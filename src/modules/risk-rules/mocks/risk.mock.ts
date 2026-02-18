@@ -131,8 +131,8 @@ export const mockContacts: Contact[] = [
 
 /** Mensagens de voz (cadastro auxiliar) */
 export const mockVoiceMessages: VoiceMessage[] = [
-  { id: 'vox-1', identification: 'Alerta nível alto', message: 'Sua pontuação atingiu nível de atenção. Entre em contato com o gestor.', format: 'MP3', active: true },
-  { id: 'vox-2', identification: 'Bloqueio', message: 'Acesso bloqueado por segurança.', format: 'WAV', active: false },
+  { id: 'vox-1', identification: 'Alerta nível alto', language: 'pt', message: 'Sua pontuação atingiu nível de atenção. Entre em contato com o gestor.', device: 'G5 Plus', format: 'MP3', active: true },
+  { id: 'vox-2', identification: 'Bloqueio', language: 'pt', message: 'Acesso bloqueado por segurança.', device: 'K1 Plus', format: 'WAV', active: false },
 ];
 
 export const mockHistory: HistoryEntry[] = [

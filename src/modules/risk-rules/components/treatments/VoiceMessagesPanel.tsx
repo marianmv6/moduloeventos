@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { VoiceMessage } from '../../types/risk.types';
+import type { VoiceMessage, VoiceMessageLanguage, VoiceMessageDevice } from '../../types/risk.types';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
@@ -10,10 +10,19 @@ const STATUS_OPTIONS: ModalSelectOption[] = [
   { value: 'inativo', label: 'Inativo' },
 ];
 
-const FORMAT_OPTIONS: ModalSelectOption[] = [
-  { value: 'WAV', label: 'WAV' },
-  { value: 'MP3', label: 'MP3' },
+const LANGUAGE_OPTIONS: ModalSelectOption[] = [
+  { value: 'pt', label: 'Português' },
+  { value: 'en', label: 'Inglês' },
+  { value: 'es', label: 'Espanhol' },
 ];
+
+const DEVICE_OPTIONS: ModalSelectOption[] = [
+  { value: 'K1 Plus', label: 'K1 Plus' },
+  { value: 'G5 Plus', label: 'G5 Plus' },
+];
+
+const MESSAGE_MAX_LENGTH_DEVICE = 200;
+const MESSAGE_MAX_LENGTH_DEFAULT = 70;
 
 interface VoiceMessagesPanelProps {
   voiceMessages: VoiceMessage[];
@@ -29,20 +38,26 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<VoiceMessage | null>(null);
   const [identification, setIdentification] = useState('');
+  const [language, setLanguage] = useState<VoiceMessageLanguage>('pt');
+  const [device, setDevice] = useState<VoiceMessageDevice>('K1 Plus');
   const [message, setMessage] = useState('');
-  const [format, setFormat] = useState<'WAV' | 'MP3'>('MP3');
   const [active, setActive] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<{ identification?: boolean; message?: boolean }>({});
 
-  /** Apenas letras, números e espaços (sem caracteres especiais), máx. 70 caracteres. */
-  const sanitizeMessage = (val: string) =>
-    val.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').slice(0, 70);
+  const messageMaxLength = device === 'K1 Plus' || device === 'G5 Plus' ? MESSAGE_MAX_LENGTH_DEVICE : MESSAGE_MAX_LENGTH_DEFAULT;
+  const formatFromDevice: 'WAV' | 'MP3' = device === 'G5 Plus' ? 'MP3' : 'WAV';
+  const formatLabel = device === 'K1 Plus' ? 'WAV disponível' : device === 'G5 Plus' ? 'MP3' : '';
+
+  /** Apenas letras, números e espaços (sem caracteres especiais), até máx. conforme dispositivo. */
+  const sanitizeMessage = (val: string, max: number) =>
+    val.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').slice(0, max);
 
   const openNew = () => {
     setEditing(null);
     setIdentification('');
+    setLanguage('pt');
+    setDevice('K1 Plus');
     setMessage('');
-    setFormat('MP3');
     setActive(true);
     setFieldErrors({});
     setModalOpen(true);
@@ -50,8 +65,9 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
   const openEdit = (m: VoiceMessage) => {
     setEditing(m);
     setIdentification(m.identification);
-    setMessage(sanitizeMessage(m.message));
-    setFormat(m.format);
+    setLanguage((m.language ?? 'pt') as VoiceMessageLanguage);
+    setDevice((m.device ?? 'K1 Plus') as VoiceMessageDevice);
+    setMessage(sanitizeMessage(m.message, m.device === 'K1 Plus' || m.device === 'G5 Plus' ? MESSAGE_MAX_LENGTH_DEVICE : MESSAGE_MAX_LENGTH_DEFAULT));
     setActive(m.active);
     setFieldErrors({});
     setModalOpen(true);
@@ -63,7 +79,7 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
   };
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(sanitizeMessage(e.target.value));
+    setMessage(sanitizeMessage(e.target.value, messageMaxLength));
     if (fieldErrors.message) setFieldErrors((err) => ({ ...err, message: false }));
   };
 
@@ -77,8 +93,10 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
     onSave({
       ...(editing?.id && { id: editing.id }),
       identification: idTrimmed,
+      language,
       message: msgTrimmed,
-      format,
+      device,
+      format: formatFromDevice,
       active,
     });
     closeModal();
@@ -97,7 +115,7 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
             <tr>
               <th>Identificação</th>
               <th>Mensagem</th>
-              <th>Formato</th>
+              <th>Dispositivo</th>
               <th>Ativo</th>
               <th></th>
             </tr>
@@ -114,7 +132,7 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
                 <tr key={m.id}>
                   <td>{m.identification}</td>
                   <td className="cell-message">{m.message}</td>
-                  <td>{m.format}</td>
+                  <td>{m.device ?? '-'}</td>
                   <td>
                     <span className={`badge badge-rounded ${m.active ? 'badge-active' : 'badge-inactive'}`}>
                       {m.active ? 'Ativo' : 'Inativo'}
@@ -180,6 +198,26 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
               )}
             </div>
           </div>
+          <div className="form-group">
+            <ModalSelect
+              id="voice-language"
+              label="Idioma"
+              value={language}
+              onChange={(v) => setLanguage(v as VoiceMessageLanguage)}
+              options={LANGUAGE_OPTIONS}
+              placeholder="Selecione"
+            />
+          </div>
+          <div className="form-group">
+            <ModalSelect
+              id="voice-device"
+              label="Dispositivo"
+              value={device}
+              onChange={(v) => setDevice(v as VoiceMessageDevice)}
+              options={DEVICE_OPTIONS}
+              placeholder="Selecione"
+            />
+          </div>
           <div className={`form-group ${fieldErrors.message ? 'has-error' : ''}`}>
             <div className="form-group__label-row">
               <label htmlFor="voice-message">Mensagem</label>
@@ -188,10 +226,10 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
               <textarea
                 id="voice-message"
                 rows={3}
-                maxLength={70}
+                maxLength={messageMaxLength}
                 value={message}
                 onChange={handleMessageChange}
-                placeholder="Texto para ser reproduzido (apenas letras e números, máx. 70 caracteres)"
+                placeholder={`Texto para ser reproduzido (apenas letras e números, máx. ${messageMaxLength} caracteres)`}
                 className={`voice-message-textarea ${fieldErrors.message ? 'input-error' : ''}`}
                 aria-invalid={fieldErrors.message}
               />
@@ -203,14 +241,8 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
             </div>
           </div>
           <div className="form-group">
-            <ModalSelect
-              id="voice-format"
-              label="Formato"
-              value={format}
-              onChange={(v) => setFormat(v as 'WAV' | 'MP3')}
-              options={FORMAT_OPTIONS}
-              placeholder="Selecione"
-            />
+            <label className="form-label">Formato</label>
+            <div className="form-readonly-value">{formatLabel}</div>
           </div>
           <div className="form-group">
             <ModalSelect

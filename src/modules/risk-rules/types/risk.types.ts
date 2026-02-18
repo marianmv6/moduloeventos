@@ -112,10 +112,18 @@ export interface Contact {
 
 export type VoiceMessageFormat = 'WAV' | 'MP3';
 
+export type VoiceMessageLanguage = 'pt' | 'en' | 'es';
+
+export type VoiceMessageDevice = 'K1 Plus' | 'G5 Plus';
+
 export interface VoiceMessage {
   id: string;
   identification: string;
+  /** Idioma da leitura: pt (padrão), en, es */
+  language?: VoiceMessageLanguage;
   message: string;
+  /** Dispositivo: K1 Plus (WAV) ou G5 Plus (MP3) */
+  device?: VoiceMessageDevice;
   format: VoiceMessageFormat;
   active: boolean;
 }

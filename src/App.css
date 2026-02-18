@@ -2074,6 +2074,20 @@ html, body {
 .form-label-optional {
   margin-top: 0.5rem;
 }
+.form-label {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+}
+.form-readonly-value {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  padding: 0.5rem 0.75rem;
+  background: #f5f5f5;
+  border-radius: 10px;
+  border: 1px solid #E9EEEE;
+}
 
 .drawer-toolbar {
   margin-bottom: 1rem;
