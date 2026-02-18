@@ -1,0 +1,36 @@
+COMO ENVIAR ESTE PROJETO AO GITHUB (Opção A)
+=============================================
+
+1. Abra o PowerShell ou o Prompt de Comando.
+
+2. Vá até esta pasta (Modulo de eventos). Exemplo:
+   cd "C:\Users\user\OneDrive - Creare Sistemas\Área de Trabalho\DHC\Modulo de eventos"
+
+   (Ajuste o caminho se sua pasta "Modulo de eventos" estiver em outro lugar.)
+
+3. Execute o script:
+   .\push-github.ps1
+
+   Se der erro de permissão no PowerShell, execute antes:
+   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+   Depois tente de novo: .\push-github.ps1
+
+
+OU execute os comandos manualmente (um por vez):
+
+   git init
+   git add .
+   git commit -m "Primeiro commit - Modulo de Eventos"
+   git branch -M main
+   git remote add origin https://github.com/marianmv6/moduloeventos.git
+   git push -u origin main
+
+
+4. Se o Git pedir usuário/senha:
+   - Use seu usuário do GitHub (marianmv6)
+   - Em vez da senha, use um "Personal Access Token":
+     GitHub -> Settings -> Developer settings -> Personal access tokens -> Generate new token.
+     Marque o escopo "repo" e use o token como senha no git push.
+
+5. Depois do push, acesse vercel.com, Add New -> Project, importe "marianmv6/moduloeventos" e faça Deploy.

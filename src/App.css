@@ -1,0 +1,2629 @@
+/* Layout padrão Creare: sidebar (launcher) + menu-header + conteúdo */
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+.between {
+  justify-content: space-between;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar conforme padrão: launcher-sidebar */
+.launcher-sidebar {
+  width: var(--sidebar-expanded-width);
+  min-width: var(--sidebar-expanded-width);
+  background-color: var(--color-sidebar);
+  color: var(--color-text-primary);
+  font-family: var(--font-noto-sans);
+  transition: width 0.3s ease;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.launcher-sidebar > .menu-header {
+  flex-shrink: 0;
+}
+
+/* Cabeçalho do menu (área do logo + ícone, conforme plataforma) */
+.menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 1rem 0.75rem 0;
+  background-image: radial-gradient(
+    circle 18rem at 50% 190%,
+    rgba(0, 0, 0, 0.03),
+    transparent 50%
+  );
+  box-sizing: border-box;
+}
+
+/* Linha cinza com margem lateral (conforme referência da plataforma) */
+.menu-header-separator {
+  height: 0;
+  border-bottom: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
+  margin: 0.75rem 0.75rem 0;
+}
+
+.menu-header-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 3.25rem;
+}
+
+.menu-header-logo-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Logo Creare: mesmas proporções da imagem (viewBox 1539x391) + ícone ao lado */
+.menu-header-logo {
+  width: 100%;
+  height: auto;
+  max-height: 2.5rem;
+  display: block;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.menu-header-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.menu-header-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Navegação do menu – padrão visual da plataforma */
+.launcher-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.launcher-sidebar nav a.nav-item,
+.launcher-sidebar nav .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 12px;
+  margin: 0 0.5rem;
+  width: calc(100% - 1rem);
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+}
+
+.launcher-sidebar nav a.nav-item {
+  text-decoration: none;
+}
+
+.launcher-sidebar nav a .nav-item-icon,
+.launcher-sidebar nav .nav-item .nav-item-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: inherit;
+}
+
+.launcher-sidebar nav a .nav-item-icon svg,
+.launcher-sidebar nav .nav-item .nav-item-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.launcher-sidebar nav a .nav-item-text,
+.launcher-sidebar nav .nav-item .nav-item-text {
+  flex: 1;
+  text-align: left;
+}
+
+.launcher-sidebar nav a .nav-item-chevron {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Item pai "Configurações": não é botão, apenas rótulo – negrito, #101828, sem seta */
+.launcher-sidebar nav .nav-item-parent {
+  color: #101828;
+  font-weight: 600;
+  background: transparent;
+  cursor: default;
+}
+
+.launcher-sidebar nav .nav-item-parent .nav-item-icon {
+  color: #101828;
+}
+
+.launcher-sidebar nav .nav-item-parent .nav-item-chevron {
+  display: none;
+}
+
+/* Itens não selecionados: mesma cor de texto que Regras de Risco (#101828), ícone #20ACAC */
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) {
+  color: #101828;
+  background: transparent;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) .nav-item-icon {
+  color: #20ACAC;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) .nav-item-chevron {
+  color: #667085;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover {
+  background: rgba(16, 24, 40, 0.04);
+  color: #101828;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover .nav-item-icon {
+  color: #20ACAC;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover .nav-item-chevron {
+  color: #667085;
+}
+
+/* Item ativo (Regras de Risco): fundo #d7dcdc, bordas 12px, sem borda externa */
+.launcher-sidebar nav a.nav-item.active {
+  background: #d7dcdc;
+  color: #101828;
+  font-weight: 500;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.launcher-sidebar nav a.nav-item.active .nav-item-icon {
+  color: var(--color-primary);
+}
+
+.launcher-sidebar nav a.nav-item.active .nav-item-text {
+  color: #101828;
+}
+
+.launcher-sidebar nav a.nav-item.active .nav-item-chevron {
+  color: #667085;
+}
+
+/* Compatibilidade com classes antigas */
+.app-sidebar {
+  width: var(--sidebar-expanded-width);
+  min-width: var(--sidebar-expanded-width);
+  background-color: var(--color-sidebar);
+  color: var(--color-text-primary);
+  font-family: var(--font-noto-sans);
+  transition: width 0.3s ease;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.app-sidebar .menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  padding: 1rem 0.75rem 0;
+  background-image: radial-gradient(
+    circle 18rem at 50% 190%,
+    rgba(0, 0, 0, 0.03),
+    transparent 50%
+  );
+}
+
+.app-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.app-sidebar nav a {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 0.25rem;
+  margin: 0 0.25rem;
+}
+
+.app-sidebar nav a:hover {
+  background: var(--color-menu-highlight);
+  color: var(--color-text-primary);
+}
+
+.app-sidebar nav a.active {
+  background: var(--color-menu-active);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+/* Top bar do sistema (cabeçalho principal) */
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header {
+  background: #FFFFFF;
+  padding: 0.75rem 1.5rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.app-header.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header h1,
+.app-header-title {
+  font-size: 0.906rem;
+  font-weight: 600;
+  color: #20ACAC;
+}
+
+.app-content {
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem 1.5rem 1.5rem;
+  overflow: auto;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  position: relative;
+}
+
+/* Corpo da tela – padrão Figma (área principal, sem menu) */
+.content-body {
+  width: 100%;
+  min-height: 0;
+}
+
+/* Barra superior do conteúdo: título + ações – padrão Empresas (fundo cinza, borda inferior #E9EEEE 50%) */
+.content-toolbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  background: #F2F4F7;
+  border-radius: 12px;
+  padding: 0 1rem;
+  border: none;
+  border-bottom: 0.063rem solid #E9EEEE80;
+  box-shadow: none;
+  height: 3rem;
+  min-height: 3rem;
+  box-sizing: border-box;
+}
+
+.content-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.content-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Botões da área superior – conforme design system */
+.content-toolbar .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  font-family: var(--font-montserrat);
+  line-height: 1.75;
+  letter-spacing: 0.02857em;
+  text-transform: none;
+  min-width: 5.5rem;
+  min-height: 2rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  box-shadow: none;
+  outline: 0;
+  margin: 0;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-toolbar .btn-primary {
+  background-color: rgb(22, 158, 255);
+  color: rgb(255, 255, 255);
+  border: 0;
+}
+
+.content-toolbar .btn-primary:hover {
+  background-color: var(--color-action-hover);
+  filter: none;
+}
+
+.content-toolbar .btn-secondary {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  border: 1px solid color-mix(in srgb, var(--color-separator) 50%, transparent);
+}
+
+.content-toolbar .btn-secondary:hover {
+  border-color: var(--color-outline-hover);
+}
+
+/* Mesmo tamanho que Editar todos; mesma cor do cancelar das modais */
+.content-toolbar .btn-outline {
+  background: #fff;
+  border: 1px solid rgb(22, 158, 255);
+  color: rgb(22, 158, 255);
+}
+.content-toolbar .btn-outline:hover {
+  background: rgba(22, 158, 255, 0.08);
+  border-color: rgb(22, 158, 255);
+}
+
+/* Título da página no corpo (ex.: Crachás, Regras de Risco) – conforme design system */
+.body-page-title {
+  font-size: 0.906rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Filtro: exatamente como na imagem (Visão Geral) – proporções, espaçamento, formato do balão */
+.type-filter-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2.5rem;
+}
+.type-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #344054;
+  cursor: pointer;
+  line-height: 1.25;
+}
+.type-filter-trigger:focus {
+  outline: none;
+}
+.type-filter-label {
+  line-height: inherit;
+}
+.type-filter-chevron {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  flex-shrink: 0;
+}
+.type-filter-chevron svg {
+  display: block;
+}
+
+/* Balão: cantos levemente arredondados, borda cinza do menu, alinhado ao trigger */
+.type-filter-dropdown {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 6px;
+  min-width: 100%;
+  background: #fff;
+  border: 1px solid var(--color-sidebar);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 0;
+  z-index: 100;
+  overflow: hidden;
+}
+.type-filter-option {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #344054;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.type-filter-option:first-child {
+  border-radius: 5px 5px 0 0;
+}
+.type-filter-option:last-child {
+  border-radius: 0 0 5px 5px;
+}
+.type-filter-option:hover {
+  background: rgb(22, 158, 255);
+  color: #fff;
+}
+.type-filter-option[aria-selected="true"] {
+  background: rgb(22, 158, 255);
+  color: #fff;
+}
+
+/* Campo de busca no estilo Figma */
+.body-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-paper);
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
+  border-radius: 0.5rem;
+  min-width: 12rem;
+}
+
+.body-search input {
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  outline: none;
+  width: 100%;
+}
+
+.body-search input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+/* Botões – padrão Figma (azul primário #169EFF) */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background: var(--color-action-hover);
+  filter: brightness(1.05);
+}
+
+.btn-secondary {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 50%, transparent);
+}
+
+.btn-secondary:hover {
+  background: var(--color-paper);
+  border-color: var(--color-outline-hover);
+}
+
+.btn-secondary:focus-visible {
+  outline: 0.125rem solid var(--color-outline-focus);
+}
+
+.btn-danger {
+  background: var(--color-background);
+  border: 0.063rem solid var(--color-error);
+  color: var(--color-error);
+}
+
+.btn-danger:hover {
+  background: var(--color-error);
+  color: #FFFFFF;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+/* Badges – padrão Figma (tags arredondadas, ex.: Vinculado) */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-rounded {
+  border-radius: 999px;
+}
+
+/* Status Ativo: verde forte e texto branco (formato da imagem Usuários) */
+.badge-active {
+  background: #16A34A;
+  color: #FFFFFF;
+}
+
+.badge-inactive {
+  background: var(--color-paper);
+  color: var(--color-text-secondary);
+}
+
+/* Risk badges (nível por score: sem risco, baixo, médio, alto) */
+.risk-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 999px;
+}
+
+.risk-badge--none { background: #E0E0E0; color: #424242; }
+.risk-badge--low { background: #E3F2FD; color: #1565C0; }
+.risk-badge--medium { background: #FFF8E1; color: #F9A825; }
+.risk-badge--high { background: #FFEBEE; color: #C62828; }
+
+/* Tooltip de nível (formato: borda sombreada, corpo branco, texto centralizado) */
+.level-tooltip-wrap {
+  position: relative;
+  display: inline-block;
+}
+.level-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  text-align: center;
+  z-index: 100;
+  pointer-events: none;
+}
+.level-tooltip-wrap .level-tooltip {
+  display: block;
+}
+/* Tooltip à direita do ícone (evita corte na borda da tela) */
+.level-tooltip-wrap--tooltip-right .level-tooltip {
+  bottom: auto;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+}
+
+/* Tabs – mesma cor em todas, só linha azul na ativa (mais grossa), sem linha cinza */
+.risk-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: none;
+  margin-bottom: 1.25rem;
+}
+
+.risk-tab {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: normal;
+  font-family: var(--font-noto-sans);
+  background: none;
+  border: none;
+  border-bottom: 0.2rem solid transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  margin-bottom: -0.2rem;
+  transition: color 0.2s;
+}
+
+.risk-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.risk-tab--active {
+  color: var(--color-text-primary);
+  font-weight: normal;
+  border-bottom: 0.2rem solid var(--color-primary);
+}
+
+/* Tables – padrão Empresas (cabeçalho com fundo cinza #F2F4F7, bordas arredondadas, sem border) */
+.list-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  background: var(--color-background);
+}
+
+.list-table th,
+.list-table td {
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid #E9EEEE;
+}
+
+.list-table thead th {
+  padding: 0 1.25rem;
+  height: 32px;
+  min-height: 32px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-noto-sans);
+  color: #344054;
+  background: rgba(233, 238, 238, 0.47);
+  border: none;
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
+.list-table thead th:first-child {
+  border-radius: 12px 0 0 0;
+}
+
+.list-table thead th:last-child {
+  border-radius: 0 12px 0 0;
+  min-width: 4.5rem;
+  padding-left: 3rem;
+}
+
+.list-table tbody th {
+  font-size: 0.875rem;
+  font-weight: normal;
+  color: var(--color-text-primary);
+  background: var(--color-paper);
+}
+
+.list-table tbody tr {
+  background: var(--color-background);
+}
+
+/* Histórico: 4 colunas (Data/Hora, Tipo, Ação, Usuário); alinhamento coluna Usuário */
+.history-list .list-table thead th:nth-child(4),
+.history-list .list-table tbody td:nth-child(4) {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  text-align: left;
+}
+
+/* Política: larguras fixas para Status e Ações no mesmo local das demais abas (Status em 80%) */
+.policy-list .list-table th:first-child,
+.policy-list .list-table td:first-child {
+  width: 55%;
+}
+.policy-list .list-table th:nth-child(2),
+.policy-list .list-table td:nth-child(2) {
+  width: 25%;
+}
+.policy-list .list-table th:nth-child(3),
+.policy-list .list-table td:nth-child(3) {
+  width: 12%;
+}
+.policy-list .list-table th:last-child,
+.policy-list .list-table td:last-child {
+  width: 6%;
+  min-width: 4.5rem;
+}
+
+/* Pontuações e Tratativas: larguras fixas para Status e Ações no mesmo local ao trocar de aba */
+.score-list .list-table th:first-child,
+.score-list .list-table td:first-child {
+  width: 35%;
+}
+.score-list .list-table th:nth-child(2),
+.score-list .list-table td:nth-child(2),
+.score-list .list-table th:nth-child(3),
+.score-list .list-table td:nth-child(3),
+.score-list .list-table th:nth-child(4),
+.score-list .list-table td:nth-child(4) {
+  width: 15%;
+}
+.score-list .list-table th:nth-child(5),
+.score-list .list-table td:nth-child(5) {
+  width: 12%;
+}
+.score-list .list-table th:last-child,
+.score-list .list-table td:last-child {
+  width: 6%;
+  min-width: 4.5rem;
+}
+
+.treatment-list .list-table th:first-child,
+.treatment-list .list-table td:first-child {
+  width: 50%;
+}
+.treatment-list .list-table th:nth-child(2),
+.treatment-list .list-table td:nth-child(2) {
+  width: 18%;
+  text-align: left;
+  font-size: 0.875rem;
+}
+.treatment-list .list-table td:nth-child(2) .risk-badge {
+  font-size: 0.875rem;
+}
+.treatment-list .list-table th:nth-child(3),
+.treatment-list .list-table td:nth-child(3) {
+  width: 12%;
+}
+.treatment-list .list-table th:nth-child(4),
+.treatment-list .list-table td:nth-child(4) {
+  width: 12%;
+}
+.treatment-list .list-table th:last-child,
+.treatment-list .list-table td:last-child {
+  width: 6%;
+  min-width: 4.5rem;
+}
+
+/* Política: 3rem entre Nível de risco, Status e Ações; ação→fim da tabela inalterado */
+.policy-list .list-table th:nth-child(2),
+.policy-list .list-table td:nth-child(2),
+.policy-list .list-table th:nth-child(3),
+.policy-list .list-table td:nth-child(3) {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.policy-list .list-table .list-cell-actions {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.policy-list .list-table thead th:last-child {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Pontuações: 3rem entre Tipo, Pontuação, Nível, Status e Ações (coluna Evento inalterada); ação→fim da tabela inalterado */
+.score-list .list-table th:nth-child(2),
+.score-list .list-table td:nth-child(2),
+.score-list .list-table th:nth-child(3),
+.score-list .list-table td:nth-child(3),
+.score-list .list-table th:nth-child(4),
+.score-list .list-table td:nth-child(4),
+.score-list .list-table th:nth-child(5),
+.score-list .list-table td:nth-child(5) {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.score-list .list-table .list-cell-actions {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.score-list .list-table thead th:last-child {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Tratativas: 3rem entre Nível de risco, Etapas, Status e Ações; ação→fim da tabela inalterado */
+.treatment-list .list-table th:nth-child(2),
+.treatment-list .list-table td:nth-child(2) {
+  min-width: 8rem;
+  white-space: nowrap;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.treatment-list .list-table th:nth-child(3),
+.treatment-list .list-table td:nth-child(3),
+.treatment-list .list-table th:nth-child(4),
+.treatment-list .list-table td:nth-child(4) {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.treatment-list .list-table .list-cell-actions {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.treatment-list .list-table thead th:last-child {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Empty state (Tratativas) */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  min-height: 280px;
+}
+.empty-state__image {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-secondary);
+}
+.empty-state__image svg {
+  width: 80px;
+  height: 80px;
+  opacity: 0.7;
+}
+.empty-state__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.5rem;
+  font-family: var(--font-noto-sans);
+}
+.empty-state__description {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+  max-width: 360px;
+  font-family: var(--font-noto-sans);
+}
+
+/* Trilhas: 6 colunas (Nome, Tipo, Modo, Etapas, Status, Ações) */
+.trail-list .list-table th:first-child,
+.trail-list .list-table td:first-child { width: 38%; }
+.trail-list .list-table th:nth-child(2),
+.trail-list .list-table td:nth-child(2) { width: 16%; }
+.trail-list .list-table th:nth-child(3),
+.trail-list .list-table td:nth-child(3) { width: 12%; }
+.trail-list .list-table th:nth-child(4),
+.trail-list .list-table td:nth-child(4) { width: 12%; }
+.trail-list .list-table th:nth-child(5),
+.trail-list .list-table td:nth-child(5) { width: 12%; }
+.trail-list .list-table th:last-child,
+.trail-list .list-table td:last-child { width: 6%; min-width: 4.5rem; }
+.trail-list .list-table th:nth-child(2),
+.trail-list .list-table td:nth-child(2),
+.trail-list .list-table th:nth-child(3),
+.trail-list .list-table td:nth-child(3),
+.trail-list .list-table th:nth-child(4),
+.trail-list .list-table td:nth-child(4),
+.trail-list .list-table th:nth-child(5),
+.trail-list .list-table td:nth-child(5) {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Pontuações: valor preenche a coluna, números centralizados */
+.score-value-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  background: #F2F4F7;
+  color: #344054;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  box-sizing: border-box;
+}
+/* Na aba Pontuações: componente do número com metade da largura da coluna */
+.score-list .score-value-cell {
+  width: 50%;
+}
+
+.list-table .list-description {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: normal;
+  margin-top: 0.125rem;
+}
+
+.list-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Célula de ações sempre visível; apenas os ícones (botões) aparecem ao passar o cursor.
+   Padding à esquerda aumenta a distância entre Status (e colunas de conteúdo) e os ícones. */
+.list-table .list-cell-actions {
+  transition: opacity 0.2s ease;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  min-width: 4.5rem;
+  white-space: nowrap;
+}
+.list-table .list-cell-actions .list-actions {
+  flex-wrap: nowrap;
+}
+.list-table .list-cell-actions .btn-icon-action {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.list-table tbody tr:hover .list-cell-actions .btn-icon-action {
+  opacity: 1;
+}
+
+/* Botões de ação somente ícone (lápis = editar, lixeira = excluir) – padrão Figma */
+.btn-icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-icon-action:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+.btn-icon-action:focus-visible {
+  outline: 0.125rem solid var(--color-outline-focus);
+  outline-offset: 0.125rem;
+}
+
+.btn-icon-action.ds-icon-danger {
+  color: var(--color-primary);
+}
+
+.btn-icon-action.ds-icon-danger:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+.ds-icon {
+  flex-shrink: 0;
+}
+
+/* Forms – padrão Figma */
+.form-card {
+  max-width: 35rem;
+  padding: 1.5rem;
+  background: var(--color-paper);
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 0.375rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 50%, transparent);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group-inline input {
+  width: auto;
+}
+
+.form-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* Modal – tamanhos conforme design system */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+/* Modal de exclusão/confirmação acima das demais modais */
+.confirm-modal-overlay {
+  z-index: 10050;
+}
+
+/* Modal de confirmação (sair sem salvar + alteração aplicada): ícone ? laranja/dourado como na imagem */
+.unsaved-confirm-overlay {
+  z-index: 10050;
+}
+.unsaved-confirm-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 2rem 1.75rem;
+  width: 100%;
+  max-width: 36rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  box-sizing: border-box;
+}
+.unsaved-confirm-modal__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  background: transparent;
+  border: none;
+}
+.unsaved-confirm-modal__question {
+  display: block;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #E69500;
+  -webkit-text-fill-color: #E69500;
+}
+.unsaved-confirm-modal__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 0.75rem;
+}
+.unsaved-confirm-modal__message {
+  font-size: 0.9375rem;
+  color: #000;
+  margin: 0 0 1.5rem;
+  line-height: 1.45;
+  word-wrap: break-word;
+}
+.unsaved-confirm-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+/* Mesmo tamanho dos botões Salvar/Cancelar da modal Nova política; Ok e Cancelar com a mesma largura */
+.unsaved-confirm-modal__actions .unsaved-confirm-btn--outline,
+.unsaved-confirm-modal__actions .unsaved-confirm-btn--primary {
+  min-width: 7rem;
+}
+.unsaved-confirm-btn--outline {
+  background: #fff;
+  border: 1px solid rgb(22, 158, 255);
+  color: rgb(22, 158, 255);
+  min-height: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  cursor: pointer;
+}
+.unsaved-confirm-btn--outline:hover {
+  background: rgba(22, 158, 255, 0.08);
+}
+.unsaved-confirm-btn--primary {
+  background: rgb(22, 158, 255);
+  border: 1px solid transparent;
+  color: #fff;
+  min-height: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  cursor: pointer;
+}
+.unsaved-confirm-btn--primary:hover {
+  background: var(--color-action-hover);
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  min-width: 25rem;
+  max-width: 90vw;
+  box-shadow: var(--box-shadow);
+}
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.modal-message {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* Modal de exclusão: Cancelar com o mesmo formato das outras modais (cor da fonte e borda = Nova política) */
+.confirm-modal .modal-actions .btn-secondary {
+  border-color: rgb(22, 158, 255);
+  color: rgb(22, 158, 255);
+  background: #fff;
+}
+.confirm-modal .modal-actions .btn-secondary:hover {
+  background: rgba(22, 158, 255, 0.08);
+  border-color: rgb(22, 158, 255);
+  color: rgb(22, 158, 255);
+}
+
+/* Modal de exclusão: botão Excluir com a mesma cor de preenchimento do Nova política */
+.confirm-modal .modal-actions .btn-danger {
+  background-color: rgb(22, 158, 255);
+  border-color: rgb(22, 158, 255);
+  color: #fff;
+}
+.confirm-modal .modal-actions .btn-danger:hover {
+  background-color: var(--color-action-hover);
+  border-color: var(--color-action-hover);
+  color: #fff;
+}
+
+/* Toast – acima das modais (z-index maior que .unsaved-confirm-overlay 10050) */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 10100;
+}
+
+.toast-success {
+  background: #C8F0BD;
+  color: #344054;
+}
+
+.toast-success .toast-icon--success {
+  color: #16A34A;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-warning {
+  background: rgba(230, 81, 0, 0.18);
+  color: #344054;
+  border-radius: 1rem;
+}
+
+.toast-warning .toast-icon--warning {
+  color: #e65100;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-icon {
+  font-weight: bold;
+}
+
+.toast-message {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+/* Page layout – corpo da tela */
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.page-header {
+  margin-bottom: 1.25rem;
+}
+
+.page-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.content-actions {
+  margin-bottom: 1rem;
+}
+
+/* Treatment step card – padrão Figma */
+.treatment-step-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.treatment-step-order {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--color-paper);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.treatment-step-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.treatment-step-action {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.treatment-step-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-icon {
+  padding: 0.25rem 0.5rem;
+  min-width: 2rem;
+}
+
+/* Tooltip de informação (aba Pontuações – régua de risco) */
+.score-info-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.score-info-icon {
+  cursor: help;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.score-info-tooltip-content {
+  visibility: hidden;
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0.5rem;
+  padding: 0.75rem 1rem;
+  min-width: 14rem;
+  max-width: 20rem;
+  background: var(--color-tooltip-background);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  white-space: pre-line;
+  border-radius: 0.375rem;
+  box-shadow: var(--box-shadow);
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.score-info-tooltip-wrap:hover .score-info-tooltip-content {
+  visibility: visible;
+}
+
+/* Modal Editar pontuação */
+.edit-score-modal .form-group {
+  margin-bottom: 1rem;
+}
+
+.modal-readonly-field {
+  padding: 0.5rem 0.75rem;
+  background: var(--color-paper);
+  border: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.form-error {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-error);
+  margin-top: 0.25rem;
+}
+
+/* Ícone de exclamação: tamanho único em todo o sistema, à esquerda do label */
+.field-error-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+}
+.field-error-icon__mark {
+  display: block;
+  line-height: 1;
+  font-size: 0.7rem;
+}
+.form-group__label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+  width: 100%;
+}
+.form-group__label-row .field-error-icon {
+  margin-left: auto;
+  margin-right: 0;
+}
+.form-group__input-with-error {
+  position: relative;
+}
+.form-group__input-with-error .form-group__field-error-icon {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.form-group.has-error .form-group__input-with-error input,
+.form-group.has-error .form-group__input-with-error textarea {
+  padding-right: 2.25rem;
+}
+.form-group__block-with-error {
+  position: relative;
+}
+.form-group__field-error-icon--block {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea,
+.form-group.has-error .modal-select__input-wrap {
+  border-color: var(--color-error);
+  border-width: 1px;
+}
+.form-group input.input-error,
+.form-group select.input-error,
+.form-group textarea.input-error,
+.form-group .modal-select__input-wrap.input-error-wrap {
+  border-color: var(--color-error);
+  border-width: 1px;
+}
+/* Blocos de checkbox/radio em erro (ex.: Eventos contemplados, Usuários) */
+.policy-form .form-group.has-error .policy-form-eventos-list,
+.policy-form .form-group.has-error .policy-form-usuarios-list {
+  outline: 1px solid var(--color-error);
+  outline-offset: 2px;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.edit-score-badge-wrap {
+  margin-top: 0.5rem;
+}
+
+.btn-retomar-padrao {
+  margin-top: 0.5rem;
+}
+
+.scores-section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.scores-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.scores-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Botões na toolbar de Pontuações – mesmo padrão da área superior */
+.scores-toolbar .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  font-family: var(--font-montserrat);
+  line-height: 1.75;
+  letter-spacing: 0.02857em;
+  text-transform: none;
+  min-width: 5.5rem;
+  min-height: 2rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  box-shadow: none;
+  outline: 0;
+  margin: 0;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scores-toolbar .btn-primary {
+  background-color: rgb(22, 158, 255);
+  color: rgb(255, 255, 255);
+  border: 0;
+}
+
+.scores-toolbar .btn-secondary {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  border: 1px solid color-mix(in srgb, var(--color-separator) 50%, transparent);
+}
+
+.scores-toolbar .btn-secondary:hover {
+  border-color: var(--color-outline-hover);
+}
+
+/* ========== Modal Creare (abertura ao clicar botão superior) ========== */
+.cr-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.cr-modal {
+  width: min(720px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 60px rgba(16, 24, 40, 0.18),
+    0 2px 10px rgba(16, 24, 40, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-noto-sans);
+  font-size: 12px;
+}
+
+.cr-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px 24px;
+}
+
+.cr-modal__title {
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #101828;
+  margin: 0;
+  font-family: var(--font-noto-sans);
+}
+
+.cr-modal__close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+}
+
+.cr-modal__close:hover {
+  background: rgba(16, 24, 40, 0.06);
+}
+
+.cr-modal__close:active {
+  background: rgba(16, 24, 40, 0.1);
+}
+
+.cr-modal__close svg {
+  width: 18px;
+  height: 18px;
+  stroke: rgb(22, 158, 255);
+}
+
+.cr-modal__body {
+  padding: 8px 24px 16px 24px;
+  overflow: visible;
+  flex: 1;
+  min-height: 0;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+}
+
+.cr-modal__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cr-modal__label {
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: normal;
+  color: #344054;
+}
+
+.cr-modal__input,
+.cr-modal__select,
+.cr-modal__textarea {
+  width: 100%;
+  border: 1px solid #D0D5DD;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #101828;
+  outline: none;
+  background: #fff;
+  min-height: 28px;
+  box-sizing: border-box;
+}
+
+.cr-modal__textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.cr-modal__input:focus,
+.cr-modal__select:focus,
+.cr-modal__textarea:focus {
+  border: 1px solid rgb(22, 158, 255);
+  outline: none;
+  box-shadow: none;
+}
+
+.cr-modal__readonly {
+  background: #f9fafb !important;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.cr-modal__body input:disabled,
+.cr-modal__body select:disabled,
+.cr-modal__body textarea:disabled {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.cr-modal__input.input-error {
+  border: 1px solid var(--color-error);
+}
+
+.cr-modal__body .form-error {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+}
+
+.cr-modal__body .edit-score-badge-wrap {
+  margin-top: 8px;
+}
+
+.cr-modal__body .btn-retomar-padrao {
+  margin-top: 8px;
+}
+
+.cr-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px 20px 24px;
+}
+
+/* Modal tela cheia: mesmas margens que .app-content; fundo igual ao da página (sem zona cinza em volta da modal) */
+.cr-modal-overlay--fullscreen {
+  position: absolute;
+  inset: 0;
+  padding: 0.75rem 1.5rem 1.5rem;
+  place-items: stretch;
+  align-items: stretch;
+  justify-content: stretch;
+  z-index: 9999;
+  box-sizing: border-box;
+  background: var(--color-background);
+}
+.cr-modal--fullscreen {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  border-radius: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  box-shadow: none;
+  background: #ffffff;
+}
+/* Cabeçalho da modal = mesmo estilo e mesma margem título/menu lateral que a barra "Regras de Risco" */
+.cr-modal--fullscreen .cr-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: #F2F4F7;
+  border-radius: 12px;
+  padding: 0 1rem;
+  min-height: 3rem;
+  height: 3rem;
+  border-bottom: 0.063rem solid #E9EEEE80;
+  box-shadow: none;
+  margin-bottom: 1.25rem;
+}
+.cr-modal--fullscreen .cr-modal__title--page {
+  font-size: 0.906rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+  margin: 0;
+  font-family: var(--font-noto-sans);
+}
+.cr-modal--fullscreen .cr-modal__header .cr-modal__close {
+  margin-right: 0;
+  flex-shrink: 0;
+}
+.cr-modal--fullscreen .cr-modal__header .cr-modal__close svg {
+  stroke: rgb(22, 158, 255);
+}
+.cr-modal--fullscreen .cr-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 24px 16px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+.cr-modal--fullscreen .cr-modal__footer {
+  flex-shrink: 0;
+  border-top: none;
+  padding: 16px 24px 20px 24px;
+  margin: 0;
+}
+.cr-modal--fullscreen .cr-modal__footer .cr-btn {
+  margin: 0;
+}
+
+/* Drawer lateral (padrão do sistema) */
+.cr-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.4);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+}
+.cr-drawer {
+  width: min(560px, 90vw);
+  max-width: 560px;
+  background: var(--color-background);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+}
+.cr-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #E9EEEE;
+  flex-shrink: 0;
+}
+.cr-drawer__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  font-family: var(--font-noto-sans);
+}
+.cr-drawer__close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.cr-drawer__close:hover {
+  background: rgba(16, 24, 40, 0.06);
+}
+.cr-drawer__close:active {
+  background: rgba(16, 24, 40, 0.1);
+}
+.cr-drawer__close svg {
+  width: 18px;
+  height: 18px;
+  stroke: rgb(22, 158, 255);
+}
+.cr-drawer__body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Trail form (trilhas de tratativas) */
+.trail-form-row {
+  display: grid;
+  gap: 1rem;
+}
+.trail-form-row .form-group {
+  width: 100%;
+  min-width: 0;
+}
+.trail-form-row--name-tracking {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 560px) {
+  .trail-form-row--name-tracking {
+    grid-template-columns: 1fr;
+  }
+}
+.trail-form .form-radios {
+  display: flex;
+  gap: 1.5rem;
+}
+.trail-form .form-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+.trail-form .form-radio input {
+  margin: 0;
+}
+.trail-form-etapas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.trail-form-etapas-header label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+  margin: 0;
+}
+.trail-step-error-icon-row {
+  margin-bottom: 0.5rem;
+}
+.trail-step-error-icon-row .trail-step-error-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.trail-steps-wrapper-outer {
+  width: 100%;
+}
+.trail-steps-wrapper {
+  position: relative;
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+.trail-steps-wrapper--error {
+  border: 1px solid var(--color-error);
+  padding: 1px;
+}
+.trail-steps-wrapper__field-error-icon {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.trail-step-error-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.trail-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.trail-step-card {
+  padding: 1rem;
+  border: 1px solid #E9EEEE;
+  border-radius: 8px;
+  background: #FAFBFC;
+}
+.trail-step-card--error {
+  border-color: var(--color-error);
+  border-width: 1px;
+  border-style: solid;
+}
+.trail-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+.trail-step-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.trail-step-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: rgb(22, 158, 255);
+  border-radius: 4px;
+}
+.trail-step-remove-btn:hover {
+  background: rgba(22, 158, 255, 0.08);
+  color: var(--color-action-hover);
+}
+.trail-step-remove-btn .ds-icon {
+  width: 16px;
+  height: 16px;
+}
+.trail-step-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+.trail-step-trigger,
+.trail-step-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 120px;
+}
+.trail-step-trigger label,
+.trail-step-action label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+/* Campo Ação: largura para caber até 30 caracteres sem sobrepor a seta */
+.trail-step-action .modal-select .modal-select__input-wrap {
+  max-width: 38ch;
+  min-width: 14rem;
+}
+.trail-step-action .modal-select .modal-select__input {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trail-step-config {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.trail-step-config label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+/* Mesma altura entre "Selecionar todos" e a lista que entre "Pontuação mínima" e o input (0.25rem) */
+.trail-step-config > .policy-form-checkbox-option {
+  margin-bottom: 0;
+}
+.trail-step-config select[multiple] {
+  min-height: 80px;
+}
+.trail-form-aviso {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 1rem 0 0;
+  padding: 0.5rem 0;
+}
+.form-label-optional {
+  margin-top: 0.5rem;
+}
+
+.drawer-toolbar {
+  margin-bottom: 1rem;
+}
+.drawer-toolbar--end {
+  display: flex;
+  justify-content: flex-end;
+}
+/* Mesmo tamanho do botão Nova tratativa */
+.drawer-toolbar .btn {
+  min-width: 5.5rem;
+  min-height: 2rem;
+  padding: 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+}
+/* Tabela no drawer Gerenciar contatos: mais espaço entre colunas, texto com quebra, ações no término */
+.drawer-contacts-table .list-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.drawer-contacts-table .list-table th:not(:last-child),
+.drawer-contacts-table .list-table td:not(:last-child) {
+  padding-left: 1rem;
+  padding-right: 1.5rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 0;
+}
+.drawer-contacts-table .list-table th:first-child,
+.drawer-contacts-table .list-table td:first-child {
+  width: 22%;
+}
+.drawer-contacts-table .list-table th:nth-child(2),
+.drawer-contacts-table .list-table td:nth-child(2) {
+  width: 18%;
+}
+.drawer-contacts-table .list-table th:nth-child(3),
+.drawer-contacts-table .list-table td:nth-child(3) {
+  width: 18%;
+}
+.drawer-contacts-table .list-table th:nth-child(4),
+.drawer-contacts-table .list-table td:nth-child(4) {
+  width: 30%;
+}
+.drawer-contacts-table .list-table th:last-child,
+.drawer-contacts-table .list-table td:last-child {
+  width: auto;
+  min-width: 4.5rem;
+  max-width: none;
+  padding-left: 0.5rem;
+  padding-right: 0;
+}
+.drawer-contacts-table .list-table .list-cell-actions {
+  padding-left: 0.5rem;
+  padding-right: 0;
+}
+
+/* Tabela no drawer Gerenciar mensagens de voz: mesmo padrão (espaço entre colunas, quebra de texto, ações no término) */
+.drawer-voice-messages-table .list-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.drawer-voice-messages-table .list-table th:not(:last-child),
+.drawer-voice-messages-table .list-table td:not(:last-child) {
+  padding-left: 1rem;
+  padding-right: 1.5rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 0;
+}
+.drawer-voice-messages-table .list-table th:first-child,
+.drawer-voice-messages-table .list-table td:first-child {
+  width: 20%;
+}
+.drawer-voice-messages-table .list-table th:nth-child(2),
+.drawer-voice-messages-table .list-table td:nth-child(2) {
+  width: 30%;
+}
+.drawer-voice-messages-table .list-table th:nth-child(3),
+.drawer-voice-messages-table .list-table td:nth-child(3) {
+  width: 18%;
+  min-width: 5rem;
+}
+.drawer-voice-messages-table .list-table th:nth-child(4),
+.drawer-voice-messages-table .list-table td:nth-child(4) {
+  width: 20%;
+  min-width: 5.5rem;
+  padding-right: 1.25rem;
+  white-space: nowrap;
+}
+.drawer-voice-messages-table .list-table th:last-child,
+.drawer-voice-messages-table .list-table td:last-child {
+  width: auto;
+  min-width: 4.5rem;
+  max-width: none;
+  padding-left: 1rem;
+  padding-right: 0;
+  white-space: nowrap;
+}
+.drawer-voice-messages-table .list-table .list-cell-actions {
+  padding-left: 1rem;
+  padding-right: 0;
+  text-align: right;
+}
+.drawer-voice-messages-table .cell-message {
+  max-width: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.contact-form-row {
+  display: grid;
+  gap: 1rem;
+}
+.contact-form-row--name-phone-email {
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.contact-form-row--name-phone-email .form-group {
+  width: 100%;
+  min-width: 0;
+}
+.contact-form-row--name-phone-email .form-group input {
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 560px) {
+  .contact-form-row--name-phone-email {
+    grid-template-columns: 1fr;
+  }
+}
+.form-hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: 0.5rem 0 0;
+}
+
+/* Campos de descrição: só redimensionar em altura, mín. 1 linha, máx. 3 linhas */
+.textarea-description {
+  resize: vertical;
+  min-height: 2.5rem;
+  max-height: 5.25rem;
+}
+.list-empty {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+.cell-message {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mesmo tamanho do botão Nova tratativa (content-toolbar .btn) */
+.cr-btn {
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-height: 2rem;
+  font-family: var(--font-noto-sans);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.cr-btn--outline {
+  background: #fff;
+  border-color: rgb(22, 158, 255);
+  color: rgb(22, 158, 255);
+}
+
+.cr-btn--outline:hover {
+  background: rgba(22, 158, 255, 0.08);
+}
+
+/* Mesma cor do botão Nova tratativa */
+.cr-btn--primary {
+  background-color: rgb(22, 158, 255);
+  color: #fff;
+}
+
+.cr-btn--primary:hover {
+  background-color: var(--color-action-hover);
+}
+
+/* Modal Editar todas as pontuações */
+.cr-modal--edit-all .cr-modal__body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.edit-all-scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.edit-all-scores-row {
+  display: grid;
+  grid-template-columns: minmax(35rem, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0;
+  row-gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #E9EEEE;
+}
+.edit-all-scores-row:last-child {
+  border-bottom: none;
+}
+.edit-all-scores-cell {
+  min-width: 0;
+}
+/* Eventos ↔ Pontuação = 1.5rem (atual 1rem + metade 0.5rem); Pontuação ↔ Nível = 0.5rem (metade) */
+.edit-all-scores-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  padding-right: 1.5rem;
+}
+.edit-all-scores-event-name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.edit-all-scores-event-name,
+.edit-all-scores-event-type {
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+}
+.edit-all-scores-event-type {
+  color: var(--color-text-secondary);
+}
+.edit-all-scores-input-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-right: 3rem;
+}
+.edit-all-scores-input-wrap .cr-modal__label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+.edit-all-scores-input-wrap input {
+  width: 5rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+.edit-all-scores-badge {
+  padding-left: 3rem;
+  padding-top: 1.5rem;
+}
+
+/* Formulários dentro do cr-modal (remover card e alinhar ao corpo) */
+.cr-modal__body .form-card {
+  max-width: none;
+  padding: 0;
+  background: transparent;
+  border: none;
+  margin-top: 0;
+}
+
+.cr-modal__body .form-group label {
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: normal;
+  color: #344054;
+}
+/* Modal Nova/Editar política: mesma formatação de texto da modal nova tratativa (fonte, tamanho, peso) */
+.cr-modal__body .policy-form .form-group label,
+.cr-modal__body .policy-form .modal-select__label {
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: normal;
+  color: #344054;
+  margin-bottom: 6px;
+}
+
+.cr-modal__body .form-group input,
+.cr-modal__body .form-group select,
+.cr-modal__body .form-group textarea {
+  border: 1px solid #D0D5DD;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #101828;
+  min-height: 28px;
+  box-sizing: border-box;
+}
+
+.cr-modal__body .form-group input:focus,
+.cr-modal__body .form-group select:focus,
+.cr-modal__body .form-group textarea:focus {
+  border: 1px solid rgb(22, 158, 255);
+  outline: none;
+  box-shadow: none;
+}
+
+/* Campos em erro: borda na mesma cor do ícone de exclamação (var(--color-error)) até ser preenchido */
+.cr-modal__body .form-group.has-error input,
+.cr-modal__body .form-group.has-error select,
+.cr-modal__body .form-group.has-error textarea,
+.cr-modal__body .form-group.has-error .modal-select__input-wrap,
+.cr-modal__body .form-group input.input-error,
+.cr-modal__body .form-group select.input-error,
+.cr-modal__body .form-group textarea.input-error {
+  border-color: var(--color-error);
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Select no modelo da imagem: pesquisável, dropdown com pills e checkboxes (modais) */
+.cr-modal__body .modal-select {
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+}
+.cr-modal__body .modal-select__label {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: normal;
+  color: #344054;
+  margin-bottom: 6px;
+}
+.modal-select {
+  position: relative;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+}
+.modal-select__label {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: normal;
+  color: #344054;
+  margin-bottom: 6px;
+}
+/* Uma só borda fina (imagem 1); multiselect: espaçamento da seta como imagem 1 */
+.modal-select__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #D0D5DD;
+  border-radius: 10px;
+  background: #fff;
+  min-height: 28px;
+  box-sizing: border-box;
+}
+.modal-select__input-wrap:focus-within {
+  border: 1px solid rgb(22, 158, 255);
+  outline: none;
+  box-shadow: none;
+}
+.modal-select__input-wrap * {
+  outline: none;
+}
+.modal-select__input {
+  width: 100%;
+  padding: 6px 40px 6px 10px;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #101828;
+  border: none !important;
+  background: transparent;
+  outline: none !important;
+  min-height: 28px;
+  box-sizing: border-box;
+  box-shadow: none !important;
+}
+.modal-select__input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.modal-select__arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: #667085;
+  pointer-events: none;
+}
+.modal-select__dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #E4E7EC;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.12);
+  z-index: 1000;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.modal-select__option-wrap {
+  margin: 0;
+}
+.modal-select__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+}
+.modal-select__option:hover {
+  background: rgba(32, 172, 172, 0.08);
+}
+.modal-select__option--selected {
+  background: rgba(32, 172, 172, 0.1);
+}
+.modal-select__option-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #F4ECFC;
+  color: #344054;
+}
+
+.policy-form-row {
+  display: grid;
+  gap: 1rem;
+}
+.policy-form-row--name-janela {
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Formato padrão de multiselect (igual ao nível de risco na modal tratativa): label + lista com borda */
+/* Exceção: modal Nova/Editar política – títulos dos campos em negrito */
+.policy-form .form-group > label:not([for]),
+.policy-form .form-group .policy-form-multiselect-label {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #344054;
+  margin-bottom: 6px;
+}
+.policy-form-eventos-list,
+.policy-form-usuarios-list {
+  border: 1px solid #D0D5DD;
+  border-radius: 10px;
+  background: #fff;
+  max-height: 12rem;
+  overflow-y: auto;
+  margin-top: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.policy-form-eventos-list .policy-form-checkbox-option,
+.policy-form-usuarios-list .policy-form-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 0;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #101828;
+  min-height: 28px;
+  box-sizing: border-box;
+}
+.policy-form-eventos-list .policy-form-checkbox-option:not(:last-child),
+.policy-form-usuarios-list .policy-form-checkbox-option:not(:last-child) {
+  border-bottom: 1px solid #E4E7EC;
+}
+/* Alinhar ícone de seleção com o texto (ex.: "Selecionar todos") em toda modal */
+.policy-form-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.policy-form-checkbox-option input {
+  width: auto;
+  margin: 0;
+  flex-shrink: 0;
+}
+.policy-form-checkbox-option label {
+  display: inline;
+  font-weight: normal;
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+/* Política: descrição redimensionável só na vertical; aviso em vermelho e itálico */
+.policy-form-desc {
+  resize: vertical;
+  min-height: 2.5rem;
+  max-height: 5.25rem;
+}
+.policy-form-aviso {
+  margin: 1rem 0 2rem 0;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #c62828;
+  font-style: italic;
+}
+/* Opções fora da lista (Selecionar todos, Todos/Específicos) */
+.policy-form .form-group > .policy-form-checkbox-option {
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.policy-form .form-group > .policy-form-checkbox-option input {
+  margin: 0;
+}
+
+/* Nível de risco (política e tratativa): somente texto, sem fundo colorido */
+.policy-form .modal-select .modal-select__option-pill,
+.treatment-form .modal-select .modal-select__option-pill,
+.trail-form .modal-select .modal-select__option-pill,
+.voice-message-form .modal-select .modal-select__option-pill {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+.voice-message-form .voice-message-textarea {
+  resize: none;
+  max-height: 5.5rem;
+}
+
+.modal-select__checkbox {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #667085;
+}
+.modal-select__chevron {
+  margin-left: auto;
+  font-size: 10px;
+  color: #667085;
+}
+.modal-select__empty {
+  padding: 12px;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: var(--color-text-secondary);
+}

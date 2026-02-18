@@ -1,0 +1,653 @@
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import type { RiskTabId } from '../types/risk.types';
+import { mockPolicies, mockScoreRules, mockTreatments, mockTrails, mockContacts, mockVoiceMessages, mockHistory, mockUsers } from '../mocks/risk.mock';
+import { TYPE_FILTER_OPTIONS, type TypeFilterValue } from '../constants/eventTypes';
+import { RiskTabs } from '../components/tabs/RiskTabs';
+import { PolicyList } from '../components/policy/PolicyList';
+import { PolicyForm } from '../components/policy/PolicyForm';
+import { ScoreList } from '../components/scores/ScoreList';
+import { EditScoreModal } from '../components/scores/EditScoreModal';
+import { EditAllScoresModal } from '../components/scores/EditAllScoresModal';
+import { TreatmentList } from '../components/treatments/TreatmentList';
+import { TreatmentForm } from '../components/treatments/TreatmentForm';
+import { TrailList } from '../components/treatments/TrailList';
+import { TrailForm } from '../components/treatments/TrailForm';
+import { EmptyState } from '../components/shared/EmptyState';
+import { HistoryList } from '../components/history/HistoryList';
+import { ConfirmModal } from '../components/shared/ConfirmModal';
+import { UnsavedConfirmModal } from '../components/shared/UnsavedConfirmModal';
+import { AppliedConfirmModal } from '../components/shared/AppliedConfirmModal';
+import { CrModal } from '../components/shared/CrModal';
+import type { EditScoreModalRef } from '../components/scores/EditScoreModal';
+import { SuccessToast, type ToastVariant } from '../components/shared/SuccessToast';
+import type { Policy, Treatment, Trail, Contact, VoiceMessage, ScoreRule } from '../types/risk.types';
+import { CrDrawer } from '../components/shared/CrDrawer';
+import { ContactsPanel } from '../components/treatments/ContactsPanel';
+import { VoiceMessagesPanel } from '../components/treatments/VoiceMessagesPanel';
+
+/**
+ * Página principal do módulo Regras de Risco - Módulo de Eventos.
+ */
+export const RiskRulesPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<RiskTabId>('policy');
+  const [typeFilter, setTypeFilter] = useState<TypeFilterValue>('todos');
+  const [policies, setPolicies] = useState(mockPolicies);
+  const policiesRef = useRef(policies);
+  policiesRef.current = policies;
+  const [scores, setScores] = useState<ScoreRule[]>(mockScoreRules);
+  const initialScoresRef = useRef<ScoreRule[]>(mockScoreRules);
+
+  const filteredScores = useMemo(() => {
+    if (typeFilter === 'todos') return scores;
+    return scores.filter((s) => s.eventType === typeFilter);
+  }, [scores, typeFilter]);
+  const [treatments, setTreatments] = useState(mockTreatments);
+  const [trails, setTrails] = useState<Trail[]>(mockTrails);
+  const [contacts, setContacts] = useState<Contact[]>(mockContacts);
+  const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>(mockVoiceMessages);
+  const [history] = useState(mockHistory);
+  const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
+  const [voiceMessagesDrawerOpen, setVoiceMessagesDrawerOpen] = useState(false);
+
+  const [editScoreModalOpen, setEditScoreModalOpen] = useState(false);
+  const [scoreEditing, setScoreEditing] = useState<ScoreRule | null>(null);
+  const [editAllScoresModalOpen, setEditAllScoresModalOpen] = useState(false);
+
+  const [policyFormOpen, setPolicyFormOpen] = useState(false);
+  const [policyEditing, setPolicyEditing] = useState<Policy | null>(null);
+  const [treatmentFormOpen, setTreatmentFormOpen] = useState(false);
+  const [treatmentEditing, setTreatmentEditing] = useState<Treatment | null>(null);
+  const [trailFormOpen, setTrailFormOpen] = useState(false);
+  const [trailEditing, setTrailEditing] = useState<Trail | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ open: false, title: '', message: '', onConfirm: () => {} });
+  const [unsavedConfirm, setUnsavedConfirm] = useState<{ open: boolean; onSave: () => void; onDiscard: () => void }>({
+    open: false,
+    onSave: () => {},
+    onDiscard: () => {},
+  });
+  const [appliedConfirmOpen, setAppliedConfirmOpen] = useState(false);
+  const [policyFormDirty, setPolicyFormDirty] = useState(false);
+  const [trailFormDirty, setTrailFormDirty] = useState(false);
+  const [editScoreDirty, setEditScoreDirty] = useState(false);
+  const editScoreModalRef = useRef<EditScoreModalRef>(null);
+  const [toast, setToast] = useState<{ visible: boolean; message: string; variant: ToastVariant }>({
+    visible: false,
+    message: '',
+    variant: 'success',
+  });
+  const [typeFilterOpen, setTypeFilterOpen] = useState(false);
+  const typeFilterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onOutside = (e: MouseEvent) => {
+      if (typeFilterRef.current && !typeFilterRef.current.contains(e.target as Node)) {
+        setTypeFilterOpen(false);
+      }
+    };
+    if (typeFilterOpen) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [typeFilterOpen]);
+
+  const showToast = (message: string, variant: ToastVariant = 'success') =>
+    setToast({ visible: true, message, variant });
+  const closeToast = () => setToast((t) => ({ ...t, visible: false }));
+
+  const openPolicyForm = (policy?: Policy) => {
+    setPolicyEditing(policy ?? null);
+    setPolicyFormOpen(true);
+  };
+  const closePolicyForm = () => {
+    setPolicyFormOpen(false);
+    setPolicyEditing(null);
+    setPolicyFormDirty(false);
+  };
+
+  const requestClosePolicyForm = () => {
+    if (policyFormDirty) {
+      setUnsavedConfirm({
+        open: true,
+        onSave: () => {
+          setUnsavedConfirm((c) => ({ ...c, open: false }));
+          document.getElementById('policy-form')?.requestSubmit();
+        },
+        onDiscard: () => {
+          setUnsavedConfirm((c) => ({ ...c, open: false }));
+          closePolicyForm();
+        },
+      });
+    } else closePolicyForm();
+  };
+
+  const openTreatmentForm = (treatment?: Treatment) => {
+    setTreatmentEditing(treatment ?? null);
+    setTreatmentFormOpen(true);
+  };
+  const closeTreatmentForm = () => {
+    setTreatmentFormOpen(false);
+    setTreatmentEditing(null);
+  };
+
+  const openTrailForm = (trail?: Trail) => {
+    setTrailEditing(trail ?? null);
+    setTrailFormOpen(true);
+  };
+  const closeTrailForm = () => {
+    setTrailFormOpen(false);
+    setTrailEditing(null);
+    setTrailFormDirty(false);
+  };
+
+  const requestCloseTrailForm = () => {
+    if (trailFormDirty) {
+      setUnsavedConfirm({
+        open: true,
+        onSave: () => {
+          setUnsavedConfirm((c) => ({ ...c, open: false }));
+          document.getElementById('trail-form')?.requestSubmit();
+        },
+        onDiscard: () => {
+          setUnsavedConfirm((c) => ({ ...c, open: false }));
+          closeTrailForm();
+        },
+      });
+    } else closeTrailForm();
+  };
+
+  const sameEventos = (a: string[], b: string[]) => {
+    if (a.length !== b.length) return false;
+    const sa = [...a].sort();
+    const sb = [...b].sort();
+    return sa.every((id, i) => id === sb[i]);
+  };
+
+  const handlePolicySubmit = (data: Omit<Policy, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (policyEditing) {
+      setPolicies((prev) =>
+        prev.map((p) =>
+          p.id === policyEditing.id
+            ? { ...p, ...data, updatedAt: new Date().toISOString() }
+            : p
+        )
+      );
+      showToast('Política atualizada com sucesso.');
+      if (data.active) setAppliedConfirmOpen(true);
+    } else {
+      const currentPolicies = policiesRef.current;
+      const otherActiveWithSameEventos = currentPolicies.some(
+        (p) => p.active && sameEventos(p.eventosContemplados, data.eventosContemplados)
+      );
+      const saveActive = !otherActiveWithSameEventos && !!data.active;
+      const newPolicy = {
+        ...data,
+        active: saveActive,
+        id: `pol-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setPolicies((prev) => [...prev, newPolicy]);
+      if (otherActiveWithSameEventos) {
+        showToast(
+          'Não é possível ativar esta política, pois existem eventos já vinculados a outra política ativa.',
+          'warning'
+        );
+      } else {
+        showToast('Política criada com sucesso.');
+        if (saveActive) setAppliedConfirmOpen(true);
+      }
+    }
+    closePolicyForm();
+  };
+
+  const handleTreatmentSubmit = (data: Omit<Treatment, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (treatmentEditing) {
+      setTreatments((prev) =>
+        prev.map((t) =>
+          t.id === treatmentEditing.id
+            ? { ...t, ...data, updatedAt: new Date().toISOString() }
+            : t
+        )
+      );
+      showToast('Tratamento atualizado com sucesso.');
+    } else {
+      setTreatments((prev) => [
+        ...prev,
+        {
+          ...data,
+          id: `trt-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
+      showToast('Tratamento criado com sucesso.');
+    }
+    closeTreatmentForm();
+  };
+
+  const confirmDelete = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({ open: true, title, message, onConfirm });
+  };
+  const closeConfirm = () => setConfirmModal((c) => ({ ...c, open: false }));
+
+  const handlePolicyDelete = (policy: Policy) => {
+    confirmDelete('Excluir política', `Deseja excluir a política "${policy.name}"?`, () => {
+      setPolicies((prev) => prev.filter((p) => p.id !== policy.id));
+      closeConfirm();
+      showToast('Política excluída.');
+    });
+  };
+
+  const handleTreatmentDelete = (treatment: Treatment) => {
+    confirmDelete('Excluir tratamento', `Deseja excluir o tratamento "${treatment.name}"?`, () => {
+      setTreatments((prev) => prev.filter((t) => t.id !== treatment.id));
+      closeConfirm();
+      showToast('Tratamento excluído.');
+    });
+  };
+
+  const handleTrailSubmit = (data: Omit<Trail, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (trailEditing) {
+      setTrails((prev) =>
+        prev.map((t) =>
+          t.id === trailEditing.id
+            ? { ...t, ...data, updatedAt: new Date().toISOString() }
+            : t
+        )
+      );
+      showToast('Trilha atualizada com sucesso.');
+    } else {
+      setTrails((prev) => [
+        ...prev,
+        {
+          ...data,
+          id: `trail-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
+      showToast('Trilha criada com sucesso.');
+    }
+    closeTrailForm();
+  };
+
+  const handleTrailDelete = (trail: Trail) => {
+    confirmDelete('Excluir tratativa', `Deseja excluir a tratativa "${trail.name}"?`, () => {
+      setTrails((prev) => prev.filter((t) => t.id !== trail.id));
+      closeConfirm();
+      showToast('Trilha excluída.');
+    });
+  };
+
+  const handleContactSave = (data: Omit<Contact, 'id'> & { id?: string }) => {
+    if (data.id) {
+      setContacts((prev) =>
+        prev.map((c) => (c.id === data.id ? { ...c, ...data } : c))
+      );
+      showToast('Contato atualizado.');
+    } else {
+      setContacts((prev) => [
+        ...prev,
+        {
+          ...data,
+          id: `cont-${Date.now()}`,
+        } as Contact,
+      ]);
+      showToast('Contato adicionado.');
+    }
+  };
+
+  const handleContactDelete = (contact: Contact) => {
+    confirmDelete('Excluir contato', `Deseja excluir "${contact.name || contact.id}"?`, () => {
+      setContacts((prev) => prev.filter((c) => c.id !== contact.id));
+      closeConfirm();
+      showToast('Contato excluído.');
+    });
+  };
+
+  const handleVoiceMessageSave = (data: Omit<VoiceMessage, 'id'> & { id?: string }) => {
+    if (data.id) {
+      setVoiceMessages((prev) =>
+        prev.map((m) => (m.id === data.id ? { ...m, ...data } : m))
+      );
+      showToast('Mensagem de voz atualizada.');
+    } else {
+      setVoiceMessages((prev) => [
+        ...prev,
+        {
+          ...data,
+          id: `vox-${Date.now()}`,
+        } as VoiceMessage,
+      ]);
+      showToast('Mensagem de voz adicionada.');
+    }
+  };
+
+  const handleVoiceMessageDelete = (msg: VoiceMessage) => {
+    confirmDelete('Excluir mensagem', `Deseja excluir "${msg.identification}"?`, () => {
+      setVoiceMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      closeConfirm();
+      showToast('Mensagem excluída.');
+    });
+  };
+
+  const openEditScore = (score: ScoreRule) => {
+    setScoreEditing(score);
+    setEditScoreModalOpen(true);
+  };
+
+  const closeEditScoreModal = () => {
+    setEditScoreModalOpen(false);
+    setScoreEditing(null);
+    setEditScoreDirty(false);
+  };
+
+  const requestCloseEditScoreModal = () => {
+    if (editScoreDirty) {
+      setUnsavedConfirm({
+        open: true,
+        onSave: () => {
+          setUnsavedConfirm((c) => ({ ...c, open: false }));
+          setEditScoreDirty(false);
+          editScoreModalRef.current?.save();
+        },
+        onDiscard: () => {
+          setUnsavedConfirm((c) => ({ ...c, open: false }));
+          closeEditScoreModal();
+        },
+      });
+    } else closeEditScoreModal();
+  };
+
+  const handleSaveScore = (scoreId: string, newWeight: number) => {
+    setScores((prev) =>
+      prev.map((s) => (s.id === scoreId ? { ...s, weight: newWeight } : s))
+    );
+    showToast('Pontuação atualizada com sucesso.');
+    closeEditScoreModal();
+    setAppliedConfirmOpen(true);
+  };
+
+  const initialScores = initialScoresRef.current;
+  const scoresDifferFromDefault = scores.some((s) => {
+    const init = initialScores.find((i) => i.id === s.id);
+    return !init || init.weight !== s.weight;
+  });
+
+  const handleRetomarPadraoScores = () => {
+    setScores((prev) =>
+      prev.map((s) => {
+        const init = initialScoresRef.current.find((i) => i.id === s.id);
+        const defaultW = init?.defaultWeight ?? init?.weight ?? s.weight;
+        return { ...s, weight: defaultW };
+      })
+    );
+    showToast('Pontuações restauradas ao padrão.');
+  };
+
+  const closeEditAllScoresModal = () => setEditAllScoresModalOpen(false);
+
+  const handleSaveAllScores = (updates: Array<{ id: string; weight: number }>) => {
+    setScores((prev) =>
+      prev.map((s) => {
+        const u = updates.find((u) => u.id === s.id);
+        return u ? { ...s, weight: u.weight } : s;
+      })
+    );
+    showToast('Pontuações atualizadas com sucesso.');
+    closeEditAllScoresModal();
+    setAppliedConfirmOpen(true);
+  };
+
+  return (
+    <div className="risk-rules-page page-layout content-body">
+      <div className="content-toolbar top-bar">
+        <div className="content-toolbar-left">
+          <h1 className="body-page-title">Regras de Risco</h1>
+          {activeTab === 'scores' && (
+            <div className="type-filter-wrap" ref={typeFilterRef}>
+              <button
+                type="button"
+                className="type-filter-trigger"
+                onClick={() => setTypeFilterOpen((v) => !v)}
+                aria-expanded={typeFilterOpen}
+                aria-haspopup="listbox"
+                aria-label="Filtrar por tipo"
+              >
+                <span className="type-filter-label">
+                  {TYPE_FILTER_OPTIONS.find((o) => o.value === typeFilter)?.label ?? 'Todos'}
+                </span>
+                <span className="type-filter-chevron" aria-hidden>
+                  <svg width="5" height="3" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 0 L5 6 L10 0" stroke="#2F2F2F" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" fill="none" />
+                  </svg>
+                </span>
+              </button>
+              {typeFilterOpen && (
+                <div className="type-filter-dropdown" role="listbox">
+                  {TYPE_FILTER_OPTIONS.map((opt) => (
+                    <div
+                      key={opt.value}
+                      role="option"
+                      aria-selected={typeFilter === opt.value}
+                      className="type-filter-option"
+                      onClick={() => {
+                        setTypeFilter(opt.value as TypeFilterValue);
+                        setTypeFilterOpen(false);
+                      }}
+                    >
+                      {opt.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="content-toolbar-right">
+          {activeTab === 'policy' && (
+            <button type="button" className="btn btn-primary" onClick={() => openPolicyForm()}>
+              Nova política
+            </button>
+          )}
+          {activeTab === 'scores' && (
+            <>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setEditAllScoresModalOpen(true)}
+              >
+                Editar todos
+              </button>
+              {scoresDifferFromDefault && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={handleRetomarPadraoScores}
+                >
+                  Retomar padrão
+                </button>
+              )}
+            </>
+          )}
+          {activeTab === 'treatments' && (
+            <>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setContactsDrawerOpen(true)}
+              >
+                Gerenciar contatos
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setVoiceMessagesDrawerOpen(true)}
+              >
+                Gerenciar mensagens de voz
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => openTrailForm()}>
+                Nova tratativa
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <RiskTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <div className="page-content risk-rules-content">
+        {activeTab === 'policy' && (
+          <>
+            {policyFormOpen ? (
+              <CrModal
+                open
+                title={policyEditing ? 'Editar política' : 'Nova política'}
+                onClose={requestClosePolicyForm}
+                onCancel={closePolicyForm}
+                formId="policy-form"
+                primaryLabel="Salvar"
+                cancelLabel="Cancelar"
+              >
+                <PolicyForm
+                  id="policy-form"
+                  initialData={policyEditing ?? undefined}
+                  scores={mockScoreRules}
+                  trails={trails}
+                  users={mockUsers}
+                  onSubmit={handlePolicySubmit}
+                  onCancel={closePolicyForm}
+                  hideActions
+                  onDirtyChange={setPolicyFormDirty}
+                />
+              </CrModal>
+            ) : (
+              <PolicyList
+                policies={policies}
+                onEdit={(p) => openPolicyForm(p)}
+                onDelete={handlePolicyDelete}
+              />
+            )}
+          </>
+        )}
+
+        {activeTab === 'scores' && (
+          <>
+            <ScoreList scores={filteredScores} onEdit={openEditScore} />
+          </>
+        )}
+
+        {activeTab === 'treatments' && (
+          <>
+            {trailFormOpen && (
+              <CrModal
+                open
+                title={trailEditing ? 'Editar tratativa' : 'Nova tratativa'}
+                onClose={requestCloseTrailForm}
+                onCancel={closeTrailForm}
+                formId="trail-form"
+                primaryLabel="Salvar"
+                cancelLabel="Cancelar"
+                fullScreen
+              >
+                <TrailForm
+                  id="trail-form"
+                  initialData={trailEditing ?? undefined}
+                  onSubmit={handleTrailSubmit}
+                  onCancel={closeTrailForm}
+                  hideActions
+                  contacts={contacts.map((c) => ({ id: c.id, name: c.name }))}
+                  voiceMessages={voiceMessages.filter((v) => v.active).map((v) => ({ id: v.id, identification: v.identification }))}
+                  onValidationError={(msg) => showToast(msg, 'warning')}
+                  onDirtyChange={setTrailFormDirty}
+                />
+              </CrModal>
+            )}
+            {trails.length === 0 && !trailFormOpen ? (
+              <EmptyState
+                title="Nenhuma tratativa cadastrada"
+                description="Cadastre tratativas para definir sequências de ações por pontuação ou nível."
+                actionLabel="Nova tratativa"
+                onAction={() => openTrailForm()}
+              />
+            ) : !trailFormOpen ? (
+              <TrailList
+                trails={trails}
+                onEdit={(t) => openTrailForm(t)}
+                onDelete={handleTrailDelete}
+              />
+            ) : null}
+          </>
+        )}
+
+        {activeTab === 'history' && <HistoryList entries={history} />}
+      </div>
+
+      <ConfirmModal
+        open={confirmModal.open}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmLabel="Excluir"
+        variant="danger"
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          closeConfirm();
+        }}
+        onCancel={closeConfirm}
+      />
+
+      <UnsavedConfirmModal
+        open={unsavedConfirm.open}
+        onSave={unsavedConfirm.onSave}
+        onDiscard={unsavedConfirm.onDiscard}
+      />
+
+      <AppliedConfirmModal open={appliedConfirmOpen} onClose={() => setAppliedConfirmOpen(false)} />
+
+      <EditScoreModal
+        ref={editScoreModalRef}
+        open={editScoreModalOpen}
+        score={scoreEditing}
+        onSave={handleSaveScore}
+        onClose={requestCloseEditScoreModal}
+        onCancel={closeEditScoreModal}
+        onDirtyChange={setEditScoreDirty}
+      />
+
+      <EditAllScoresModal
+        open={editAllScoresModalOpen}
+        scores={scores}
+        onSave={handleSaveAllScores}
+        onCancel={closeEditAllScoresModal}
+      />
+
+      <CrDrawer open={contactsDrawerOpen} title="Gerenciar contatos" onClose={() => setContactsDrawerOpen(false)}>
+        <ContactsPanel
+          contacts={contacts}
+          onSave={handleContactSave}
+          onDelete={handleContactDelete}
+        />
+      </CrDrawer>
+
+      <CrDrawer open={voiceMessagesDrawerOpen} title="Gerenciar mensagens de voz" onClose={() => setVoiceMessagesDrawerOpen(false)}>
+        <VoiceMessagesPanel
+          voiceMessages={voiceMessages}
+          onSave={handleVoiceMessageSave}
+          onDelete={handleVoiceMessageDelete}
+        />
+      </CrDrawer>
+
+      <SuccessToast
+        message={toast.message}
+        visible={toast.visible}
+        onClose={closeToast}
+        variant={toast.variant}
+      />
+    </div>
+  );
+};
+
+export default RiskRulesPage;

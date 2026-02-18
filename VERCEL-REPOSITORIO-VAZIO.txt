@@ -1,0 +1,61 @@
+VERCEL DIZ QUE O REPOSITORIO NAO TEM BRANCH/COMMIT
+===================================================
+
+Siga estes passos na ordem:
+
+---
+1) CONFIRMAR QUE O CODIGO ESTA NO GITHUB
+---
+
+Abra no navegador: https://github.com/marianmv6/moduloeventos
+
+- Veja se aparecem arquivos e pastas (ex: src, package.json, index.html).
+- Se a pagina disser "This repository is empty", o push nao subiu. Va para o passo 2.
+- Se tiver arquivos, veja qual e a branch: em cima deve estar "main" (ou "master").
+  Se for "master", na Vercel ao importar escolha a branch "master" em vez de "main".
+
+---
+2) ENVIAR O CODIGO DE NOVO (SE O REPO ESTIVER VAZIO)
+---
+
+No PowerShell, na pasta "Modulo de eventos":
+
+   cd "C:\Users\user\OneDrive - Creare Sistemas\Área de Trabalho\DHC\Modulo de eventos"
+
+Se ja tiver feito git init antes, use:
+
+   git status
+   git add .
+   git commit -m "Enviar codigo para GitHub"
+   git branch -M main
+   git remote remove origin
+   git remote add origin https://github.com/marianmv6/moduloeventos.git
+   git push -u origin main
+
+(Quando pedir senha, use o Personal Access Token do GitHub, nao a senha da conta.)
+
+Ou execute de novo:   .\push-github.ps1
+
+---
+3) NA VERCEL - IMPORTAR DE NOVO
+---
+
+- Vercel -> Add New -> Project.
+- Escolha "marianmv6/moduloeventos".
+- Em "Branch to deploy" (ou Git Branch), selecione: main
+  (ou master, se no GitHub a branch padrao for master).
+- Root Directory: deixe em branco.
+- Build Command: npm run build
+- Output Directory: dist
+- Deploy.
+
+---
+4) SE AINDA DER ERRO NA VERCEL
+---
+
+No GitHub, confira:
+- Repo e Public.
+- Em Settings -> General -> Default branch esta como "main" (ou "master").
+
+Depois na Vercel remova o projeto (Settings -> Delete Project) e importe de novo,
+escolhendo explicitamente a branch "main".
