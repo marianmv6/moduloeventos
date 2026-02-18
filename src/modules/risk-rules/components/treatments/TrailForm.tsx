@@ -509,25 +509,23 @@ export const TrailForm: React.FC<TrailFormProps> = ({
               )}
               {step.action === 'mensagem_voz' && (
                 <div className="trail-step-config">
-                  <label>Mensagem de voz</label>
-                  <select
-                    value={step.config?.voiceMessageId ?? ''}
-                    onChange={(e) =>
-                      updateStep(step.id, {
-                        config: { ...step.config, voiceMessageId: e.target.value || undefined },
-                      })
-                    }
-                  >
-                    <option value="">Selecione</option>
-                    {activeVoiceMessages.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.identification}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="trail-step-action">
+                    <ModalSelect
+                      id={`step-voice-${step.id}`}
+                      label="Mensagem de voz"
+                      value={step.config?.voiceMessageId ?? ''}
+                      onChange={(v) =>
+                        updateStep(step.id, {
+                          config: { ...step.config, voiceMessageId: v || undefined },
+                        })
+                      }
+                      options={activeVoiceMessages.map((v) => ({ value: v.id, label: v.identification }))}
+                      placeholder="Selecione"
+                    />
+                  </div>
                 </div>
               )}
-              {step.action === 'acao_personalizada' && (
+              {(step.action === 'whatsapp_grupo' || step.action === 'acao_personalizada') && (
                 <div className="trail-step-config">
                   <label>Descrição</label>
                   <input

@@ -15,11 +15,13 @@ if ($LASTEXITCODE -ne 0) {
     git branch -M main
     git remote add origin https://github.com/marianmv6/moduloeventos.git
 } else {
-    Write-Host "Remote origin ja existe. Adicionando alteracoes e enviando..." -ForegroundColor Cyan
+    Write-Host "Repositorio existente. Adicionando alteracoes para deploy em producao..." -ForegroundColor Cyan
     git add .
     git status
-    git commit -m "Atualizacao - Modulo de Eventos" 2>$null
-    if ($LASTEXITCODE -ne 0) { Write-Host "(Nenhuma alteracao nova para commit)" -ForegroundColor Gray }
+    git commit -m "Deploy producao - atualizacoes do modulo de eventos"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "(Nenhuma alteracao para commit - tudo ja estava salvo)" -ForegroundColor Gray
+    }
     git branch -M main
 }
 

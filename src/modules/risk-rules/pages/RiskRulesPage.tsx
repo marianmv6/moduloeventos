@@ -511,6 +511,7 @@ export const RiskRulesPage: React.FC = () => {
                 formId="policy-form"
                 primaryLabel="Salvar"
                 cancelLabel="Cancelar"
+                fullScreen
               >
                 <PolicyForm
                   id="policy-form"
