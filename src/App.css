@@ -626,13 +626,16 @@ html, body {
   padding-right: 1.375rem;
 }
 
-/* Risk badges (nível por score: sem risco, baixo, médio, alto) */
+/* Risk badges (nível por score: sem risco, baixo, médio, alto) – mesma largura */
 .risk-badge {
   display: inline-block;
+  min-width: 5.5rem;
   padding: 0.25rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 999px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .risk-badge--none { background: #E0E0E0; color: #424242; }
