@@ -5,6 +5,8 @@ interface CrDrawerProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  /** Classe extra no drawer (ex.: cr-drawer--wide para mais largura) */
+  className?: string;
 }
 
 const CloseIcon: React.FC = () => (
@@ -17,12 +19,12 @@ const CloseIcon: React.FC = () => (
 /**
  * Drawer lateral (padrão do sistema) para telas auxiliares.
  */
-export const CrDrawer: React.FC<CrDrawerProps> = ({ open, title, onClose, children }) => {
+export const CrDrawer: React.FC<CrDrawerProps> = ({ open, title, onClose, children, className }) => {
   if (!open) return null;
 
   return (
     <div className="cr-drawer-overlay" onClick={onClose}>
-      <div className="cr-drawer" onClick={(e) => e.stopPropagation()}>
+      <div className={`cr-drawer ${className ?? ''}`.trim()} onClick={(e) => e.stopPropagation()}>
         <header className="cr-drawer__header">
           <h2 className="cr-drawer__title">{title}</h2>
           <button type="button" className="cr-drawer__close" onClick={onClose} aria-label="Fechar">

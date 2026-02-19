@@ -198,26 +198,6 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
               )}
             </div>
           </div>
-          <div className="form-group">
-            <ModalSelect
-              id="voice-language"
-              label="Idioma"
-              value={language}
-              onChange={(v) => setLanguage(v as VoiceMessageLanguage)}
-              options={LANGUAGE_OPTIONS}
-              placeholder="Selecione"
-            />
-          </div>
-          <div className="form-group">
-            <ModalSelect
-              id="voice-device"
-              label="Dispositivo"
-              value={device}
-              onChange={(v) => setDevice(v as VoiceMessageDevice)}
-              options={DEVICE_OPTIONS}
-              placeholder="Selecione"
-            />
-          </div>
           <div className={`form-group ${fieldErrors.message ? 'has-error' : ''}`}>
             <div className="form-group__label-row">
               <label htmlFor="voice-message">Mensagem</label>
@@ -240,19 +220,43 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
               )}
             </div>
           </div>
-          <div className="form-group">
-            <label className="form-label">Formato</label>
-            <div className="form-readonly-value">{formatLabel}</div>
+          <div className="voice-message-form__row">
+            <div className="form-group">
+              <ModalSelect
+                id="voice-device"
+                label="Dispositivo"
+                value={device}
+                onChange={(v) => setDevice(v as VoiceMessageDevice)}
+                options={DEVICE_OPTIONS}
+                placeholder="Selecione"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Formato</label>
+              <div className="form-readonly-value">{formatLabel}</div>
+            </div>
           </div>
-          <div className="form-group">
-            <ModalSelect
-              id="voice-status"
-              label="Status"
-              value={active ? 'ativo' : 'inativo'}
-              onChange={(v) => setActive(v === 'ativo')}
-              options={STATUS_OPTIONS}
-              placeholder="Selecione o status"
-            />
+          <div className="voice-message-form__row">
+            <div className="form-group">
+              <ModalSelect
+                id="voice-language"
+                label="Idioma"
+                value={language}
+                onChange={(v) => setLanguage(v as VoiceMessageLanguage)}
+                options={LANGUAGE_OPTIONS}
+                placeholder="Selecione"
+              />
+            </div>
+            <div className="form-group">
+              <ModalSelect
+                id="voice-status"
+                label="Status"
+                value={active ? 'ativo' : 'inativo'}
+                onChange={(v) => setActive(v === 'ativo')}
+                options={STATUS_OPTIONS}
+                placeholder="Selecione o status"
+              />
+            </div>
           </div>
           <p className="form-hint">Mensagens inativas não aparecem na seleção da criação/edição de tratativas.</p>
         </form>

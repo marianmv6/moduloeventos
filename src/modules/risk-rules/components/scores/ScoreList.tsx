@@ -18,7 +18,6 @@ export const ScoreList: React.FC<ScoreListProps> = ({ scores, onEdit }) => (
           <th>Tipo</th>
           <th>Pontuação</th>
           <th>Nível</th>
-          <th>Status</th>
           <th></th>
         </tr>
       </thead>
@@ -30,11 +29,6 @@ export const ScoreList: React.FC<ScoreListProps> = ({ scores, onEdit }) => (
             <td><span className="score-value-cell">{score.weight}</span></td>
             <td>
               <ScoreLevelBadge points={score.weight} />
-            </td>
-            <td>
-              <span className={`badge badge-rounded ${score.active ? 'badge-active' : 'badge-inactive'}`}>
-                {score.active ? 'Ativo' : 'Inativo'}
-              </span>
             </td>
             <td className="list-cell-actions">
               <div className="list-actions">

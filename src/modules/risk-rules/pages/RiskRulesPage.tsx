@@ -625,7 +625,7 @@ export const RiskRulesPage: React.FC = () => {
         onCancel={closeEditAllScoresModal}
       />
 
-      <CrDrawer open={contactsDrawerOpen} title="Gerenciar contatos" onClose={() => setContactsDrawerOpen(false)}>
+      <CrDrawer open={contactsDrawerOpen} title="Gerenciar contatos" onClose={() => setContactsDrawerOpen(false)} className="cr-drawer--wide">
         <ContactsPanel
           contacts={contacts}
           onSave={handleContactSave}
@@ -633,7 +633,7 @@ export const RiskRulesPage: React.FC = () => {
         />
       </CrDrawer>
 
-      <CrDrawer open={voiceMessagesDrawerOpen} title="Gerenciar mensagens de voz" onClose={() => setVoiceMessagesDrawerOpen(false)}>
+      <CrDrawer open={voiceMessagesDrawerOpen} title="Gerenciar mensagens de voz" onClose={() => setVoiceMessagesDrawerOpen(false)} className="cr-drawer--wide">
         <VoiceMessagesPanel
           voiceMessages={voiceMessages}
           onSave={handleVoiceMessageSave}

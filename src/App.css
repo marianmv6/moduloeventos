@@ -487,7 +487,7 @@ html, body {
   display: block;
 }
 
-/* Balão: cantos levemente arredondados, borda cinza do menu, alinhado ao trigger */
+/* Balão: cantos arredondados, margem interna para o destaque não tocar a borda (igual multiselect das modais) */
 .type-filter-dropdown {
   position: absolute;
   left: 0;
@@ -495,34 +495,30 @@ html, body {
   margin-top: 6px;
   min-width: 100%;
   background: #fff;
-  border: 1px solid var(--color-sidebar);
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 0;
+  border: 1px solid #E4E7EC;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.12);
+  padding: 6px 8px;
   z-index: 100;
   overflow: hidden;
 }
 .type-filter-option {
-  padding: 0.5rem 1.5rem;
-  font-size: 0.875rem;
+  padding: 8px 12px;
+  margin: 2px 0;
+  border-radius: 6px;
+  font-size: 14px;
   font-family: var(--font-noto-sans);
   color: #344054;
   cursor: pointer;
   white-space: nowrap;
   box-sizing: border-box;
 }
-.type-filter-option:first-child {
-  border-radius: 5px 5px 0 0;
-}
-.type-filter-option:last-child {
-  border-radius: 0 0 5px 5px;
-}
 .type-filter-option:hover {
-  background: rgb(22, 158, 255);
+  background: #36A3F7;
   color: #fff;
 }
 .type-filter-option[aria-selected="true"] {
-  background: rgb(22, 158, 255);
+  background: #36A3F7;
   color: #fff;
 }
 
@@ -805,10 +801,6 @@ html, body {
 .score-list .list-table td:nth-child(4) {
   width: 15%;
 }
-.score-list .list-table th:nth-child(5),
-.score-list .list-table td:nth-child(5) {
-  width: 12%;
-}
 .score-list .list-table th:last-child,
 .score-list .list-table td:last-child {
   width: 6%;
@@ -859,15 +851,13 @@ html, body {
   padding-right: 0.5rem;
 }
 
-/* Pontuações: 3rem entre Tipo, Pontuação, Nível, Status e Ações (coluna Evento inalterada); ação→fim da tabela inalterado */
+/* Pontuações: 3rem entre Tipo, Pontuação, Nível e Ações (coluna Evento inalterada); ação→fim da tabela inalterado */
 .score-list .list-table th:nth-child(2),
 .score-list .list-table td:nth-child(2),
 .score-list .list-table th:nth-child(3),
 .score-list .list-table td:nth-child(3),
 .score-list .list-table th:nth-child(4),
-.score-list .list-table td:nth-child(4),
-.score-list .list-table th:nth-child(5),
-.score-list .list-table td:nth-child(5) {
+.score-list .list-table td:nth-child(4) {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
@@ -1643,12 +1633,12 @@ html, body {
 }
 
 .cr-modal__title {
-  font-size: 12px;
+  font-size: 14.5px;
   line-height: 1.25;
   font-weight: 600;
   color: #101828;
   margin: 0;
-  font-family: var(--font-noto-sans);
+  font-family: var(--font-montserrat);
 }
 
 .cr-modal__close {
@@ -1813,12 +1803,12 @@ html, body {
   margin-bottom: 1.25rem;
 }
 .cr-modal--fullscreen .cr-modal__title--page {
-  font-size: 0.906rem;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.25;
   margin: 0;
-  font-family: var(--font-noto-sans);
+  font-family: var(--font-montserrat);
 }
 .cr-modal--fullscreen .cr-modal__header .cr-modal__close {
   margin-right: 0;
@@ -1862,6 +1852,10 @@ html, body {
   display: flex;
   flex-direction: column;
   max-height: 100vh;
+}
+.cr-drawer--wide {
+  width: min(720px, 92vw);
+  max-width: 720px;
 }
 .cr-drawer__header {
   display: flex;
@@ -2293,11 +2287,7 @@ html, body {
   background-color: var(--color-action-hover);
 }
 
-/* Modal Editar todas as pontuações */
-.cr-modal--edit-all .cr-modal__body {
-  max-height: 60vh;
-  overflow-y: auto;
-}
+/* Conteúdo Editar todas as pontuações (modal tela cheia) */
 .edit-all-scores-list {
   display: flex;
   flex-direction: column;
@@ -2509,24 +2499,45 @@ html, body {
   z-index: 1000;
   max-height: 220px;
   overflow-y: auto;
+  padding: 6px 8px;
+  box-sizing: border-box;
 }
 .modal-select__option-wrap {
-  margin: 0;
+  margin: 2px 0;
 }
 .modal-select__option {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-family: var(--font-noto-sans);
+  color: #344054;
+  box-sizing: border-box;
 }
 .modal-select__option:hover {
-  background: rgba(32, 172, 172, 0.08);
+  background: #36A3F7;
+  color: #fff;
+}
+.modal-select__option:hover .modal-select__option-pill {
+  color: #fff;
+  background: transparent;
 }
 .modal-select__option--selected {
-  background: rgba(32, 172, 172, 0.1);
+  background: #36A3F7;
+  color: #fff;
+}
+.modal-select__option--selected .modal-select__option-pill {
+  color: #fff;
+  background: transparent;
+}
+.modal-select__option:hover .modal-select__checkbox,
+.modal-select__option:hover .modal-select__chevron,
+.modal-select__option--selected .modal-select__checkbox,
+.modal-select__option--selected .modal-select__chevron {
+  color: #fff;
 }
 .modal-select__option-pill {
   display: inline-block;
@@ -2639,6 +2650,11 @@ html, body {
 .voice-message-form .voice-message-textarea {
   resize: none;
   max-height: 5.5rem;
+}
+.voice-message-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .modal-select__checkbox {
