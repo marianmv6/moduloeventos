@@ -230,7 +230,7 @@ html, body {
 }
 
 .launcher-sidebar nav a.nav-item.active .nav-item-chevron {
-  color: #667085;
+  display: none;
 }
 
 /* Compatibilidade com classes antigas */
