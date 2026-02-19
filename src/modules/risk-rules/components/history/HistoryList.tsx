@@ -14,6 +14,8 @@ const entityLabels: Record<HistoryEntry['entityType'], string> = {
   policy: 'Política de avaliação',
   score: 'Pontuação',
   treatment: 'Tratativa',
+  contact: 'Contato',
+  voice: 'Mensagem de voz',
 };
 
 interface HistoryListProps {

@@ -130,7 +130,7 @@ export interface VoiceMessage {
 
 export interface HistoryEntry {
   id: string;
-  entityType: 'policy' | 'score' | 'treatment';
+  entityType: 'policy' | 'score' | 'treatment' | 'contact' | 'voice';
   entityId: string;
   entityName: string;
   action: 'create' | 'update' | 'delete' | 'activate' | 'deactivate';

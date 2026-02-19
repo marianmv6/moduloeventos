@@ -20,7 +20,7 @@ import { AppliedConfirmModal } from '../components/shared/AppliedConfirmModal';
 import { CrModal } from '../components/shared/CrModal';
 import type { EditScoreModalRef } from '../components/scores/EditScoreModal';
 import { SuccessToast, type ToastVariant } from '../components/shared/SuccessToast';
-import type { Policy, Treatment, Trail, Contact, VoiceMessage, ScoreRule } from '../types/risk.types';
+import type { Policy, Treatment, Trail, Contact, VoiceMessage, ScoreRule, HistoryEntry } from '../types/risk.types';
 import { CrDrawer } from '../components/shared/CrDrawer';
 import { ContactsPanel } from '../components/treatments/ContactsPanel';
 import { VoiceMessagesPanel } from '../components/treatments/VoiceMessagesPanel';
@@ -45,7 +45,19 @@ export const RiskRulesPage: React.FC = () => {
   const [trails, setTrails] = useState<Trail[]>(mockTrails);
   const [contacts, setContacts] = useState<Contact[]>(mockContacts);
   const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>(mockVoiceMessages);
-  const [history] = useState(mockHistory);
+  const [history, setHistory] = useState<HistoryEntry[]>(mockHistory);
+
+  const addHistoryEntry = (entry: Omit<HistoryEntry, 'id' | 'timestamp'>) => {
+    setHistory((prev) => [
+      {
+        ...entry,
+        id: `hist-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        userEmail: entry.userEmail ?? 'admin@empresa.com',
+      },
+      ...prev,
+    ]);
+  };
   const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
   const [voiceMessagesDrawerOpen, setVoiceMessagesDrawerOpen] = useState(false);
 
@@ -181,6 +193,13 @@ export const RiskRulesPage: React.FC = () => {
             : p
         )
       );
+      addHistoryEntry({
+        entityType: 'policy',
+        entityId: policyEditing.id,
+        entityName: data.name,
+        action: 'update',
+        actionDescription: 'Política atualizada.',
+      });
       if (data.active) {
         setAppliedConfirm({ open: true, pendingToast: 'Política atualizada com sucesso.' });
       } else {
@@ -200,6 +219,13 @@ export const RiskRulesPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
       setPolicies((prev) => [...prev, newPolicy]);
+      addHistoryEntry({
+        entityType: 'policy',
+        entityId: newPolicy.id,
+        entityName: data.name,
+        action: 'create',
+        actionDescription: 'Política criada.',
+      });
       if (otherActiveWithSameEventos) {
         showToast(
           'Não é possível ativar esta política, pois existem eventos já vinculados a outra política ativa.',
@@ -223,17 +249,32 @@ export const RiskRulesPage: React.FC = () => {
             : t
         )
       );
+      addHistoryEntry({
+        entityType: 'treatment',
+        entityId: treatmentEditing.id,
+        entityName: data.name,
+        action: 'update',
+        actionDescription: 'Tratamento atualizado.',
+      });
       showToast('Tratamento atualizado com sucesso.');
     } else {
+      const newId = `trt-${Date.now()}`;
       setTreatments((prev) => [
         ...prev,
         {
           ...data,
-          id: `trt-${Date.now()}`,
+          id: newId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       ]);
+      addHistoryEntry({
+        entityType: 'treatment',
+        entityId: newId,
+        entityName: data.name,
+        action: 'create',
+        actionDescription: 'Tratamento criado.',
+      });
       showToast('Tratamento criado com sucesso.');
     }
     closeTreatmentForm();
@@ -247,6 +288,13 @@ export const RiskRulesPage: React.FC = () => {
   const handlePolicyDelete = (policy: Policy) => {
     confirmDelete('Excluir política', `Deseja excluir a política "${policy.name}"?`, () => {
       setPolicies((prev) => prev.filter((p) => p.id !== policy.id));
+      addHistoryEntry({
+        entityType: 'policy',
+        entityId: policy.id,
+        entityName: policy.name,
+        action: 'delete',
+        actionDescription: 'Política excluída.',
+      });
       closeConfirm();
       showToast('Política excluída.');
     });
@@ -255,6 +303,13 @@ export const RiskRulesPage: React.FC = () => {
   const handleTreatmentDelete = (treatment: Treatment) => {
     confirmDelete('Excluir tratamento', `Deseja excluir o tratamento "${treatment.name}"?`, () => {
       setTreatments((prev) => prev.filter((t) => t.id !== treatment.id));
+      addHistoryEntry({
+        entityType: 'treatment',
+        entityId: treatment.id,
+        entityName: treatment.name,
+        action: 'delete',
+        actionDescription: 'Tratamento excluído.',
+      });
       closeConfirm();
       showToast('Tratamento excluído.');
     });
@@ -269,17 +324,32 @@ export const RiskRulesPage: React.FC = () => {
             : t
         )
       );
+      addHistoryEntry({
+        entityType: 'treatment',
+        entityId: trailEditing.id,
+        entityName: data.name,
+        action: 'update',
+        actionDescription: 'Tratativa atualizada.',
+      });
       showToast('Trilha atualizada com sucesso.');
     } else {
+      const newId = `trail-${Date.now()}`;
       setTrails((prev) => [
         ...prev,
         {
           ...data,
-          id: `trail-${Date.now()}`,
+          id: newId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       ]);
+      addHistoryEntry({
+        entityType: 'treatment',
+        entityId: newId,
+        entityName: data.name,
+        action: 'create',
+        actionDescription: 'Tratativa criada.',
+      });
       showToast('Trilha criada com sucesso.');
     }
     closeTrailForm();
@@ -288,6 +358,13 @@ export const RiskRulesPage: React.FC = () => {
   const handleTrailDelete = (trail: Trail) => {
     confirmDelete('Excluir tratativa', `Deseja excluir a tratativa "${trail.name}"?`, () => {
       setTrails((prev) => prev.filter((t) => t.id !== trail.id));
+      addHistoryEntry({
+        entityType: 'treatment',
+        entityId: trail.id,
+        entityName: trail.name,
+        action: 'delete',
+        actionDescription: 'Tratativa excluída.',
+      });
       closeConfirm();
       showToast('Trilha excluída.');
     });
@@ -298,15 +375,30 @@ export const RiskRulesPage: React.FC = () => {
       setContacts((prev) =>
         prev.map((c) => (c.id === data.id ? { ...c, ...data } : c))
       );
+      addHistoryEntry({
+        entityType: 'contact',
+        entityId: data.id,
+        entityName: data.name || data.id,
+        action: 'update',
+        actionDescription: 'Contato atualizado.',
+      });
       showToast('Contato atualizado.');
     } else {
+      const newId = `cont-${Date.now()}`;
       setContacts((prev) => [
         ...prev,
         {
           ...data,
-          id: `cont-${Date.now()}`,
+          id: newId,
         } as Contact,
       ]);
+      addHistoryEntry({
+        entityType: 'contact',
+        entityId: newId,
+        entityName: data.name || newId,
+        action: 'create',
+        actionDescription: 'Contato adicionado.',
+      });
       showToast('Contato adicionado.');
     }
   };
@@ -314,6 +406,13 @@ export const RiskRulesPage: React.FC = () => {
   const handleContactDelete = (contact: Contact) => {
     confirmDelete('Excluir contato', `Deseja excluir "${contact.name || contact.id}"?`, () => {
       setContacts((prev) => prev.filter((c) => c.id !== contact.id));
+      addHistoryEntry({
+        entityType: 'contact',
+        entityId: contact.id,
+        entityName: contact.name || contact.id,
+        action: 'delete',
+        actionDescription: 'Contato excluído.',
+      });
       closeConfirm();
       showToast('Contato excluído.');
     });
@@ -324,15 +423,30 @@ export const RiskRulesPage: React.FC = () => {
       setVoiceMessages((prev) =>
         prev.map((m) => (m.id === data.id ? { ...m, ...data } : m))
       );
+      addHistoryEntry({
+        entityType: 'voice',
+        entityId: data.id,
+        entityName: data.identification || data.id,
+        action: 'update',
+        actionDescription: 'Mensagem de voz atualizada.',
+      });
       showToast('Mensagem de voz atualizada.');
     } else {
+      const newId = `vox-${Date.now()}`;
       setVoiceMessages((prev) => [
         ...prev,
         {
           ...data,
-          id: `vox-${Date.now()}`,
+          id: newId,
         } as VoiceMessage,
       ]);
+      addHistoryEntry({
+        entityType: 'voice',
+        entityId: newId,
+        entityName: data.identification || newId,
+        action: 'create',
+        actionDescription: 'Mensagem de voz adicionada.',
+      });
       showToast('Mensagem de voz adicionada.');
     }
   };
@@ -340,6 +454,13 @@ export const RiskRulesPage: React.FC = () => {
   const handleVoiceMessageDelete = (msg: VoiceMessage) => {
     confirmDelete('Excluir mensagem', `Deseja excluir "${msg.identification}"?`, () => {
       setVoiceMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      addHistoryEntry({
+        entityType: 'voice',
+        entityId: msg.id,
+        entityName: msg.identification,
+        action: 'delete',
+        actionDescription: 'Mensagem de voz excluída.',
+      });
       closeConfirm();
       showToast('Mensagem excluída.');
     });
@@ -374,9 +495,17 @@ export const RiskRulesPage: React.FC = () => {
   };
 
   const handleSaveScore = (scoreId: string, newWeight: number) => {
+    const score = scores.find((s) => s.id === scoreId);
     setScores((prev) =>
       prev.map((s) => (s.id === scoreId ? { ...s, weight: newWeight } : s))
     );
+    addHistoryEntry({
+      entityType: 'score',
+      entityId: scoreId,
+      entityName: score?.name ?? scoreId,
+      action: 'update',
+      actionDescription: `Pontuação alterada para ${newWeight}.`,
+    });
     closeEditScoreModal();
     setAppliedConfirm({ open: true, pendingToast: 'Pontuação atualizada com sucesso.' });
   };
@@ -401,7 +530,16 @@ export const RiskRulesPage: React.FC = () => {
     setAppliedConfirm({
       open: true,
       pendingToast: 'Pontuações restauradas ao padrão.',
-      onConfirm: restoreScoresToDefault,
+      onConfirm: () => {
+        restoreScoresToDefault();
+        addHistoryEntry({
+          entityType: 'score',
+          entityId: 'padrao',
+          entityName: 'Pontuações',
+          action: 'update',
+          actionDescription: 'Pontuações restauradas ao padrão.',
+        });
+      },
     });
   };
 
@@ -414,6 +552,13 @@ export const RiskRulesPage: React.FC = () => {
         return u ? { ...s, weight: u.weight } : s;
       })
     );
+    addHistoryEntry({
+      entityType: 'score',
+      entityId: 'edicao-lote',
+      entityName: 'Pontuações',
+      action: 'update',
+      actionDescription: `${updates.length} pontuação(ões) atualizada(s).`,
+    });
     closeEditAllScoresModal();
     setAppliedConfirm({ open: true, pendingToast: 'Pontuações atualizadas com sucesso.' });
   };
