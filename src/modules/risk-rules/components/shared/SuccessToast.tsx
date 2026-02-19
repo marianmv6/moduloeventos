@@ -11,7 +11,7 @@ interface SuccessToastProps {
 }
 
 const effectiveDuration = (variant: ToastVariant, duration: number) =>
-  variant === 'warning' ? duration + 2000 : duration;
+  variant === 'warning' ? duration + 1000 : duration;
 
 export const SuccessToast: React.FC<SuccessToastProps> = ({
   message,

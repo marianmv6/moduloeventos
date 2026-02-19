@@ -17,7 +17,10 @@ export const UnsavedConfirmModal: React.FC<UnsavedConfirmModalProps> = ({
     <div className="modal-overlay confirm-modal-overlay unsaved-confirm-overlay" role="dialog" aria-modal="true">
       <div className="unsaved-confirm-modal" onClick={(e) => e.stopPropagation()}>
         <div className="unsaved-confirm-modal__icon" aria-hidden>
-          <span className="unsaved-confirm-modal__question">?</span>
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="26" cy="26" r="22" stroke="#E29C2C" strokeWidth="2.5" fill="none" />
+            <text x="26" y="34" textAnchor="middle" fill="#E29C2C" fontSize="28" fontWeight="bold" fontFamily="sans-serif">?</text>
+          </svg>
         </div>
         <h3 className="unsaved-confirm-modal__title">Confirme</h3>
         <p className="unsaved-confirm-modal__message">

@@ -70,7 +70,10 @@ export const RiskRulesPage: React.FC = () => {
     onSave: () => {},
     onDiscard: () => {},
   });
-  const [appliedConfirmOpen, setAppliedConfirmOpen] = useState(false);
+  const [appliedConfirm, setAppliedConfirm] = useState<{ open: boolean; pendingToast: string | null }>({
+    open: false,
+    pendingToast: null,
+  });
   const [policyFormDirty, setPolicyFormDirty] = useState(false);
   const [trailFormDirty, setTrailFormDirty] = useState(false);
   const [editScoreDirty, setEditScoreDirty] = useState(false);
@@ -105,6 +108,7 @@ export const RiskRulesPage: React.FC = () => {
     setPolicyFormOpen(false);
     setPolicyEditing(null);
     setPolicyFormDirty(false);
+    closeToast();
   };
 
   const requestClosePolicyForm = () => {
@@ -130,6 +134,7 @@ export const RiskRulesPage: React.FC = () => {
   const closeTreatmentForm = () => {
     setTreatmentFormOpen(false);
     setTreatmentEditing(null);
+    closeToast();
   };
 
   const openTrailForm = (trail?: Trail) => {
@@ -140,6 +145,7 @@ export const RiskRulesPage: React.FC = () => {
     setTrailFormOpen(false);
     setTrailEditing(null);
     setTrailFormDirty(false);
+    closeToast();
   };
 
   const requestCloseTrailForm = () => {
@@ -174,8 +180,11 @@ export const RiskRulesPage: React.FC = () => {
             : p
         )
       );
-      showToast('Política atualizada com sucesso.');
-      if (data.active) setAppliedConfirmOpen(true);
+      if (data.active) {
+        setAppliedConfirm({ open: true, pendingToast: 'Política atualizada com sucesso.' });
+      } else {
+        showToast('Política atualizada com sucesso.');
+      }
     } else {
       const currentPolicies = policiesRef.current;
       const otherActiveWithSameEventos = currentPolicies.some(
@@ -195,9 +204,10 @@ export const RiskRulesPage: React.FC = () => {
           'Não é possível ativar esta política, pois existem eventos já vinculados a outra política ativa.',
           'warning'
         );
+      } else if (saveActive) {
+        setAppliedConfirm({ open: true, pendingToast: 'Política criada com sucesso.' });
       } else {
         showToast('Política criada com sucesso.');
-        if (saveActive) setAppliedConfirmOpen(true);
       }
     }
     closePolicyForm();
@@ -366,9 +376,8 @@ export const RiskRulesPage: React.FC = () => {
     setScores((prev) =>
       prev.map((s) => (s.id === scoreId ? { ...s, weight: newWeight } : s))
     );
-    showToast('Pontuação atualizada com sucesso.');
     closeEditScoreModal();
-    setAppliedConfirmOpen(true);
+    setAppliedConfirm({ open: true, pendingToast: 'Pontuação atualizada com sucesso.' });
   };
 
   const initialScores = initialScoresRef.current;
@@ -397,9 +406,8 @@ export const RiskRulesPage: React.FC = () => {
         return u ? { ...s, weight: u.weight } : s;
       })
     );
-    showToast('Pontuações atualizadas com sucesso.');
     closeEditAllScoresModal();
-    setAppliedConfirmOpen(true);
+    setAppliedConfirm({ open: true, pendingToast: 'Pontuações atualizadas com sucesso.' });
   };
 
   return (
@@ -455,13 +463,6 @@ export const RiskRulesPage: React.FC = () => {
           )}
           {activeTab === 'scores' && (
             <>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => setEditAllScoresModalOpen(true)}
-              >
-                Editar todos
-              </button>
               {scoresDifferFromDefault && (
                 <button
                   type="button"
@@ -471,6 +472,13 @@ export const RiskRulesPage: React.FC = () => {
                   Retomar padrão
                 </button>
               )}
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setEditAllScoresModalOpen(true)}
+              >
+                Editar todos
+              </button>
             </>
           )}
           {activeTab === 'treatments' && (
@@ -606,7 +614,14 @@ export const RiskRulesPage: React.FC = () => {
         onDiscard={unsavedConfirm.onDiscard}
       />
 
-      <AppliedConfirmModal open={appliedConfirmOpen} onClose={() => setAppliedConfirmOpen(false)} />
+      <AppliedConfirmModal
+        open={appliedConfirm.open}
+        onClose={() => {
+          const msg = appliedConfirm.pendingToast;
+          setAppliedConfirm({ open: false, pendingToast: null });
+          if (msg) showToast(msg);
+        }}
+      />
 
       <EditScoreModal
         ref={editScoreModalRef}

@@ -1124,53 +1124,61 @@ html, body {
   z-index: 10050;
 }
 
-/* Modal de confirmação (sair sem salvar + alteração aplicada): ícone ? laranja/dourado como na imagem */
+/* Modal de confirmação (sair sem salvar + alteração aplicada): 384x271, raio 8px, ícone 52x52 #E29C2C */
 .unsaved-confirm-overlay {
   z-index: 10050;
 }
 .unsaved-confirm-modal {
   background: #fff;
-  border-radius: 12px;
-  padding: 1.5rem 2rem 1.75rem;
-  width: 100%;
-  max-width: 36rem;
+  border-radius: 8px;
+  padding: 24px 16px;
+  width: 384px;
+  height: 271px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   text-align: center;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .unsaved-confirm-modal__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  margin: 0 0 14px;
   background: transparent;
-  border: none;
 }
-.unsaved-confirm-modal__question {
+.unsaved-confirm-modal__icon svg {
   display: block;
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1;
-  color: #E69500;
-  -webkit-text-fill-color: #E69500;
+  width: 52px;
+  height: 52px;
 }
 .unsaved-confirm-modal__title {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-family: var(--font-montserrat);
+  font-size: 14.5px;
+  font-weight: 600;
   color: #000;
-  margin: 0 0 0.75rem;
+  margin: 0 0 25px;
 }
 .unsaved-confirm-modal__message {
-  font-size: 0.9375rem;
+  font-family: var(--font-noto-sans);
+  font-size: 14px;
+  font-weight: 400;
   color: #000;
-  margin: 0 0 1.5rem;
+  margin: 0 0 24px;
   line-height: 1.45;
   word-wrap: break-word;
+  width: 352px;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
 }
 .unsaved-confirm-modal__actions {
   display: flex;
   gap: 0.75rem;
   justify-content: center;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 /* Mesmo tamanho dos botões Salvar/Cancelar da modal Nova política; Ok e Cancelar com a mesma largura */
 .unsaved-confirm-modal__actions .unsaved-confirm-btn--outline,
