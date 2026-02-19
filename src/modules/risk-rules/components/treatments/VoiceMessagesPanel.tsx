@@ -223,22 +223,6 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
           <div className="voice-message-form__row">
             <div className="form-group">
               <ModalSelect
-                id="voice-device"
-                label="Dispositivo"
-                value={device}
-                onChange={(v) => setDevice(v as VoiceMessageDevice)}
-                options={DEVICE_OPTIONS}
-                placeholder="Selecione"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Formato</label>
-              <div className="form-readonly-value">{formatLabel}</div>
-            </div>
-          </div>
-          <div className="voice-message-form__row">
-            <div className="form-group">
-              <ModalSelect
                 id="voice-language"
                 label="Idioma"
                 value={language}
@@ -256,6 +240,22 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
                 options={STATUS_OPTIONS}
                 placeholder="Selecione o status"
               />
+            </div>
+          </div>
+          <div className="voice-message-form__row">
+            <div className="form-group">
+              <ModalSelect
+                id="voice-device"
+                label="Dispositivo"
+                value={device}
+                onChange={(v) => setDevice(v as VoiceMessageDevice)}
+                options={DEVICE_OPTIONS}
+                placeholder="Selecione"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Formato</label>
+              <div className="form-readonly-value">{formatLabel}</div>
             </div>
           </div>
           <p className="form-hint">Mensagens inativas não aparecem na seleção da criação/edição de tratativas.</p>
