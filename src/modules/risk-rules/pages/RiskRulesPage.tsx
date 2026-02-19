@@ -70,10 +70,11 @@ export const RiskRulesPage: React.FC = () => {
     onSave: () => {},
     onDiscard: () => {},
   });
-  const [appliedConfirm, setAppliedConfirm] = useState<{ open: boolean; pendingToast: string | null }>({
-    open: false,
-    pendingToast: null,
-  });
+  const [appliedConfirm, setAppliedConfirm] = useState<{
+    open: boolean;
+    pendingToast: string | null;
+    onConfirm?: () => void;
+  }>({ open: false, pendingToast: null });
   const [policyFormDirty, setPolicyFormDirty] = useState(false);
   const [trailFormDirty, setTrailFormDirty] = useState(false);
   const [editScoreDirty, setEditScoreDirty] = useState(false);
@@ -386,7 +387,7 @@ export const RiskRulesPage: React.FC = () => {
     return !init || init.weight !== s.weight;
   });
 
-  const handleRetomarPadraoScores = () => {
+  const restoreScoresToDefault = () => {
     setScores((prev) =>
       prev.map((s) => {
         const init = initialScoresRef.current.find((i) => i.id === s.id);
@@ -394,7 +395,14 @@ export const RiskRulesPage: React.FC = () => {
         return { ...s, weight: defaultW };
       })
     );
-    showToast('Pontuações restauradas ao padrão.');
+  };
+
+  const openRetomarPadraoConfirm = () => {
+    setAppliedConfirm({
+      open: true,
+      pendingToast: 'Pontuações restauradas ao padrão.',
+      onConfirm: restoreScoresToDefault,
+    });
   };
 
   const closeEditAllScoresModal = () => setEditAllScoresModalOpen(false);
@@ -467,7 +475,7 @@ export const RiskRulesPage: React.FC = () => {
                 <button
                   type="button"
                   className="btn btn-outline"
-                  onClick={handleRetomarPadraoScores}
+                  onClick={openRetomarPadraoConfirm}
                 >
                   Retomar padrão
                 </button>
@@ -617,6 +625,7 @@ export const RiskRulesPage: React.FC = () => {
       <AppliedConfirmModal
         open={appliedConfirm.open}
         onClose={() => {
+          appliedConfirm.onConfirm?.();
           const msg = appliedConfirm.pendingToast;
           setAppliedConfirm({ open: false, pendingToast: null });
           if (msg) showToast(msg);
