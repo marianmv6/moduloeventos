@@ -121,7 +121,9 @@ html, body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  font-size: 0.875rem;
+  font-size: 14px;
+  font-family: var(--font-noto-sans);
+  font-weight: 600;
   text-decoration: none;
   transition: background 0.2s, color 0.2s;
   border-radius: 12px;
@@ -212,7 +214,7 @@ html, body {
 .launcher-sidebar nav a.nav-item.active {
   background: #d7dcdc;
   color: #101828;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 12px;
   border: none;
   outline: none;
@@ -271,7 +273,9 @@ html, body {
 
 .app-sidebar nav a {
   padding: 0.625rem 1rem;
-  font-size: 0.875rem;
+  font-size: 14px;
+  font-family: var(--font-noto-sans);
+  font-weight: 600;
   color: var(--color-text-primary);
   text-decoration: none;
   transition: background 0.2s, color 0.2s;
@@ -287,7 +291,7 @@ html, body {
 .app-sidebar nav a.active {
   background: var(--color-menu-active);
   color: var(--color-text-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .app-main {
@@ -323,7 +327,7 @@ html, body {
 
 .app-header h1,
 .app-header-title {
-  font-size: 0.906rem;
+  font-size: 14.4px;
   font-weight: 600;
   color: #20ACAC;
 }
@@ -441,7 +445,7 @@ html, body {
 
 /* Título da página no corpo (ex.: Crachás, Regras de Risco) – conforme design system */
 .body-page-title {
-  font-size: 0.906rem;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
@@ -461,7 +465,7 @@ html, body {
   background: none;
   border: none;
   padding: 0;
-  font-size: 0.875rem;
+  font-size: 14.5px;
   font-family: var(--font-noto-sans);
   color: #344054;
   cursor: pointer;
@@ -611,15 +615,19 @@ html, body {
   border-radius: 999px;
 }
 
-/* Status Ativo: verde forte e texto branco (formato da imagem Usuários) */
+/* Status Ativo: verde rgb(55, 181, 116) e texto branco */
 .badge-active {
-  background: #16A34A;
+  background: rgb(55, 181, 116);
   color: #FFFFFF;
+  padding-left: 1.375rem;
+  padding-right: 1.375rem;
 }
 
 .badge-inactive {
   background: var(--color-paper);
   color: var(--color-text-secondary);
+  padding-left: 1.375rem;
+  padding-right: 1.375rem;
 }
 
 /* Risk badges (nível por score: sem risco, baixo, médio, alto) */
@@ -717,14 +725,16 @@ html, body {
   padding: 0.75rem 1.25rem;
   text-align: left;
   border-bottom: 1px solid #E9EEEE;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: var(--font-noto-sans);
 }
 
 .list-table thead th {
-  padding: 0 1.25rem;
-  height: 32px;
-  min-height: 32px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: calc(0.875rem) 1.25rem;
+  min-height: calc(32px + 1.75rem);
+  font-size: 14px;
+  font-weight: 400;
   font-family: var(--font-noto-sans);
   color: #344054;
   background: rgba(233, 238, 238, 0.47);
@@ -744,8 +754,9 @@ html, body {
 }
 
 .list-table tbody th {
-  font-size: 0.875rem;
-  font-weight: normal;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: var(--font-noto-sans);
   color: var(--color-text-primary);
   background: var(--color-paper);
 }
@@ -2476,9 +2487,14 @@ html, body {
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
   color: #667085;
   pointer-events: none;
+}
+.modal-select__arrow svg {
+  display: block;
 }
 .modal-select__dropdown {
   position: absolute;
@@ -2640,4 +2656,72 @@ html, body {
   font-size: 0.875rem;
   font-family: var(--font-noto-sans);
   color: var(--color-text-secondary);
+}
+
+/* Corpo da página e conteúdo das abas/modais: 14px, Noto Sans, regular (como títulos das tabelas) */
+.risk-rules-content,
+.risk-rules-content .risk-tab,
+.risk-rules-content .list-table th,
+.risk-rules-content .list-table td,
+.risk-rules-content .type-filter-trigger,
+.risk-rules-content .type-filter-option,
+.risk-rules-content .form-group label,
+.risk-rules-content .form-group input,
+.risk-rules-content .form-group select,
+.risk-rules-content .form-group textarea,
+.risk-rules-content .form-label,
+.risk-rules-content .form-hint,
+.risk-rules-content .policy-form .form-group label,
+.risk-rules-content .policy-form .modal-select__label,
+.risk-rules-content .modal-select,
+.risk-rules-content .modal-select__label,
+.risk-rules-content .body-search,
+.risk-rules-content .empty-state__title,
+.risk-rules-content .empty-state__description,
+.risk-rules-content .risk-badge,
+.risk-rules-content .badge {
+  font-size: 14px;
+  font-family: var(--font-noto-sans);
+  font-weight: 400;
+}
+.cr-modal__body,
+.cr-modal__body .form-group label,
+.cr-modal__body .form-group input,
+.cr-modal__body .form-group select,
+.cr-modal__body .form-group textarea,
+.cr-modal__body .form-label,
+.cr-modal__body .form-label-optional,
+.cr-modal__body .form-hint,
+.cr-modal__body .form-readonly-value,
+.cr-modal__body .policy-form .form-group label,
+.cr-modal__body .policy-form .modal-select__label,
+.cr-modal__body .modal-select,
+.cr-modal__body .modal-select__label,
+.cr-modal__body .modal-select__input,
+.cr-modal__body .cr-modal__label,
+.cr-modal__body .cr-modal__input,
+.cr-modal__body .cr-modal__select,
+.cr-modal__body .cr-modal__textarea,
+.cr-modal__body .form-card .form-group label,
+.cr-modal__body .form-card input,
+.cr-modal__body .form-card select,
+.cr-modal__body .form-card textarea,
+.cr-modal__body .form-card .modal-select,
+.cr-modal__body .form-error {
+  font-size: 14px;
+  font-family: var(--font-noto-sans);
+  font-weight: 400;
+}
+
+/* Botões CTA: Noto Sans Semibold 12px (toolbar superior e dentro das modais) */
+.content-toolbar .btn,
+.scores-toolbar .btn,
+.cr-modal__footer .btn,
+.cr-modal__body .form-actions .btn,
+.form-actions .btn,
+.drawer-toolbar .btn,
+.cr-btn {
+  font-family: var(--font-noto-sans);
+  font-weight: 600;
+  font-size: 12px;
 }

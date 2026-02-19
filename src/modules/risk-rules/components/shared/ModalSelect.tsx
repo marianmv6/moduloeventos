@@ -161,7 +161,11 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
           disabled={disabled}
           autoComplete="off"
         />
-        <span className="modal-select__arrow" aria-hidden>▼</span>
+        <span className="modal-select__arrow" aria-hidden>
+          <svg width="8" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0 L5 6 L10 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" fill="none" />
+          </svg>
+        </span>
       </div>
       {open && (
         <div className="modal-select__dropdown">

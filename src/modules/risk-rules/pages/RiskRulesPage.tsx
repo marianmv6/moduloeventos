@@ -406,7 +406,7 @@ export const RiskRulesPage: React.FC = () => {
     <div className="risk-rules-page page-layout content-body">
       <div className="content-toolbar top-bar">
         <div className="content-toolbar-left">
-          <h1 className="body-page-title">Regras de Risco</h1>
+          <h1 className="body-page-title">Regras de risco</h1>
           {activeTab === 'scores' && (
             <div className="type-filter-wrap" ref={typeFilterRef}>
               <button
@@ -421,7 +421,7 @@ export const RiskRulesPage: React.FC = () => {
                   {TYPE_FILTER_OPTIONS.find((o) => o.value === typeFilter)?.label ?? 'Todos'}
                 </span>
                 <span className="type-filter-chevron" aria-hidden>
-                  <svg width="5" height="3" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="8" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0 0 L5 6 L10 0" stroke="#2F2F2F" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" fill="none" />
                   </svg>
                 </span>
