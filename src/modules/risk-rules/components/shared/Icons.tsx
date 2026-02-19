@@ -10,8 +10,8 @@ const iconClass = 'ds-icon';
 export const IconEdit: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     className={iconClass}
-    width="14"
-    height="14"
+    width="17"
+    height="17"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -29,8 +29,8 @@ export const IconEdit: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 export const IconTrash: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     className={iconClass}
-    width="14"
-    height="14"
+    width="17"
+    height="17"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"

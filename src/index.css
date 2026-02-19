@@ -13,7 +13,7 @@
 :root {
   --font-montserrat: "Montserrat", "Roboto", "Helvetica", "Arial", sans-serif;
   --font-noto-sans: "Noto Sans", "Roboto", "Helvetica", "Arial", sans-serif;
-  --font-size-base: 12px;
+  --font-size-base: 17px;
   --sidebar-expanded-width: 15rem;
   --box-shadow: 0.05rem 0.05rem 0.1rem rgba(0, 0, 0, 0.1), 0.05rem 0.05rem 0.5rem rgba(0, 0, 0, 0.05);
   --color-primary: #169EFF;
