@@ -30,7 +30,7 @@ import type { AppRoute } from '../../../components/layout/AppSidebar';
 const ROUTE_TITLES: Record<AppRoute, string> = {
   'regras-tratativa': 'Políticas de tratativa',
   eventos: 'Eventos',
-  tratativas: 'Tratativas',
+  tratativas: 'Regras de tratativa',
   contatos: 'Contatos',
   'email-automatico': 'E-mail automático',
   'mensagem-voz': 'Mensagem voz',

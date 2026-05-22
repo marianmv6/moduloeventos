@@ -184,7 +184,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <>
             {parentItem(<IconConfiguracoes />, 'Configurações', goRoot)}
             {childItem('regras-tratativa', 'Políticas de tratativa', <IconRegrasTratativa />)}
-            {childItem('tratativas', 'Tratativas', <IconTratativas />)}
+            {childItem('tratativas', 'Regras de tratativa', <IconTratativas />)}
             {childItem('eventos', 'Eventos', <IconEventos />)}
           </>
         )}
