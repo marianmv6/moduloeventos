@@ -1,4 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
+import type { ContactsPanelHandle } from '../components/treatments/ContactsPanel';
+import type { VoiceMessagesPanelHandle } from '../components/treatments/VoiceMessagesPanel';
 import type { RiskTabId } from '../types/risk.types';
 import { mockPolicies, mockScoreRules, mockTreatments, mockTrails, mockContacts, mockVoiceMessages, mockHistory, mockUsers, mockEmailTemplates } from '../mocks/risk.mock';
 import { TYPE_FILTER_OPTIONS, type TypeFilterValue } from '../constants/eventTypes';
@@ -18,18 +20,34 @@ import { AppliedConfirmModal } from '../components/shared/AppliedConfirmModal';
 import { CrModal } from '../components/shared/CrModal';
 import { SuccessToast, type ToastVariant } from '../components/shared/SuccessToast';
 import type { Policy, Treatment, Trail, Contact, VoiceMessage, ScoreRule, HistoryEntry, EmailTemplate } from '../types/risk.types';
-import { CrDrawer } from '../components/shared/CrDrawer';
 import { ContactsPanel } from '../components/treatments/ContactsPanel';
 import { EmailTemplatesPanel } from '../components/treatments/EmailTemplatesPanel';
 import { EmailTemplateForm } from '../components/treatments/EmailTemplateForm';
 import { VoiceMessagesPanel } from '../components/treatments/VoiceMessagesPanel';
 import { MAX_EMAIL_TEMPLATES_PER_COMPANY, DEFAULT_TEMPLATE_ID } from '../constants/emailTemplateConstants';
+import type { AppRoute } from '../../../components/layout/AppSidebar';
+
+const ROUTE_TITLES: Record<AppRoute, string> = {
+  'regras-tratativa': 'Políticas de tratativa',
+  eventos: 'Eventos',
+  tratativas: 'Tratativas',
+  contatos: 'Contatos',
+  'email-automatico': 'E-mail automático',
+  'mensagem-voz': 'Mensagem voz',
+};
+
+const CADASTRO_ROUTES: AppRoute[] = ['contatos', 'email-automatico', 'mensagem-voz'];
+
+interface RiskRulesPageProps {
+  appRoute?: AppRoute;
+}
 
 /**
  * Página principal do módulo Regras de Tratativa - Módulo de Eventos.
  */
-export const RiskRulesPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<RiskTabId>('scores');
+export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras-tratativa' }) => {
+  const isCadastroPage = CADASTRO_ROUTES.includes(appRoute);
+  const [activeTab, setActiveTab] = useState<RiskTabId>('policy');
   const [typeFilter, setTypeFilter] = useState<TypeFilterValue>('todos');
   const [policies, setPolicies] = useState(mockPolicies);
   const policiesRef = useRef(policies);
@@ -56,6 +74,8 @@ export const RiskRulesPage: React.FC = () => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [emailTemplateFormOpen, setEmailTemplateFormOpen] = useState(false);
   const [emailTemplateEditing, setEmailTemplateEditing] = useState<EmailTemplate | null>(null);
+  const contactsPanelRef = useRef<ContactsPanelHandle>(null);
+  const voiceMessagesPanelRef = useRef<VoiceMessagesPanelHandle>(null);
 
   const addHistoryEntry = (entry: Omit<HistoryEntry, 'id' | 'timestamp'>) => {
     setHistory((prev) => [
@@ -91,15 +111,12 @@ export const RiskRulesPage: React.FC = () => {
   const formatActive = (v: unknown) => (v ? 'Ativo' : 'Inativo');
   const formatTipoAcomp = (v: unknown) => (v === 'veiculo' ? 'Por veículo' : 'Por motorista');
   const formatRiskLevel = (v: unknown) => {
-    const m: Record<string, string> = { low: 'Baixo', medium: 'Médio', high: 'Alto', critical: 'Crítico' };
-    return m[String(v)] ?? String(v ?? '—');
+    const key = String(v);
+    const m: Record<string, string> = { low: 'Baixo', medium: 'Médio', high: 'Alto', critical: 'Crítico', grave: 'Crítico' };
+    return m[key] ?? String(v ?? '—');
   };
   const formatTrackingType = (v: unknown) => (v === 'veiculo' ? 'Por veículo' : 'Por motorista');
   const formatMode = (v: unknown) => (v === 'levels' ? 'Por nível' : 'Por pontuação');
-  const [contactsDrawerOpen, setContactsDrawerOpen] = useState(false);
-  const [emailTemplatesDrawerOpen, setEmailTemplatesDrawerOpen] = useState(false);
-  const [voiceMessagesDrawerOpen, setVoiceMessagesDrawerOpen] = useState(false);
-
   const [policyFormOpen, setPolicyFormOpen] = useState(false);
   const [policyEditing, setPolicyEditing] = useState<Policy | null>(null);
   const [treatmentFormOpen, setTreatmentFormOpen] = useState(false);
@@ -280,7 +297,7 @@ export const RiskRulesPage: React.FC = () => {
         [
           { key: 'name', label: 'Nome' },
           { key: 'description', label: 'Descrição' },
-          { key: 'riskLevel', label: 'Nível de risco', format: formatRiskLevel },
+          { key: 'riskLevel', label: 'Gravidade', format: formatRiskLevel },
           { key: 'active', label: 'Status', format: formatActive },
         ]
       );
@@ -540,7 +557,6 @@ export const RiskRulesPage: React.FC = () => {
 
   const openEmailTemplateForm = (template: EmailTemplate | null) => {
     setEmailTemplateEditing(template);
-    setEmailTemplatesDrawerOpen(false);
     setEmailTemplateFormOpen(true);
   };
 
@@ -621,12 +637,117 @@ export const RiskRulesPage: React.FC = () => {
     });
   };
 
-  return (
-    <div className="risk-rules-page page-layout content-body">
-      <div className="content-toolbar top-bar">
-        <div className="content-toolbar-left">
-          <h1 className="body-page-title">Regras de tratativa</h1>
-          {activeTab === 'scores' && (
+  if (isCadastroPage) {
+    return (
+      <div className="risk-rules-page page-layout content-body cadastro-page">
+        <div className="content-toolbar top-bar">
+          <div className="content-toolbar-left">
+            <h1 className="body-page-title">{ROUTE_TITLES[appRoute]}</h1>
+          </div>
+          <div className="content-toolbar-right">
+            {appRoute === 'contatos' && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => contactsPanelRef.current?.openNew()}
+              >
+                Novo contato
+              </button>
+            )}
+            {appRoute === 'email-automatico' && (
+              <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null)}>
+                Novo E-mail
+              </button>
+            )}
+            {appRoute === 'mensagem-voz' && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => voiceMessagesPanelRef.current?.openNew()}
+              >
+                Nova mensagem de voz
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="page-content risk-rules-content cadastro-page-content">
+          {appRoute === 'contatos' && (
+            <ContactsPanel
+              ref={contactsPanelRef}
+              hideToolbar
+              contacts={contacts}
+              onSave={handleContactSave}
+              onDelete={handleContactDelete}
+              onValidationError={(msg) => showToast(msg, 'warning')}
+            />
+          )}
+          {appRoute === 'email-automatico' && (
+            <EmailTemplatesPanel
+              hideToolbar
+              templates={emailTemplates}
+              onNew={() => openEmailTemplateForm(null)}
+              onEdit={openEmailTemplateForm}
+              onDelete={handleEmailTemplateDelete}
+            />
+          )}
+          {appRoute === 'mensagem-voz' && (
+            <VoiceMessagesPanel
+              ref={voiceMessagesPanelRef}
+              hideToolbar
+              voiceMessages={voiceMessages}
+              onSave={handleVoiceMessageSave}
+              onDelete={handleVoiceMessageDelete}
+            />
+          )}
+        </div>
+        {emailTemplateFormOpen && (
+          <CrModal
+            open
+            title={emailTemplateEditing ? 'Editar template de e-mail' : 'Novo template de e-mail'}
+            onClose={closeEmailTemplateForm}
+            onCancel={closeEmailTemplateForm}
+            formId="email-template-form"
+            primaryLabel="Salvar"
+            cancelLabel="Cancelar"
+            fullScreen
+          >
+            <EmailTemplateForm
+              id="email-template-form"
+              initialData={emailTemplateEditing ?? undefined}
+              onSubmit={handleEmailTemplateSave}
+              onCancel={closeEmailTemplateForm}
+              hideActions
+            />
+          </CrModal>
+        )}
+        <ConfirmModal
+          open={confirmModal.open}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmLabel="Excluir"
+          variant="danger"
+          onConfirm={() => {
+            confirmModal.onConfirm();
+            closeConfirm();
+          }}
+          onCancel={closeConfirm}
+        />
+        <SuccessToast
+          message={toast.message}
+          visible={toast.visible}
+          onClose={closeToast}
+          variant={toast.variant}
+        />
+      </div>
+    );
+  }
+
+  if (appRoute === 'eventos') {
+    return (
+      <div className="risk-rules-page page-layout content-body">
+        <div className="content-toolbar top-bar">
+          <div className="content-toolbar-left">
+            <h1 className="body-page-title">{ROUTE_TITLES.eventos}</h1>
             <div className="type-filter-wrap" ref={typeFilterRef}>
               <button
                 type="button"
@@ -664,41 +785,118 @@ export const RiskRulesPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+        <div className="page-content risk-rules-content">
+          <ScoreList scores={filteredScores} />
+        </div>
+        <SuccessToast
+          message={toast.message}
+          visible={toast.visible}
+          onClose={closeToast}
+          variant={toast.variant}
+        />
+      </div>
+    );
+  }
+
+  if (appRoute === 'tratativas') {
+    return (
+      <div className="risk-rules-page page-layout content-body">
+        <div className="content-toolbar top-bar">
+          <div className="content-toolbar-left">
+            <h1 className="body-page-title">{ROUTE_TITLES.tratativas}</h1>
+          </div>
+          <div className="content-toolbar-right">
+            <button type="button" className="btn btn-primary" onClick={() => openTrailForm()}>
+              Nova tratativa
+            </button>
+          </div>
+        </div>
+        <div className="page-content risk-rules-content">
+          {trailFormOpen && (
+            <CrModal
+              open
+              title={trailEditing ? 'Editar tratativa' : 'Nova tratativa'}
+              onClose={requestCloseTrailForm}
+              onCancel={closeTrailForm}
+              formId="trail-form"
+              primaryLabel="Salvar"
+              cancelLabel="Cancelar"
+              fullScreen
+            >
+              <TrailForm
+                id="trail-form"
+                initialData={trailEditing ?? undefined}
+                onSubmit={handleTrailSubmit}
+                onCancel={closeTrailForm}
+                hideActions
+                contacts={contacts}
+                emailTemplates={emailTemplates.filter((t) => t.active).map((t) => ({ id: t.id, title: t.title }))}
+                voiceMessages={voiceMessages.filter((v) => v.active).map((v) => ({ id: v.id, identification: v.identification }))}
+                onValidationError={(msg) => showToast(msg, 'warning')}
+                onDirtyChange={setTrailFormDirty}
+              />
+            </CrModal>
           )}
+          {trails.length === 0 && !trailFormOpen ? (
+            <EmptyState
+              title="Nenhuma tratativa cadastrada"
+              description="Cadastre tratativas para definir sequências de ações por pontuação ou nível."
+              actionLabel="Nova tratativa"
+              onAction={() => openTrailForm()}
+            />
+          ) : !trailFormOpen ? (
+            <TrailList trails={trails} onEdit={(t) => openTrailForm(t)} onDelete={handleTrailDelete} />
+          ) : null}
+        </div>
+        <ConfirmModal
+          open={confirmModal.open}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmLabel="Excluir"
+          variant="danger"
+          onConfirm={() => {
+            confirmModal.onConfirm();
+            closeConfirm();
+          }}
+          onCancel={closeConfirm}
+        />
+        <UnsavedConfirmModal
+          open={unsavedConfirm.open}
+          onSave={unsavedConfirm.onSave}
+          onDiscard={unsavedConfirm.onDiscard}
+        />
+        <AppliedConfirmModal
+          open={appliedConfirm.open}
+          onClose={() => {
+            appliedConfirm.onConfirm?.();
+            const msg = appliedConfirm.pendingToast;
+            setAppliedConfirm({ open: false, pendingToast: null });
+            if (msg) showToast(msg);
+          }}
+        />
+        <SuccessToast
+          message={toast.message}
+          visible={toast.visible}
+          onClose={closeToast}
+          variant={toast.variant}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="risk-rules-page page-layout content-body">
+      <div className="content-toolbar top-bar">
+        <div className="content-toolbar-left">
+          <h1 className="body-page-title">{ROUTE_TITLES['regras-tratativa']}</h1>
         </div>
         <div className="content-toolbar-right">
           {activeTab === 'policy' && (
             <button type="button" className="btn btn-primary" onClick={() => openPolicyForm()}>
               Nova política
             </button>
-          )}
-          {activeTab === 'treatments' && (
-            <>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setContactsDrawerOpen(true)}
-              >
-                Contatos
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setEmailTemplatesDrawerOpen(true)}
-              >
-                E-mail automático
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setVoiceMessagesDrawerOpen(true)}
-              >
-                Mensagens de voz
-              </button>
-              <button type="button" className="btn btn-primary" onClick={() => openTrailForm()}>
-                Nova tratativa
-              </button>
-            </>
           )}
         </div>
       </div>
@@ -747,52 +945,6 @@ export const RiskRulesPage: React.FC = () => {
           </>
         )}
 
-        {activeTab === 'scores' && <ScoreList scores={filteredScores} />}
-
-        {activeTab === 'treatments' && (
-          <>
-            {trailFormOpen && (
-              <CrModal
-                open
-                title={trailEditing ? 'Editar tratativa' : 'Nova tratativa'}
-                onClose={requestCloseTrailForm}
-                onCancel={closeTrailForm}
-                formId="trail-form"
-                primaryLabel="Salvar"
-                cancelLabel="Cancelar"
-                fullScreen
-              >
-                <TrailForm
-                  id="trail-form"
-                  initialData={trailEditing ?? undefined}
-                  onSubmit={handleTrailSubmit}
-                  onCancel={closeTrailForm}
-                  hideActions
-                  contacts={contacts}
-                  emailTemplates={emailTemplates.filter((t) => t.active).map((t) => ({ id: t.id, title: t.title }))}
-                  voiceMessages={voiceMessages.filter((v) => v.active).map((v) => ({ id: v.id, identification: v.identification }))}
-                  onValidationError={(msg) => showToast(msg, 'warning')}
-                  onDirtyChange={setTrailFormDirty}
-                />
-              </CrModal>
-            )}
-            {trails.length === 0 && !trailFormOpen ? (
-              <EmptyState
-                title="Nenhuma tratativa cadastrada"
-                description="Cadastre tratativas para definir sequências de ações por pontuação ou nível."
-                actionLabel="Nova tratativa"
-                onAction={() => openTrailForm()}
-              />
-            ) : !trailFormOpen ? (
-              <TrailList
-                trails={trails}
-                onEdit={(t) => openTrailForm(t)}
-                onDelete={handleTrailDelete}
-              />
-            ) : null}
-          </>
-        )}
-
         {activeTab === 'history' && <HistoryList entries={history} />}
       </div>
 
@@ -824,53 +976,6 @@ export const RiskRulesPage: React.FC = () => {
           if (msg) showToast(msg);
         }}
       />
-
-      <CrDrawer open={contactsDrawerOpen} title="Contatos" onClose={() => setContactsDrawerOpen(false)} className="cr-drawer--contacts">
-        <ContactsPanel
-          contacts={contacts}
-          onSave={handleContactSave}
-          onDelete={handleContactDelete}
-          onValidationError={(msg) => showToast(msg, 'warning')}
-        />
-      </CrDrawer>
-
-      <CrDrawer open={emailTemplatesDrawerOpen} title="E-mail automático" onClose={() => setEmailTemplatesDrawerOpen(false)} className="cr-drawer--wide">
-        <EmailTemplatesPanel
-          templates={emailTemplates}
-          onNew={() => openEmailTemplateForm(null)}
-          onEdit={openEmailTemplateForm}
-          onDelete={handleEmailTemplateDelete}
-        />
-      </CrDrawer>
-
-      {emailTemplateFormOpen && (
-        <CrModal
-          open
-          title={emailTemplateEditing ? 'Editar template de e-mail' : 'Novo template de e-mail'}
-          onClose={closeEmailTemplateForm}
-          onCancel={closeEmailTemplateForm}
-          formId="email-template-form"
-          primaryLabel="Salvar"
-          cancelLabel="Cancelar"
-          fullScreen
-        >
-          <EmailTemplateForm
-            id="email-template-form"
-            initialData={emailTemplateEditing ?? undefined}
-            onSubmit={handleEmailTemplateSave}
-            onCancel={closeEmailTemplateForm}
-            hideActions
-          />
-        </CrModal>
-      )}
-
-      <CrDrawer open={voiceMessagesDrawerOpen} title="Mensagens de voz" onClose={() => setVoiceMessagesDrawerOpen(false)} className="cr-drawer--wide">
-        <VoiceMessagesPanel
-          voiceMessages={voiceMessages}
-          onSave={handleVoiceMessageSave}
-          onDelete={handleVoiceMessageDelete}
-        />
-      </CrDrawer>
 
       <SuccessToast
         message={toast.message}

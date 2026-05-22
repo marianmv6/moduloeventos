@@ -7,6 +7,7 @@ import { IconTrash, IconSearch } from '../shared/Icons';
 import { InfoTooltip } from '../shared/InfoTooltip';
 import { LevelTooltip } from '../shared/LevelTooltip';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
+import { GRAVITY_FIELD_LABEL, GRAVITY_OPTIONS } from '../../constants/gravityConstants';
 
 interface PolicyFormProps {
   id?: string;
@@ -45,12 +46,6 @@ const DURACAO_ATIVA_OPTIONS: ModalSelectOption[] = [
 const STATUS_OPTIONS: ModalSelectOption[] = [
   { value: 'ativo', label: 'Ativo' },
   { value: 'inativo', label: 'Inativo' },
-];
-
-const NIVEL_RISCO_OPTIONS: ModalSelectOption[] = [
-  { value: 'low', label: 'Baixo' },
-  { value: 'medium', label: 'Médio' },
-  { value: 'high', label: 'Alto' },
 ];
 
 const MAX_GATILHOS = 5;
@@ -524,10 +519,10 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
                         <div className="trail-step-action policy-form-gatilho-trail-inline">
                           <ModalSelect
                             id={`gatilho-nivel-${index}`}
-                            label="Nível de risco"
+                            label={GRAVITY_FIELD_LABEL}
                             value={g.nivelRisco ?? ''}
                             onChange={(v) => updateGatilho(index, { nivelRisco: (v || undefined) as PolicyTrigger['nivelRisco'] })}
-                            options={NIVEL_RISCO_OPTIONS}
+                            options={GRAVITY_OPTIONS}
                             placeholder="Selecione"
                           />
                         </div>

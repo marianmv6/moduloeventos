@@ -20,14 +20,14 @@ export interface PolicyEventConfig {
   duracaoAtiva: string;
 }
 
-/** Nível de risco para ocorrência quando a política inclui evento de vídeo */
-export type PolicyTriggerNivelRisco = 'low' | 'medium' | 'high';
+/** Gravidade para ocorrência quando a política inclui evento de vídeo */
+export type PolicyTriggerNivelRisco = 'low' | 'medium' | 'high' | 'critical';
 
-/** Ocorrência: a partir de X pontos solicitar tratativa (trilha) Y; opcionalmente nível de risco quando há evento de vídeo */
+/** Ocorrência: a partir de X pontos solicitar tratativa (trilha) Y; opcionalmente gravidade quando há evento de vídeo */
 export interface PolicyTrigger {
   aPartirDePontos: number;
   trilhaId: string;
-  /** Nível de risco (Baixo/Médio/Alto) – exibido quando a política inclui evento de vídeo */
+  /** Gravidade (Baixo/Médio/Alto/Crítico) – exibido quando a política inclui evento de vídeo */
   nivelRisco?: PolicyTriggerNivelRisco;
 }
 
@@ -93,7 +93,7 @@ export type StepActionType =
 
 export type TrailStepTrigger =
   | { type: 'points'; minScore: number }
-  | { type: 'levels'; level: 'low' | 'medium' | 'high' };
+  | { type: 'levels'; level: 'low' | 'medium' | 'high' | 'critical' };
 
 export interface TrailStepConfig {
   contactIds?: string[];
@@ -192,4 +192,4 @@ export interface HistoryEntry {
   details?: Record<string, unknown>;
 }
 
-export type RiskTabId = 'policy' | 'scores' | 'treatments' | 'history';
+export type RiskTabId = 'policy' | 'history';

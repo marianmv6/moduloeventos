@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { Treatment, TreatmentStep, RiskLevel } from '../../types/risk.types';
 import { TreatmentStepCard } from './TreatmentStepCard';
-import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
+import { ModalSelect } from '../shared/ModalSelect';
+import { GRAVITY_FIELD_LABEL, GRAVITY_OPTIONS, normalizeGravityLevel } from '../../constants/gravityConstants';
 
 interface TreatmentFormProps {
   id?: string;
@@ -11,13 +12,6 @@ interface TreatmentFormProps {
   /** Oculta os botões do formulário (usado quando dentro de CrModal) */
   hideActions?: boolean;
 }
-
-/* Mesmas opções da política: somente Baixo, Médio e Alto; sem fundo colorido */
-const TREATMENT_RISK_LEVEL_OPTIONS: ModalSelectOption[] = [
-  { value: 'low', label: 'Baixo' },
-  { value: 'medium', label: 'Médio' },
-  { value: 'high', label: 'Alto' },
-];
 
 export const TreatmentForm: React.FC<TreatmentFormProps> = ({
   id,
@@ -29,7 +23,7 @@ export const TreatmentForm: React.FC<TreatmentFormProps> = ({
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [riskLevel, setRiskLevel] = useState<RiskLevel>(
-    initialData?.riskLevel === 'critical' ? 'high' : (initialData?.riskLevel ?? 'high')
+    (normalizeGravityLevel(initialData?.riskLevel as string) ?? 'high') as RiskLevel
   );
   const [active, setActive] = useState(initialData?.active ?? true);
   const [steps, setSteps] = useState<TreatmentStep[]>(
@@ -87,11 +81,11 @@ export const TreatmentForm: React.FC<TreatmentFormProps> = ({
       <div className="form-group">
         <ModalSelect
           id="treatment-risk"
-          label="Nível de risco"
+          label={GRAVITY_FIELD_LABEL}
           value={riskLevel}
-          onChange={(v) => setRiskLevel(v as RiskLevel)}
-          options={TREATMENT_RISK_LEVEL_OPTIONS}
-          placeholder="Selecione o nível"
+          onChange={(v) => setRiskLevel((normalizeGravityLevel(v) ?? 'high') as RiskLevel)}
+          options={GRAVITY_OPTIONS}
+          placeholder="Selecione a gravidade"
         />
       </div>
       <div className="form-group">

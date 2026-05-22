@@ -1,13 +1,8 @@
 import React from 'react';
 import type { Policy, PolicyTriggerNivelRisco, ScoreRule } from '../../types/risk.types';
 import { EVENT_TYPE_LABELS } from '../../constants/eventTypes';
+import { GRAVITY_FIELD_LABEL, GRAVITY_LABELS } from '../../constants/gravityConstants';
 import { IconEdit, IconTrash } from '../shared/Icons';
-
-const NIVEL_RISCO_LABELS: Record<PolicyTriggerNivelRisco, string> = {
-  low: 'Baixo',
-  medium: 'Médio',
-  high: 'Alto',
-};
 
 function getEventosText(policy: Policy, scores: ScoreRule[]): string {
   const eventIds = Object.keys(policy.configEventos ?? {});
@@ -23,7 +18,7 @@ function getNivelRiscoText(policy: Policy): string {
   const levels = (policy.gatilhos ?? [])
     .map((g) => g.nivelRisco)
     .filter((v): v is PolicyTriggerNivelRisco => !!v)
-    .map((v) => NIVEL_RISCO_LABELS[v]);
+    .map((v) => GRAVITY_LABELS[v]);
   const unique = [...new Set(levels)];
   return unique.join(', ') || '—';
 }
@@ -50,7 +45,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
           <th>Nome</th>
           <th>Tipo</th>
           <th>Eventos</th>
-          <th>Nível de risco</th>
+          <th>{GRAVITY_FIELD_LABEL}</th>
           <th>Status</th>
           <th></th>
         </tr>

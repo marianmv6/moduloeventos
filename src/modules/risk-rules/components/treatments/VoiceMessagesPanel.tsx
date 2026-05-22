@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import type { VoiceMessage, VoiceMessageLanguage, VoiceMessageDevice } from '../../types/risk.types';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
@@ -24,17 +24,19 @@ const DEVICE_OPTIONS: ModalSelectOption[] = [
 const MESSAGE_MAX_LENGTH_DEVICE = 200;
 const MESSAGE_MAX_LENGTH_DEFAULT = 70;
 
+export interface VoiceMessagesPanelHandle {
+  openNew: () => void;
+}
+
 interface VoiceMessagesPanelProps {
   voiceMessages: VoiceMessage[];
   onSave: (msg: Omit<VoiceMessage, 'id'> & { id?: string }) => void;
   onDelete: (msg: VoiceMessage) => void;
+  hideToolbar?: boolean;
 }
 
-export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
-  voiceMessages,
-  onSave,
-  onDelete,
-}) => {
+export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMessagesPanelProps>(
+  function VoiceMessagesPanel({ voiceMessages, onSave, onDelete, hideToolbar = false }, ref) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<VoiceMessage | null>(null);
   const [identification, setIdentification] = useState('');
@@ -62,6 +64,9 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
     setFieldErrors({});
     setModalOpen(true);
   };
+
+  useImperativeHandle(ref, () => ({ openNew }), []);
+
   const openEdit = (m: VoiceMessage) => {
     setEditing(m);
     setIdentification(m.identification);
@@ -104,11 +109,13 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
 
   return (
     <>
-      <div className="drawer-toolbar drawer-toolbar--end">
-        <button type="button" className="btn btn-primary" onClick={openNew}>
-          Nova mensagem de voz
-        </button>
-      </div>
+      {!hideToolbar && (
+        <div className="drawer-toolbar drawer-toolbar--end">
+          <button type="button" className="btn btn-primary" onClick={openNew}>
+            Nova mensagem de voz
+          </button>
+        </div>
+      )}
       <div className="voice-messages-table-wrap drawer-voice-messages-table">
         <table className="list-table">
           <thead>
@@ -263,6 +270,6 @@ export const VoiceMessagesPanel: React.FC<VoiceMessagesPanelProps> = ({
       </CrModal>
     </>
   );
-};
+});
 
 export default VoiceMessagesPanel;

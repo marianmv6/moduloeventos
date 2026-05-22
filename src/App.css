@@ -141,6 +141,7 @@ html, body {
 }
 
 .launcher-sidebar nav a.nav-item,
+.launcher-sidebar nav button.nav-item,
 .launcher-sidebar nav .nav-item {
   display: flex;
   align-items: center;
@@ -157,6 +158,9 @@ html, body {
   box-sizing: border-box;
   border: none;
   outline: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
 }
 
 .launcher-sidebar nav a.nav-item {
@@ -192,12 +196,19 @@ html, body {
   line-height: 1;
 }
 
-/* Item pai "Configurações": não é botão, apenas rótulo – negrito, #101828, sem seta */
+/* Item pai (Configurações / Cadastros): negrito, #101828, clicável para voltar ao menu anterior */
 .launcher-sidebar nav .nav-item-parent {
   color: #101828;
   font-weight: 600;
   background: transparent;
-  cursor: default;
+}
+
+.launcher-sidebar nav .nav-item-parent.nav-item-parent--clickable {
+  cursor: pointer;
+}
+
+.launcher-sidebar nav .nav-item-parent.nav-item-parent--clickable:hover {
+  background: rgba(16, 24, 40, 0.04);
 }
 
 .launcher-sidebar nav .nav-item-parent .nav-item-icon {
@@ -208,35 +219,61 @@ html, body {
   display: none;
 }
 
-/* Itens não selecionados: mesma cor de texto que Regras de Tratativa (#101828), ícone #20ACAC */
-.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) {
+/* Menu raiz: Cadastros e Configurações – ícone na cor do item pai (#101828) */
+.launcher-sidebar nav .nav-item--root .nav-item-icon--cadastros,
+.launcher-sidebar nav .nav-item--root .nav-item-icon--settings {
+  color: #101828;
+}
+
+.launcher-sidebar nav .nav-item--root:not(.active) {
   color: #101828;
   background: transparent;
 }
 
-.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) .nav-item-icon {
-  color: #20ACAC;
-}
-
-.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) .nav-item-chevron {
+.launcher-sidebar nav .nav-item--root:not(.active) .nav-item-chevron {
   color: #667085;
 }
 
-.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover {
+.launcher-sidebar nav .nav-item--root:not(.active):hover {
+  background: rgba(16, 24, 40, 0.04);
+}
+
+/* Itens não selecionados: mesma cor de texto que Regras de Tratativa (#101828), ícone #20ACAC */
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active),
+.launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root) {
+  color: #101828;
+  background: transparent;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) .nav-item-icon,
+.launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root) .nav-item-icon {
+  color: #20ACAC;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active) .nav-item-chevron,
+.launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root) .nav-item-chevron {
+  color: #667085;
+}
+
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover,
+.launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root):hover {
   background: rgba(16, 24, 40, 0.04);
   color: #101828;
 }
 
-.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover .nav-item-icon {
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover .nav-item-icon,
+.launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root):hover .nav-item-icon {
   color: #20ACAC;
 }
 
-.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover .nav-item-chevron {
+.launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active):hover .nav-item-chevron,
+.launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root):hover .nav-item-chevron {
   color: #667085;
 }
 
-/* Item ativo (Regras de Tratativa): fundo #d7dcdc, bordas 12px, sem borda externa */
-.launcher-sidebar nav a.nav-item.active {
+/* Item ativo: fundo #d7dcdc, ícone azul primário */
+.launcher-sidebar nav a.nav-item.active,
+.launcher-sidebar nav button.nav-item.active {
   background: #d7dcdc;
   color: #101828;
   font-weight: 600;
@@ -246,16 +283,42 @@ html, body {
   box-shadow: none;
 }
 
-.launcher-sidebar nav a.nav-item.active .nav-item-icon {
+.launcher-sidebar nav a.nav-item.active .nav-item-icon,
+.launcher-sidebar nav button.nav-item.active .nav-item-icon {
   color: var(--color-primary);
 }
 
-.launcher-sidebar nav a.nav-item.active .nav-item-text {
+.launcher-sidebar nav a.nav-item.active .nav-item-text,
+.launcher-sidebar nav button.nav-item.active .nav-item-text {
   color: #101828;
 }
 
-.launcher-sidebar nav a.nav-item.active .nav-item-chevron {
+.launcher-sidebar nav a.nav-item.active .nav-item-chevron,
+.launcher-sidebar nav button.nav-item.active .nav-item-chevron {
   display: none;
+}
+
+/* Páginas de cadastro (Contatos, E-mail, Mensagem voz) – conteúdo em tela cheia */
+.cadastro-page {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.cadastro-page-content {
+  padding-top: 0.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.cadastro-page .drawer-toolbar {
+  margin-bottom: 1rem;
+}
+
+.cadastro-page .contacts-table-wrap,
+.cadastro-page .email-templates-table-wrap,
+.cadastro-page .voice-messages-table-wrap {
+  width: 100%;
 }
 
 /* Compatibilidade com classes antigas */
@@ -667,6 +730,7 @@ html, body {
 .risk-badge--low { background: #E3F2FD; color: #1565C0; }
 .risk-badge--medium { background: #FFF8E1; color: #F9A825; }
 .risk-badge--high { background: #FFEBEE; color: #C62828; }
+.risk-badge--critical { background: #F3E5F5; color: #6A1B9A; }
 
 /* Tooltip padrão: fundo branco, bordas arredondadas (6px), sombra cinza, fonte Noto Sans */
 .level-tooltip-wrap {

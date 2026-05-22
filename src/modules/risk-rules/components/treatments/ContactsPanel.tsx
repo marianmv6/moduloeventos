@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import type { Contact, ContactShift } from '../../types/risk.types';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
@@ -25,15 +25,24 @@ function phoneToRaw(formatted: string): string {
   return formatted.replace(/\D/g, '');
 }
 
+export interface ContactsPanelHandle {
+  openNew: () => void;
+}
+
 interface ContactsPanelProps {
   contacts: Contact[];
   onSave: (contact: Omit<Contact, 'id'> & { id?: string }) => void;
   onDelete: (contact: Contact) => void;
   /** Mensagem exibida em toast de aviso (ex.: validação de horários) */
   onValidationError?: (message: string) => void;
+  /** Oculta o CTA interno (usado quando o botão fica no cabeçalho da página) */
+  hideToolbar?: boolean;
 }
 
-export const ContactsPanel: React.FC<ContactsPanelProps> = ({ contacts, onSave, onDelete, onValidationError }) => {
+export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>(function ContactsPanel(
+  { contacts, onSave, onDelete, onValidationError, hideToolbar = false },
+  ref
+) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
   const [name, setName] = useState('');
@@ -57,6 +66,9 @@ export const ContactsPanel: React.FC<ContactsPanelProps> = ({ contacts, onSave, 
     setFieldErrors({});
     setModalOpen(true);
   };
+
+  useImperativeHandle(ref, () => ({ openNew }), []);
+
   const openEdit = (c: Contact) => {
     setEditing(c);
     setName(c.name ?? '');
@@ -117,11 +129,13 @@ export const ContactsPanel: React.FC<ContactsPanelProps> = ({ contacts, onSave, 
 
   return (
     <>
-      <div className="drawer-toolbar drawer-toolbar--end">
-        <button type="button" className="btn btn-primary" onClick={openNew}>
-          Novo contato
-        </button>
-      </div>
+      {!hideToolbar && (
+        <div className="drawer-toolbar drawer-toolbar--end">
+          <button type="button" className="btn btn-primary" onClick={openNew}>
+            Novo contato
+          </button>
+        </div>
+      )}
       <div className="contacts-table-wrap drawer-contacts-table">
         <table className="list-table">
           <thead>
@@ -312,6 +326,6 @@ export const ContactsPanel: React.FC<ContactsPanelProps> = ({ contacts, onSave, 
       </CrModal>
     </>
   );
-};
+});
 
 export default ContactsPanel;

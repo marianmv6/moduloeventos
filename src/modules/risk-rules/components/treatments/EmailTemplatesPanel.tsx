@@ -8,6 +8,8 @@ interface EmailTemplatesPanelProps {
   onNew: () => void;
   onEdit: (template: EmailTemplate) => void;
   onDelete: (template: EmailTemplate) => void;
+  /** Oculta o CTA interno (usado quando o botão fica no cabeçalho da página) */
+  hideToolbar?: boolean;
 }
 
 export const EmailTemplatesPanel: React.FC<EmailTemplatesPanelProps> = ({
@@ -15,14 +17,17 @@ export const EmailTemplatesPanel: React.FC<EmailTemplatesPanelProps> = ({
   onNew,
   onEdit,
   onDelete,
+  hideToolbar = false,
 }) => {
   return (
     <>
-      <div className="drawer-toolbar drawer-toolbar--end">
-        <button type="button" className="btn btn-primary" onClick={onNew}>
-          Novo E-mail
-        </button>
-      </div>
+      {!hideToolbar && (
+        <div className="drawer-toolbar drawer-toolbar--end">
+          <button type="button" className="btn btn-primary" onClick={onNew}>
+            Novo E-mail
+          </button>
+        </div>
+      )}
       <div className="email-templates-table-wrap drawer-email-templates-table">
         <table className="list-table">
           <thead>
