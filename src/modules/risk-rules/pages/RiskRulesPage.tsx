@@ -29,11 +29,13 @@ import type { AppRoute } from '../../../components/layout/AppSidebar';
 
 const ROUTE_TITLES: Record<AppRoute, string> = {
   'regras-tratativa': 'Políticas de tratativa',
-  eventos: 'Eventos',
+  'tipos-evento': 'Tipos de evento',
   tratativas: 'Regras de tratativa',
   contatos: 'Contatos',
   'email-automatico': 'E-mail automático',
   'mensagem-voz': 'Mensagem voz',
+  'central-operacoes': 'Central de operações',
+  'operacoes-eventos': 'Eventos',
 };
 
 const CADASTRO_ROUTES: AppRoute[] = ['contatos', 'email-automatico', 'mensagem-voz'];
@@ -742,12 +744,12 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     );
   }
 
-  if (appRoute === 'eventos') {
+  if (appRoute === 'tipos-evento') {
     return (
       <div className="risk-rules-page page-layout content-body">
         <div className="content-toolbar top-bar">
           <div className="content-toolbar-left">
-            <h1 className="body-page-title">{ROUTE_TITLES.eventos}</h1>
+            <h1 className="body-page-title">{ROUTE_TITLES['tipos-evento']}</h1>
             <div className="type-filter-wrap" ref={typeFilterRef}>
               <button
                 type="button"

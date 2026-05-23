@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { RiskRulesPage } from './modules/risk-rules';
+import { OperacoesEventosPage, OperacoesCentralPage } from './modules/operacoes';
 import { AppSidebar } from './components/layout/AppSidebar';
 import './App.css';
 
@@ -11,9 +12,25 @@ function App() {
     setActiveRoute(route);
     if (route === 'contatos' || route === 'email-automatico' || route === 'mensagem-voz') {
       setMenuLevel('cadastros');
-    } else if (route === 'regras-tratativa' || route === 'eventos' || route === 'tratativas') {
+    } else if (
+      route === 'regras-tratativa' ||
+      route === 'tipos-evento' ||
+      route === 'tratativas'
+    ) {
       setMenuLevel('configuracoes');
+    } else if (route === 'central-operacoes' || route === 'operacoes-eventos') {
+      setMenuLevel('operacoes');
     }
+  };
+
+  const renderContent = () => {
+    if (activeRoute === 'operacoes-eventos') {
+      return <OperacoesEventosPage />;
+    }
+    if (activeRoute === 'central-operacoes') {
+      return <OperacoesCentralPage />;
+    }
+    return <RiskRulesPage appRoute={activeRoute} />;
   };
 
   return (
@@ -28,9 +45,7 @@ function App() {
         <header className="app-header top-bar">
           <h1 className="app-header-title">Creare Sistemas</h1>
         </header>
-        <div className="app-content">
-          <RiskRulesPage appRoute={activeRoute} />
-        </div>
+        <div className="app-content">{renderContent()}</div>
       </main>
     </div>
   );

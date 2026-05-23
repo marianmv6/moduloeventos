@@ -1,24 +1,29 @@
 import React from 'react';
 import {
   IconCadastros,
+  IconCentralOperacoes,
   IconConfiguracoes,
   IconEmail,
   IconEventos,
   IconMensagemVoz,
+  IconOperacoes,
+  IconOperacoesEventos,
   IconRegrasTratativa,
   IconTratativas,
   IconUsersGroup,
 } from './NavIcons';
 
-export type MenuLevel = 'root' | 'configuracoes' | 'cadastros';
+export type MenuLevel = 'root' | 'configuracoes' | 'cadastros' | 'operacoes';
 
 export type AppRoute =
   | 'regras-tratativa'
-  | 'eventos'
+  | 'tipos-evento'
   | 'tratativas'
   | 'contatos'
   | 'email-automatico'
-  | 'mensagem-voz';
+  | 'mensagem-voz'
+  | 'central-operacoes'
+  | 'operacoes-eventos';
 
 interface AppSidebarProps {
   menuLevel: MenuLevel;
@@ -153,6 +158,20 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               type="button"
               className="nav-item nav-item--root"
               onClick={() => {
+                onMenuLevelChange('operacoes');
+                onRouteChange('operacoes-eventos');
+              }}
+            >
+              <span className="nav-item-icon nav-item-icon--operacoes" aria-hidden>
+                <IconOperacoes />
+              </span>
+              <span className="nav-item-text">Operações</span>
+              <NavChevron />
+            </button>
+            <button
+              type="button"
+              className="nav-item nav-item--root"
+              onClick={() => {
                 onMenuLevelChange('cadastros');
                 onRouteChange('contatos');
               }}
@@ -180,12 +199,20 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           </>
         )}
 
+        {menuLevel === 'operacoes' && (
+          <>
+            {parentItem(<IconOperacoes />, 'Operações', goRoot)}
+            {childItem('central-operacoes', 'Central de operações', <IconCentralOperacoes />)}
+            {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
+          </>
+        )}
+
         {menuLevel === 'configuracoes' && (
           <>
             {parentItem(<IconConfiguracoes />, 'Configurações', goRoot)}
             {childItem('regras-tratativa', 'Políticas de tratativa', <IconRegrasTratativa />)}
             {childItem('tratativas', 'Regras de tratativa', <IconTratativas />)}
-            {childItem('eventos', 'Eventos', <IconEventos />)}
+            {childItem('tipos-evento', 'Tipos de evento', <IconEventos />)}
           </>
         )}
 

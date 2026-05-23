@@ -21,6 +21,8 @@ interface ModalSelectProps {
   hierarchical?: boolean;
   className?: string;
   disabled?: boolean;
+  /** Placeholder com aparência esmaecida quando nenhum valor está selecionado */
+  mutedPlaceholder?: boolean;
 }
 
 const flattenOptions = (opts: ModalSelectOption[], level = 0): { option: ModalSelectOption; level: number }[] => {
@@ -45,6 +47,7 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
   hierarchical = false,
   className = '',
   disabled = false,
+  mutedPlaceholder = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -140,8 +143,13 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
     );
   };
 
+  const showMutedPlaceholder = mutedPlaceholder && !multiple && !value;
+
   return (
-    <div className={`modal-select ${className}`} ref={containerRef}>
+    <div
+      className={`modal-select ${className}${showMutedPlaceholder ? ' modal-select--muted-placeholder' : ''}`.trim()}
+      ref={containerRef}
+    >
       {label && (
         <label className="modal-select__label" htmlFor={id}>
           {label}

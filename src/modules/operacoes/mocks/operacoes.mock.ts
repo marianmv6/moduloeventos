@@ -1,0 +1,62 @@
+import type { OperacoesEventRow } from '../types/operacoes.types';
+
+export const mockOperacoesEvents: OperacoesEventRow[] = [
+  {
+    id: 'ev-1',
+    placa: 'SLE3P56',
+    eventType: 'Alerta de sonolência N2',
+    category: 'sonolencia',
+    driverName: 'Carlos Fujimoto do Prado',
+    politicaTratativa: 'Política padrão',
+    score: 5,
+    occurredAt: '2026-05-22T14:28:00Z',
+    relativeTime: 'Há 2 min',
+  },
+  {
+    id: 'ev-2',
+    placa: 'FAL0M70',
+    eventType: 'Operação de carregamento',
+    category: 'carregamento',
+    driverName: null,
+    politicaTratativa: null,
+    score: 1,
+    occurredAt: '2026-05-22T13:30:00Z',
+    relativeTime: 'Há 1 hora',
+  },
+  {
+    id: 'ev-3',
+    placa: 'IQP2A01',
+    eventType: 'Sem cinto de segurança',
+    category: 'cinto',
+    driverName: 'Douglas Almeida',
+    politicaTratativa: 'Política alta criticidade',
+    score: 3,
+    occurredAt: '2026-05-22T11:00:00Z',
+    relativeTime: 'Há 3 horas',
+  },
+  {
+    id: 'ev-4',
+    placa: 'HQH5986',
+    eventType: 'Entrada / saída de cerca',
+    category: 'cerca',
+    driverName: 'Juan Valencia',
+    politicaTratativa: 'Política padrão',
+    score: 2,
+    occurredAt: '2026-05-22T09:00:00Z',
+    relativeTime: 'Há 5 horas',
+  },
+  {
+    id: 'ev-5',
+    placa: 'BKR5I96',
+    eventType: 'Excesso de velocidade',
+    category: 'velocidade',
+    driverName: 'Rogério da Silva',
+    politicaTratativa: 'Política alta criticidade',
+    score: 5,
+    occurredAt: '2026-05-22T07:00:00Z',
+    relativeTime: 'Há 7 horas',
+  },
+];
+
+export const OPERACOES_EVENTS_TOTAL = 1248;
+export const OPERACOES_EVENTS_PAGE_SIZE = 100;
