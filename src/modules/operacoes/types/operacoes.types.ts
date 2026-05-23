@@ -6,6 +6,11 @@ export type OperacoesEventCategory =
   | 'velocidade'
   | 'outro';
 
+export interface OperacoesEventMapPosition {
+  top: string;
+  left: string;
+}
+
 export interface OperacoesEventRow {
   id: string;
   placa: string;
@@ -16,4 +21,5 @@ export interface OperacoesEventRow {
   score: number | null;
   occurredAt: string;
   relativeTime: string;
+  mapPosition: OperacoesEventMapPosition;
 }

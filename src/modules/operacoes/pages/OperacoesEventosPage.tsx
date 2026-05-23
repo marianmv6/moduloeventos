@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { OperacoesEventDetailModal } from '../components/OperacoesEventDetailModal';
 import { EventTypeIcon } from '../components/EventTypeIcon';
 import { IconFilterBars } from '../components/IconFilterBars';
 import { OperacoesEventosFilterBanner } from '../components/OperacoesEventosFilterBanner';
@@ -13,6 +14,7 @@ import { IconView } from '../../risk-rules/components/shared/Icons';
 import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
 import { getIconCategoryForEventType } from '../constants/eventTypeIcons';
 import { mockOperacoesEvents } from '../mocks/operacoes.mock';
+import type { OperacoesEventRow } from '../types/operacoes.types';
 
 const EVENT_FILTER_OPTIONS = [
   { value: 'all', label: 'Todos os eventos' },
@@ -87,6 +89,7 @@ export const OperacoesEventosPage: React.FC = () => {
   const [appliedFilters, setAppliedFilters] = useState<OperacoesAdvancedFilters>(
     EMPTY_OPERACOES_FILTERS,
   );
+  const [selectedEvent, setSelectedEvent] = useState<OperacoesEventRow | null>(null);
   const eventFilterRef = useRef<HTMLDivElement>(null);
   const periodFilterRef = useRef<HTMLDivElement>(null);
 
@@ -108,11 +111,6 @@ export const OperacoesEventosPage: React.FC = () => {
     EVENT_FILTER_OPTIONS.find((o) => o.value === eventFilter)?.label ?? 'Todos os eventos';
   const periodFilterLabel =
     PERIOD_FILTER_OPTIONS.find((o) => o.value === periodFilter)?.label ?? 'Hoje';
-
-  const formatScore = (score: number | null) => {
-    if (score == null) return '—';
-    return `+${score}`;
-  };
 
   const toggleList = () => {
     setShowList((prev) => {
@@ -171,14 +169,14 @@ export const OperacoesEventosPage: React.FC = () => {
 
   const listTooltip = showList ? 'Ocultar lista' : 'Exibir lista';
   const mapTooltip = showMap ? 'Ocultar mapa' : 'Exibir mapa';
-  /** Lista + mapa lado a lado: oculta Política de tratativa para não quebrar colunas */
-  const showPoliticaColumn = !(showList && showMap);
+  const tableLayoutClass =
+    showList && showMap ? ' operacoes-eventos-table--map-visible' : '';
 
   return (
     <div className="operacoes-eventos-page page-layout content-body">
       <div className="content-toolbar top-bar operacoes-eventos-toolbar">
         <div className="content-toolbar-left">
-          <h1 className="body-page-title">Visão geral</h1>
+          <h1 className="body-page-title">Eventos</h1>
           <div className="type-filter-wrap" ref={eventFilterRef}>
             <button
               type="button"
@@ -342,15 +340,11 @@ export const OperacoesEventosPage: React.FC = () => {
               <strong>{filteredRows.length}</strong> eventos, <strong>{uniqueTypes}</strong> tipos
             </p>
             <div className="operacoes-eventos-table-wrap">
-              <table
-                className={`list-table operacoes-eventos-table${showPoliticaColumn ? '' : ' operacoes-eventos-table--map-visible'}`}
-              >
+              <table className={`list-table operacoes-eventos-table${tableLayoutClass}`}>
                 <colgroup>
                   <col className="operacoes-col-evento" />
                   <col className="operacoes-col-placa" />
                   <col className="operacoes-col-motorista" />
-                  {showPoliticaColumn && <col className="operacoes-col-politica" />}
-                  <col className="operacoes-col-pontuacao" />
                   <col className="operacoes-col-datetime" />
                   <col className="operacoes-col-acoes" />
                 </colgroup>
@@ -359,10 +353,6 @@ export const OperacoesEventosPage: React.FC = () => {
                     <th className="operacoes-col-evento-header">Tipo de evento</th>
                     <th className="operacoes-col-data">Placa/ prefixo</th>
                     <th className="operacoes-col-data">Motorista</th>
-                    {showPoliticaColumn && (
-                      <th className="operacoes-col-data">Política de tratativa</th>
-                    )}
-                    <th className="operacoes-col-data">Pontuação</th>
                     <th className="operacoes-col-data">Data / hora</th>
                     <th className="list-cell-actions operacoes-col-acoes-header" aria-label="Ações" />
                   </tr>
@@ -387,14 +377,6 @@ export const OperacoesEventosPage: React.FC = () => {
                       <td className="operacoes-col-data operacoes-col-motorista-cell">
                         <TruncatedTextTooltip text={row.driverName ?? '—'} />
                       </td>
-                      {showPoliticaColumn && (
-                        <td className="operacoes-col-data operacoes-col-politica-cell">
-                          <TruncatedTextTooltip text={row.politicaTratativa ?? '—'} />
-                        </td>
-                      )}
-                      <td className="operacoes-col-data operacoes-score">
-                        <TruncatedTextTooltip text={formatScore(row.score)} />
-                      </td>
                       <td className="operacoes-col-data operacoes-time">
                         <TruncatedTextTooltip text={row.relativeTime} />
                       </td>
@@ -405,7 +387,7 @@ export const OperacoesEventosPage: React.FC = () => {
                             className="btn btn-icon-action operacoes-view-btn"
                             aria-label="Visualizar"
                             title="Visualizar"
-                            onClick={() => {}}
+                            onClick={() => setSelectedEvent(row)}
                           >
                             <IconView />
                           </button>
@@ -424,6 +406,12 @@ export const OperacoesEventosPage: React.FC = () => {
           </section>
         )}
       </div>
+      {selectedEvent && (
+        <OperacoesEventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
     </div>
   );
 };

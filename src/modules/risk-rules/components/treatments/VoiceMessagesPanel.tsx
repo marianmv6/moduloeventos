@@ -116,14 +116,14 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
           </button>
         </div>
       )}
-      <div className="voice-messages-table-wrap drawer-voice-messages-table">
+      <div className="policy-list voice-messages-table-wrap drawer-voice-messages-table">
         <table className="list-table">
           <thead>
             <tr>
               <th>Identificação</th>
               <th>Mensagem</th>
               <th>Dispositivo</th>
-              <th>Ativo</th>
+              <th>Status</th>
               <th></th>
             </tr>
           </thead>

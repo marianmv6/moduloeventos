@@ -1,18 +1,18 @@
 import React from 'react';
 import { IconFilterClear } from './IconFilterBars';
-import type { OperacoesAdvancedFilters } from '../constants/operacoesFilterOptions';
-import { getAppliedFilterEntries } from '../utils/operacoesFilterSummary';
+import type { CentralControleFilters } from '../constants/centralControleFilterOptions';
+import { getCentralAppliedFilterEntries } from '../utils/centralControleFilterSummary';
 
-interface OperacoesEventosFilterBannerProps {
-  appliedFilters: OperacoesAdvancedFilters;
+interface CentralControleFilterBannerProps {
+  appliedFilters: CentralControleFilters;
   onClear: () => void;
 }
 
-export const OperacoesEventosFilterBanner: React.FC<OperacoesEventosFilterBannerProps> = ({
+export const CentralControleFilterBanner: React.FC<CentralControleFilterBannerProps> = ({
   appliedFilters,
   onClear,
 }) => {
-  const entries = getAppliedFilterEntries(appliedFilters);
+  const entries = getCentralAppliedFilterEntries(appliedFilters);
   if (entries.length === 0) return null;
 
   const countLabel =
@@ -31,14 +31,12 @@ export const OperacoesEventosFilterBanner: React.FC<OperacoesEventosFilterBanner
         ))}
         <span>.</span>
       </p>
-      <button
-        type="button"
-        className="operacoes-eventos-filter-banner__clear"
-        onClick={onClear}
-      >
+      <button type="button" className="operacoes-eventos-filter-banner__clear" onClick={onClear}>
         Limpar filtros
         <IconFilterClear />
       </button>
     </div>
   );
 };
+
+export default CentralControleFilterBanner;

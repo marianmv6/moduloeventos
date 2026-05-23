@@ -34,7 +34,7 @@ const ROUTE_TITLES: Record<AppRoute, string> = {
   contatos: 'Contatos',
   'email-automatico': 'E-mail automático',
   'mensagem-voz': 'Mensagem voz',
-  'central-operacoes': 'Central de operações',
+  'central-operacoes': 'Central de controle',
   'operacoes-eventos': 'Eventos',
 };
 

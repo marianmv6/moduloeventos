@@ -1,4 +1,5 @@
 import React from 'react';
+import type { OperacoesEventMapPosition } from '../types/operacoes.types';
 
 /** Marcadores mock (clusters) para o mapa da visão geral */
 const MAP_CLUSTERS = [
@@ -8,9 +9,23 @@ const MAP_CLUSTERS = [
   { id: 'c4', label: '12', top: '45%', left: '62%' },
 ] as const;
 
-export const OperacoesEventosMap: React.FC = () => {
+interface OperacoesEventosMapProps {
+  /** Quando informado, exibe apenas o marcador do evento (modal de detalhe) */
+  eventLocation?: OperacoesEventMapPosition;
+  eventMarkerLabel?: string;
+}
+
+export const OperacoesEventosMap: React.FC<OperacoesEventosMapProps> = ({
+  eventLocation,
+  eventMarkerLabel = 'Evento',
+}) => {
+  const isSingleEvent = Boolean(eventLocation);
+  const ariaLabel = isSingleEvent
+    ? `Mapa com local do evento: ${eventMarkerLabel}`
+    : 'Mapa de eventos';
+
   return (
-    <div className="operacoes-eventos-map" role="img" aria-label="Mapa de eventos">
+    <div className="operacoes-eventos-map" role="img" aria-label={ariaLabel}>
       <div className="operacoes-eventos-map__canvas">
         <svg
           className="operacoes-eventos-map__land"
@@ -30,17 +45,25 @@ export const OperacoesEventosMap: React.FC = () => {
             fill="#b8d0e2"
           />
         </svg>
-        {MAP_CLUSTERS.map((cluster) => (
-          <button
-            key={cluster.id}
-            type="button"
-            className="operacoes-eventos-map__marker"
-            style={{ top: cluster.top, left: cluster.left }}
-            aria-label={`${cluster.label} eventos nesta região`}
-          >
-            {cluster.label}
-          </button>
-        ))}
+        {isSingleEvent && eventLocation ? (
+          <span
+            className="operacoes-eventos-map__marker operacoes-eventos-map__marker--single"
+            style={{ top: eventLocation.top, left: eventLocation.left }}
+            aria-hidden
+          />
+        ) : (
+          MAP_CLUSTERS.map((cluster) => (
+            <button
+              key={cluster.id}
+              type="button"
+              className="operacoes-eventos-map__marker"
+              style={{ top: cluster.top, left: cluster.left }}
+              aria-label={`${cluster.label} eventos nesta região`}
+            >
+              {cluster.label}
+            </button>
+          ))
+        )}
       </div>
     </div>
   );

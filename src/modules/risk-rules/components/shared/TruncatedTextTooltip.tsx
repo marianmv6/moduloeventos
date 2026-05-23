@@ -1,10 +1,13 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { AppTooltipBubble } from './AppTooltipBubble';
 
 interface TruncatedTextTooltipProps {
   text: string;
   className?: string;
 }
+
+const TOOLTIP_OFFSET_Y = -8;
 
 function isTextTruncated(el: HTMLElement): boolean {
   return el.scrollWidth > el.clientWidth + 1;
@@ -40,7 +43,7 @@ export const TruncatedTextTooltip: React.FC<TruncatedTextTooltipProps> = ({ text
     const tip = tooltipRef.current;
     tip.style.left = `${rect.left + rect.width / 2}px`;
     tip.style.top = `${rect.top}px`;
-    tip.style.transform = 'translate(-50%, -100%) translateY(-6px)';
+    tip.style.transform = `translate(-50%, -100%) translateY(${TOOLTIP_OFFSET_Y}px)`;
   }, [visible, text]);
 
   const handleMouseEnter = () => {
@@ -61,13 +64,12 @@ export const TruncatedTextTooltip: React.FC<TruncatedTextTooltipProps> = ({ text
       </span>
       {visible &&
         createPortal(
-          <span
-            ref={tooltipRef}
-            className="policy-form-header-info-tooltip truncated-text-tooltip-popup"
-            role="tooltip"
-            style={{ position: 'fixed', left: 0, top: 0, zIndex: 99999 }}
-          >
-            {text}
+          <span ref={tooltipRef} style={{ position: 'fixed', left: 0, top: 0, zIndex: 99999 }}>
+            <AppTooltipBubble
+              text={text}
+              className="policy-form-header-info-tooltip truncated-text-tooltip-popup"
+              nowrap
+            />
           </span>,
           document.body,
         )}

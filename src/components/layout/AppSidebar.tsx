@@ -71,7 +71,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     return (
       <button
         type="button"
-        className={`nav-item${isActive ? ' active' : ''}`}
+        className={`nav-item nav-item--child${isActive ? ' active' : ''}`}
         onClick={() => onRouteChange(route)}
       >
         <span className={`nav-item-icon${iconClassName ? ` ${iconClassName}` : ''}`} aria-hidden>
@@ -202,8 +202,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         {menuLevel === 'operacoes' && (
           <>
             {parentItem(<IconOperacoes />, 'Operações', goRoot)}
-            {childItem('central-operacoes', 'Central de operações', <IconCentralOperacoes />)}
             {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
+            {childItem('central-operacoes', 'Central de controle', <IconCentralOperacoes />)}
           </>
         )}
 

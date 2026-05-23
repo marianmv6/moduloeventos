@@ -28,7 +28,7 @@ export const EmailTemplatesPanel: React.FC<EmailTemplatesPanelProps> = ({
           </button>
         </div>
       )}
-      <div className="email-templates-table-wrap drawer-email-templates-table">
+      <div className="policy-list email-templates-table-wrap drawer-email-templates-table">
         <table className="list-table">
           <thead>
             <tr>

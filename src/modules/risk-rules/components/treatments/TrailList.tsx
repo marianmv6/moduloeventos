@@ -13,7 +13,7 @@ export const TrailList: React.FC<TrailListProps> = ({
   onEdit,
   onDelete,
 }) => (
-  <div className="treatment-list trail-list">
+  <div className="policy-list treatment-list trail-list">
     <table className="list-table">
       <thead>
         <tr>

@@ -4,13 +4,14 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
   {
     id: 'ev-1',
     placa: 'SLE3P56',
-    eventType: 'Alerta de sonolência N2',
+    eventType: 'Sonolência N2',
     category: 'sonolencia',
     driverName: 'Carlos Fujimoto do Prado',
     politicaTratativa: 'Política padrão',
     score: 5,
     occurredAt: '2026-05-22T14:28:00Z',
     relativeTime: 'Há 2 min',
+    mapPosition: { top: '38%', left: '52%' },
   },
   {
     id: 'ev-2',
@@ -22,6 +23,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
     score: 1,
     occurredAt: '2026-05-22T13:30:00Z',
     relativeTime: 'Há 1 hora',
+    mapPosition: { top: '55%', left: '48%' },
   },
   {
     id: 'ev-3',
@@ -33,6 +35,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
     score: 3,
     occurredAt: '2026-05-22T11:00:00Z',
     relativeTime: 'Há 3 horas',
+    mapPosition: { top: '62%', left: '58%' },
   },
   {
     id: 'ev-4',
@@ -44,6 +47,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
     score: 2,
     occurredAt: '2026-05-22T09:00:00Z',
     relativeTime: 'Há 5 horas',
+    mapPosition: { top: '45%', left: '62%' },
   },
   {
     id: 'ev-5',
@@ -55,6 +59,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
     score: 5,
     occurredAt: '2026-05-22T07:00:00Z',
     relativeTime: 'Há 7 horas',
+    mapPosition: { top: '50%', left: '40%' },
   },
 ];
 
