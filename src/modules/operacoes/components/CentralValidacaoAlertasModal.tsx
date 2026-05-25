@@ -1059,8 +1059,8 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
         open={unsavedConfirmOpen}
         onSave={handleKeepEditing}
         onDiscard={handleDiscardAndClose}
-        title="Você possui alterações não salvas"
-        message="Se você sair agora, todas as alterações serão descartadas. Deseja sair sem salvar ou continuar?"
+        title="Você possui alterações não salvas nesse evento"
+        message="As alterações deste evento serão perdidas se você sair agora. Deseja continuar ou sair sem salvar?"
         saveLabel="Continuar"
       />
     </div>
