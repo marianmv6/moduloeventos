@@ -40,6 +40,8 @@ export interface CentralOccurrenceEvent {
   /** Evento atual (primeiro da lista expandida) — exibe placa, motorista e ações */
   isCurrent?: boolean;
   validationStatus?: CentralEventValidationStatus;
+  /** Nome do analista que validou — exibido no tooltip do ícone de "Validado" */
+  validatedBy?: string;
 }
 
 export interface CentralOccurrence {

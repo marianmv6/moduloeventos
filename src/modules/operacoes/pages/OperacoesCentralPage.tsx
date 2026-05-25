@@ -6,7 +6,6 @@ import { CentralControleToolbarSearch } from '../components/CentralControleToolb
 import { CentralValidacaoAlertasModal } from '../components/CentralValidacaoAlertasModal';
 import {
   IconAnalystHeadset,
-  IconMonitorBot,
   IconOnlineStatus,
   IconOpenOccurrence,
   IconRowChevron,
@@ -197,8 +196,8 @@ function EventRowActions({
         </LevelTooltip>
       ) : showMonitorAi ? (
         <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-controle-monitor-icon" aria-label="Validado pela IA">
-            <IconMonitorBot />
+          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+            IA
           </span>
         </LevelTooltip>
       ) : null}
@@ -248,8 +247,8 @@ function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
         </LevelTooltip>
       ) : (
         <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-controle-monitor-icon" aria-label="Validado pela IA">
-            <IconMonitorBot />
+          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+            IA
           </span>
         </LevelTooltip>
       )}
@@ -367,20 +366,28 @@ function EventOccurrenceRow({
             onPlay={onPlay}
           />
         ) : event.validationStatus ? (
-          <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
-            <LevelTooltip text={STATUS_LABEL[event.validationStatus]} topLayer nowrap>
-              <span
-                className={`central-controle-status-icon central-controle-status-icon--${event.validationStatus}`}
-                aria-label={STATUS_LABEL[event.validationStatus]}
-              >
-                {event.validationStatus === 'aguardando' ? (
-                  <IconStatusWaitingValidation />
-                ) : (
-                  <IconStatusValidated />
-                )}
-              </span>
-            </LevelTooltip>
-          </div>
+          (() => {
+            const tooltipText =
+              event.validationStatus === 'validado' && event.validatedBy
+                ? `Validado por ${event.validatedBy}`
+                : STATUS_LABEL[event.validationStatus];
+            return (
+              <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
+                <LevelTooltip text={tooltipText} topLayer nowrap>
+                  <span
+                    className={`central-controle-status-icon central-controle-status-icon--${event.validationStatus}`}
+                    aria-label={tooltipText}
+                  >
+                    {event.validationStatus === 'aguardando' ? (
+                      <IconStatusWaitingValidation />
+                    ) : (
+                      <IconStatusValidated />
+                    )}
+                  </span>
+                </LevelTooltip>
+              </div>
+            );
+          })()
         ) : null}
       </td>
     </tr>

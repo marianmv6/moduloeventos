@@ -43,6 +43,7 @@ export const mockCentralOccurrenceExpanded: CentralOccurrence = {
       eventType: 'Sonolência N1',
       eventPoints: 20,
       validationStatus: 'validado',
+      validatedBy: 'Pedro',
     },
   ],
 };
@@ -72,6 +73,7 @@ export const mockCentralOccurrenceSonolenciaN1: CentralOccurrence = {
       eventType: 'Sonolência N2',
       eventPoints: 40,
       validationStatus: 'validado',
+      validatedBy: 'Pedro',
     },
   ],
 };
