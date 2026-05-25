@@ -7902,21 +7902,16 @@ body.cr-fullscreen-modal-open .app-content {
 
 .tratativa-eventos-player {
   display: grid;
-  grid-template-columns: minmax(0, 2.5fr) minmax(220px, 1fr);
-  gap: 1rem;
+  /* Mesma proporção da modal de validação dos alertas
+     (.central-validacao-body): 1.55fr / 1fr. */
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 0.75rem;
   align-items: stretch;
-  /* Altura fixa: garante que vídeos e mapa renderizem com tamanho
-     definido (proporcional ao Figma) e não fiquem colapsados quando
-     os tiles internos não têm conteúdo intrínseco. */
-  height: 340px;
-}
-
-.tratativa-eventos-player .central-validacao-videos {
-  height: 100%;
-}
-
-.tratativa-eventos-player .central-validacao-map {
-  height: 100%;
+  /* Cresce para preencher o espaço disponível na aba (mesma
+     mecânica do .central-validacao-body), respeitando a altura
+     mínima dos tiles. */
+  flex: 1;
+  min-height: 0;
 }
 
 .tratativa-eventos-timeline {
