@@ -394,10 +394,31 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   const handleToggleDone = (actionId: string) => {
     setDoneIds((prev) => {
       const next = new Set(prev);
-      if (next.has(actionId)) {
+      const wasDone = next.has(actionId);
+      if (wasDone) {
         next.delete(actionId);
       } else {
         next.add(actionId);
+      }
+      // Em modo tratativa a seleção acompanha o avanço da trilha:
+      //  - ao marcar uma ação como "Feito": pula para a próxima
+      //    ação ainda pendente (item esmaecido fica para trás);
+      //  - ao desfazer: volta para a ação que acabou de virar pendente
+      //    (a "ativa" novamente), evitando que um card pendente
+      //    fique aparentando estar selecionado.
+      // No modo auditoria todas as ações já estão concluídas e o
+      // usuário escolhe livremente qual visualizar — nada a fazer.
+      if (!isAuditoria) {
+        if (!wasDone) {
+          const nextPendingIdx = data.actions.findIndex(
+            (a) => a.id !== actionId && !next.has(a.id),
+          );
+          if (nextPendingIdx !== -1) {
+            setSelectedActionId(data.actions[nextPendingIdx].id);
+          }
+        } else {
+          setSelectedActionId(actionId);
+        }
       }
       return next;
     });
@@ -751,14 +772,39 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 label="Validado como"
                 value={selectedEvent?.validatedAs ?? '—'}
               />
-              <ReadOnlyField
-                label="Placa / prefixo"
-                value={eventVehicleLabel}
-              />
-              <ReadOnlyField
-                label="Motorista"
-                value={eventDriverLabel}
-              />
+              {isAuditoria ? (
+                /* Auditoria: campos seguem o evento selecionado e ficam
+                   somente leitura. */
+                <>
+                  <ReadOnlyField label="Placa / prefixo" value={eventVehicleLabel} />
+                  <ReadOnlyField label="Motorista" value={eventDriverLabel} />
+                </>
+              ) : (
+                /* Tratativa: o analista pode alterar a Placa/prefixo
+                   e a Motorista decorre da seleção feita na aba
+                   "Informações" (read-only nesta aba). */
+                <>
+                  <div className="tratativa-field">
+                    <span className="tratativa-field__label">Placa / prefixo</span>
+                    {selectedVehicleId ? (
+                      <SelectField
+                        value={selectedVehicleId}
+                        options={vehicleSelectOptions}
+                        onChange={(id) => setSelectedVehicleId(id)}
+                        ariaLabel="Selecionar veículo"
+                      />
+                    ) : (
+                      <div className="tratativa-field__value tratativa-field__value--readonly">
+                        Não identificado
+                      </div>
+                    )}
+                  </div>
+                  <ReadOnlyField
+                    label="Motorista"
+                    value={selectedDriver?.name ?? 'Não identificado'}
+                  />
+                </>
+              )}
             </div>
 
             <div className="tratativa-eventos-player">
