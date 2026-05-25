@@ -682,7 +682,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
 
   const totalEvents = events.length;
   const activeEvent = events[activeIndex];
-  const counterLabel = activeEvent ? `Alerta ${activeIndex + 1}/${totalEvents}` : '';
+  const counterLabel = activeEvent ? `Evento ${activeIndex + 1}/${totalEvents}` : '';
   const headerTitle = activeEvent ? `${counterLabel} — ${driverName}` : driverName;
 
   const isLastEvent = activeIndex === totalEvents - 1;
@@ -754,7 +754,12 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 className={`central-validacao-event${isActive ? ' central-validacao-event--active' : ''}${isConfirmed ? ' central-validacao-event--validated' : ''}`}
                 aria-current={isActive ? 'step' : undefined}
               >
-                <div className="central-validacao-event__btn">
+                <button
+                  type="button"
+                  className="central-validacao-event__btn"
+                  onClick={() => setActiveIndex(index)}
+                  aria-pressed={isActive}
+                >
                   <div className="central-validacao-event__main">
                     <span className="central-validacao-event__time">{event.time}</span>
                     <span className="central-validacao-event__plate">{event.plate}</span>
@@ -769,11 +774,14 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                   <span className="central-validacao-event__status" aria-hidden>
                     {isConfirmed ? <IconCheckCircle /> : <IconHourglass />}
                   </span>
-                </div>
+                </button>
               </li>
             );
           })}
         </ul>
+        <p className="central-validacao-sidebar__note">
+          É possível revisitar os alertas anteriormente validados para alteração até que sejam tratados. Após iniciar a tratativa, não será possível retornar a esta tela.
+        </p>
         <div className="central-validacao-sidebar__logo" aria-hidden>
           <IconCreareLogo />
         </div>
@@ -821,10 +829,10 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               >
                 {(
                   [
-                    { id: 'condutor', label: 'Condutor', placeholder: 'Visão do condutor' },
-                    { id: 'frontal', label: 'Frontal', placeholder: 'Visão frontal' },
-                    { id: 'cabine', label: 'Cabine', placeholder: 'Visão cabine' },
-                    { id: 'lateral', label: 'Lateral esquerda', placeholder: 'Visão lateral' },
+                    { id: 'canal-1', label: 'Canal 1', placeholder: 'Canal 1' },
+                    { id: 'canal-2', label: 'Canal 2', placeholder: 'Canal 2' },
+                    { id: 'canal-3', label: 'Canal 3', placeholder: 'Canal 3' },
+                    { id: 'canal-4', label: 'Canal 4', placeholder: 'Canal 4' },
                   ] as const
                 ).map((cam) => (
                   <VideoTile

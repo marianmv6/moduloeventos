@@ -6506,7 +6506,7 @@ body.cr-fullscreen-modal-open .app-content {
 .central-validacao-sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: #fff;
+  background: #f2f4f4;
   border-right: 1px solid #e9eeee;
   display: flex;
   flex-direction: column;
@@ -6541,12 +6541,16 @@ body.cr-fullscreen-modal-open .app-content {
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  transition: background-color 0.15s ease;
 }
 
-.central-validacao-event--active .central-validacao-event__btn {
-  background: #f6fbfb;
-  border-left: 3px solid #169eff;
-  padding-left: calc(1.25rem - 3px);
+.central-validacao-event__btn:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.central-validacao-event--active .central-validacao-event__btn,
+.central-validacao-event--active .central-validacao-event__btn:hover {
+  background: #ffffff;
 }
 
 .central-validacao-event__main {
@@ -6584,6 +6588,15 @@ body.cr-fullscreen-modal-open .app-content {
   display: inline-flex;
   align-items: center;
   margin-top: 0.125rem;
+}
+
+.central-validacao-sidebar__note {
+  margin: 0.75rem 1.25rem 0;
+  padding: 0;
+  font-family: var(--font-noto-sans);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: #667085;
 }
 
 .central-validacao-sidebar__logo {
@@ -7170,9 +7183,12 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0.5rem 0.25rem 1rem;
 }
 
+/** Mesmo padrão visual de "Dados do veículo" (DetailSection) — borda verde-azulada,
+   título em #344054, font-size 14px, weight 600. */
 .central-validacao-info__section {
-  border-bottom: 1px solid #e9eeee;
-  padding: 0.5rem 0;
+  margin-bottom: 1.25rem;
+  padding: 0;
+  border-bottom: none;
 }
 
 .central-validacao-info__section:first-child {
@@ -7184,12 +7200,14 @@ body.cr-fullscreen-modal-open .app-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.625rem 0.25rem;
+  padding: 0.5rem 0 0.625rem;
   background: transparent;
   border: none;
+  border-bottom: 1px solid rgba(32, 172, 172, 0.5);
+  margin-bottom: 1rem;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 0.9375rem;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
   font-weight: 600;
   color: #344054;
 }
@@ -7201,7 +7219,9 @@ body.cr-fullscreen-modal-open .app-content {
 .central-validacao-info__section-chevron {
   display: inline-flex;
   align-items: center;
-  transition: transform 0.2s;
+  flex-shrink: 0;
+  color: #667085;
+  transition: transform 0.2s ease;
 }
 
 .central-validacao-info__section-chevron--open {
@@ -7209,7 +7229,7 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 .central-validacao-info__section-body {
-  padding: 0.5rem 0.25rem 0.875rem;
+  padding: 0 0 0.25rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;

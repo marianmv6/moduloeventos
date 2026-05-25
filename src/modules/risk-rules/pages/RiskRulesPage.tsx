@@ -685,11 +685,6 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
           <div className="content-toolbar-right">
             {appRoute === 'contatos' && (
               <>
-                <AdvancedFilterToggle
-                  open={contactsFilter.open}
-                  appliedCount={contactsFilter.appliedCount}
-                  onToggle={() => contactsPanelRef.current?.toggleFilter()}
-                />
                 <button
                   type="button"
                   className="btn btn-primary"
@@ -697,27 +692,27 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                 >
                   Novo contato
                 </button>
+                <AdvancedFilterToggle
+                  open={contactsFilter.open}
+                  appliedCount={contactsFilter.appliedCount}
+                  onToggle={() => contactsPanelRef.current?.toggleFilter()}
+                />
               </>
             )}
             {appRoute === 'email-automatico' && (
               <>
+                <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null)}>
+                  Novo E-mail
+                </button>
                 <AdvancedFilterToggle
                   open={emailFilter.open}
                   appliedCount={emailFilter.appliedCount}
                   onToggle={() => emailTemplatesPanelRef.current?.toggleFilter()}
                 />
-                <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null)}>
-                  Novo E-mail
-                </button>
               </>
             )}
             {appRoute === 'mensagem-voz' && (
               <>
-                <AdvancedFilterToggle
-                  open={voiceFilter.open}
-                  appliedCount={voiceFilter.appliedCount}
-                  onToggle={() => voiceMessagesPanelRef.current?.toggleFilter()}
-                />
                 <button
                   type="button"
                   className="btn btn-primary"
@@ -725,6 +720,11 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                 >
                   Nova mensagem de voz
                 </button>
+                <AdvancedFilterToggle
+                  open={voiceFilter.open}
+                  appliedCount={voiceFilter.appliedCount}
+                  onToggle={() => voiceMessagesPanelRef.current?.toggleFilter()}
+                />
               </>
             )}
           </div>
@@ -871,6 +871,9 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
             <h1 className="body-page-title">{ROUTE_TITLES.tratativas}</h1>
           </div>
           <div className="content-toolbar-right">
+            <button type="button" className="btn btn-primary" onClick={() => openTrailForm()}>
+              Nova tratativa
+            </button>
             {!trailFormOpen && trails.length > 0 && (
               <AdvancedFilterToggle
                 open={trailFilter.open}
@@ -878,9 +881,6 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                 onToggle={() => trailListRef.current?.toggleFilter()}
               />
             )}
-            <button type="button" className="btn btn-primary" onClick={() => openTrailForm()}>
-              Nova tratativa
-            </button>
           </div>
         </div>
         <div className="page-content risk-rules-content">
@@ -969,6 +969,9 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
           <h1 className="body-page-title">{ROUTE_TITLES['regras-tratativa']}</h1>
         </div>
         <div className="content-toolbar-right">
+          <button type="button" className="btn btn-primary" onClick={() => openPolicyForm()}>
+            Nova política
+          </button>
           {!policyFormOpen && (
             <AdvancedFilterToggle
               open={policyFilter.open}
@@ -976,9 +979,6 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
               onToggle={() => policyListRef.current?.toggleFilter()}
             />
           )}
-          <button type="button" className="btn btn-primary" onClick={() => openPolicyForm()}>
-            Nova política
-          </button>
         </div>
       </div>
 
