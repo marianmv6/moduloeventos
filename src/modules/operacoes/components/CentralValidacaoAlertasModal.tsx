@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import type {
   CentralAlertType,
   CentralValidationEvent,
@@ -28,12 +29,27 @@ const ALERT_LABELS: Record<CentralAlertType, string> = ALERT_TYPE_OPTIONS.reduce
   {} as Record<CentralAlertType, string>,
 );
 
+const OUTROS_APONTAMENTOS_OPTIONS: { value: string; label: string }[] = [
+  { value: 'camera-parcialmente-coberta', label: 'Câmera parcialmente coberta' },
+  { value: 'objetos-soltos-cabine', label: 'Objetos soltos na cabine' },
+  { value: 'outro-motorista', label: 'Outro motorista' },
+  { value: 'sem-cinto', label: 'Sem cinto de segurança' },
+  { value: 'lorem-ipsum', label: 'Lorem ipsum dolor' },
+];
+
+const DRIVER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'pedro-ramos', label: 'Pedro Ramos de Paula' },
+  { value: 'ana-cristina', label: 'Ana Cristina dos Santos' },
+  { value: 'joao-silva', label: 'João Silva Souza' },
+  { value: 'lucas-mendes', label: 'Lucas Mendes Carvalho' },
+];
+
 interface CentralValidacaoAlertasModalProps {
   open: boolean;
   events: CentralValidationEvent[];
   driverName: string;
-  /** Hora/identificador exibido no canto superior do cabeçalho (ex.: "Alerta 1/3") */
-  alertCounterPrefix?: string;
+  /** Quando true, o condutor não está identificado e o campo abre para seleção na aba Informações */
+  driverUnidentified?: boolean;
   onClose: () => void;
   onReturn: () => void;
   onConfirmClose: () => void;
@@ -81,32 +97,31 @@ const IconHourglass: React.FC<IconProps> = (props) => (
 
 const IconPlay: React.FC<IconProps> = (props) => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden {...props}>
-    <path
-      d="M7 5.5L17 11L7 16.5V5.5Z"
-      fill="#169EFF"
-    />
+    <path d="M7 5.5L17 11L7 16.5V5.5Z" fill="#169EFF" />
   </svg>
 );
 
 const IconCaretDown: React.FC<IconProps> = (props) => (
   <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden {...props}>
-    <path d="M1 1L5 5L9 1" stroke="#475467" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M1 1L5 5L9 1"
+      stroke="#475467"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
-const IconZoomIn: React.FC<IconProps> = (props) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden {...props}>
-    <circle cx="9" cy="9" r="6" stroke="#475467" strokeWidth="1.5" />
-    <path d="M14 14L18 18" stroke="#475467" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M9 6V12M6 9H12" stroke="#475467" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-const IconZoomOut: React.FC<IconProps> = (props) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden {...props}>
-    <circle cx="9" cy="9" r="6" stroke="#475467" strokeWidth="1.5" />
-    <path d="M14 14L18 18" stroke="#475467" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M6 9H12" stroke="#475467" strokeWidth="1.5" strokeLinecap="round" />
+const IconChevronDown: React.FC<IconProps> = (props) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
+    <path
+      d="M6 9l6 6 6-6"
+      stroke="#475467"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -173,6 +188,7 @@ interface AlertTypeSelectProps {
   onChange: (value: CentralAlertType) => void;
   showAiBadge?: boolean;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
@@ -181,9 +197,10 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
   onChange,
   showAiBadge,
   placeholder,
+  disabled,
 }) => {
   const [open, setOpen] = useState(false);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onOutside = (event: MouseEvent) => {
@@ -200,21 +217,26 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`central-validacao-select${open ? ' central-validacao-select--open' : ''}`}
+      className={`central-validacao-select central-validacao-select--dropup${open ? ' central-validacao-select--open' : ''}`}
       id={id}
     >
       <button
         type="button"
         className="central-validacao-select__trigger"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => !disabled && setOpen((current) => !current)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        disabled={disabled}
       >
-        <span className={`central-validacao-select__value${value ? '' : ' central-validacao-select__value--placeholder'}`}>
+        <span
+          className={`central-validacao-select__value${value ? '' : ' central-validacao-select__value--placeholder'}`}
+        >
           {display}
         </span>
         {showAiBadge && value && (
-          <span className="central-validacao-ia-badge" aria-label="Sugerido pela IA">IA</span>
+          <span className="central-validacao-ia-badge" aria-label="Sugerido pela IA">
+            IA
+          </span>
         )}
         <span className="central-validacao-select__chevron" aria-hidden>
           <IconCaretDown />
@@ -239,11 +261,123 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
                 >
                   <span>{opt.label}</span>
                   {showAiBadge && selected && (
-                    <span className="central-validacao-ia-badge" aria-hidden>IA</span>
+                    <span className="central-validacao-ia-badge" aria-hidden>
+                      IA
+                    </span>
                   )}
                 </button>
-                {isLastOfSection && <div className="central-validacao-select__divider" aria-hidden />}
+                {isLastOfSection && (
+                  <div className="central-validacao-select__divider" aria-hidden />
+                )}
               </React.Fragment>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface OutrosApontamentosSelectProps {
+  id: string;
+  values: string[];
+  onChange: (values: string[]) => void;
+  placeholder: string;
+  disabled?: boolean;
+}
+
+const OutrosApontamentosSelect: React.FC<OutrosApontamentosSelectProps> = ({
+  id,
+  values,
+  onChange,
+  placeholder,
+  disabled,
+}) => {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [open]);
+
+  const toggleValue = (value: string) => {
+    if (values.includes(value)) {
+      onChange(values.filter((v) => v !== value));
+    } else {
+      onChange([...values, value]);
+    }
+  };
+
+  const displayLabel = useMemo(() => {
+    if (values.length === 0) return placeholder;
+    if (values.length === 1) {
+      const opt = OUTROS_APONTAMENTOS_OPTIONS.find((o) => o.value === values[0]);
+      return opt?.label ?? placeholder;
+    }
+    return `${values.length} apontamentos`;
+  }, [values, placeholder]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`central-validacao-select central-validacao-select--dropup${open ? ' central-validacao-select--open' : ''}`}
+      id={id}
+    >
+      <button
+        type="button"
+        className="central-validacao-select__trigger"
+        onClick={() => !disabled && setOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={disabled}
+      >
+        <span
+          className={`central-validacao-select__value${values.length > 0 ? '' : ' central-validacao-select__value--placeholder'}`}
+        >
+          {displayLabel}
+        </span>
+        <span className="central-validacao-select__chevron" aria-hidden>
+          <IconCaretDown />
+        </span>
+      </button>
+      {open && (
+        <div
+          className="central-validacao-select__dropdown central-validacao-select__dropdown--checkbox"
+          role="listbox"
+        >
+          {OUTROS_APONTAMENTOS_OPTIONS.map((opt) => {
+            const checked = values.includes(opt.value);
+            return (
+              <label
+                key={opt.value}
+                className={`central-validacao-checkbox-option${checked ? ' central-validacao-checkbox-option--checked' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleValue(opt.value)}
+                />
+                <span className="central-validacao-checkbox-option__box" aria-hidden>
+                  {checked && (
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <path
+                        d="M1 4L4 7L9 1"
+                        stroke="#fff"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </span>
+                <span className="central-validacao-checkbox-option__label">{opt.label}</span>
+              </label>
             );
           })}
         </div>
@@ -267,12 +401,167 @@ const MapPanel: React.FC = () => (
     <div className="central-validacao-map__pin" aria-hidden>
       <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
         <circle cx="17" cy="17" r="11" fill="#169EFF" />
-        <path
-          d="M17 11L21 17L17 23L13 17L17 11Z"
-          fill="#fff"
-        />
+        <path d="M17 11L21 17L17 23L13 17L17 11Z" fill="#fff" />
       </svg>
     </div>
+  </div>
+);
+
+interface InfoFieldProps {
+  label: string;
+  value?: string;
+}
+
+const InfoField: React.FC<InfoFieldProps> = ({ label, value }) => (
+  <div className="central-validacao-info__field">
+    <label className="central-validacao-info__label">{label}</label>
+    <div className="central-validacao-info__value">{value ?? '—'}</div>
+  </div>
+);
+
+interface DriverSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const DriverSelect: React.FC<DriverSelectProps> = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [open]);
+
+  const display = value
+    ? DRIVER_OPTIONS.find((d) => d.value === value)?.label ?? value
+    : 'Selecionar condutor';
+
+  return (
+    <div
+      ref={containerRef}
+      className={`central-validacao-info__field central-validacao-info__field--select${open ? ' is-open' : ''}`}
+    >
+      <label className="central-validacao-info__label">Condutor</label>
+      <button
+        type="button"
+        className="central-validacao-info__select-trigger"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span
+          className={value ? '' : 'central-validacao-info__select-placeholder'}
+        >
+          {display}
+        </span>
+        <span className="central-validacao-info__select-chevron" aria-hidden>
+          <IconCaretDown />
+        </span>
+      </button>
+      {open && (
+        <div className="central-validacao-info__select-dropdown" role="listbox">
+          {DRIVER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              role="option"
+              aria-selected={value === opt.value}
+              className={`central-validacao-info__select-option${value === opt.value ? ' central-validacao-info__select-option--selected' : ''}`}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface CollapsibleSectionProps {
+  title: string;
+  defaultOpen?: boolean;
+  children?: React.ReactNode;
+}
+
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
+  title,
+  defaultOpen = false,
+  children,
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="central-validacao-info__section">
+      <button
+        type="button"
+        className="central-validacao-info__section-header"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+      >
+        <span className="central-validacao-info__section-title">{title}</span>
+        <span
+          className={`central-validacao-info__section-chevron${open ? ' central-validacao-info__section-chevron--open' : ''}`}
+          aria-hidden
+        >
+          <IconChevronDown />
+        </span>
+      </button>
+      {open && <div className="central-validacao-info__section-body">{children}</div>}
+    </section>
+  );
+};
+
+interface InfoTabProps {
+  driverName: string;
+  driverUnidentified?: boolean;
+  selectedDriver: string;
+  onChangeDriver: (value: string) => void;
+}
+
+const InfoTab: React.FC<InfoTabProps> = ({
+  driverName,
+  driverUnidentified,
+  selectedDriver,
+  onChangeDriver,
+}) => (
+  <div className="central-validacao-info">
+    <CollapsibleSection title="Dados gerais" defaultOpen>
+      <div className="central-validacao-info__grid central-validacao-info__grid--2col">
+        <InfoField label="Empresa" value="Bracell" />
+        <InfoField label="Filial" value="Expresso Nepomuceno" />
+      </div>
+      <div className="central-validacao-info__grid central-validacao-info__grid--4col">
+        <InfoField label="Placa / Prefixo" value="ANB1K52" />
+        {driverUnidentified ? (
+          <DriverSelect value={selectedDriver} onChange={onChangeDriver} />
+        ) : (
+          <InfoField label="Condutor" value={driverName} />
+        )}
+        <InfoField label="ID da autoria" value="38868155" />
+        <InfoField label="Autor de tratativa" value="Marco Romero da Costa" />
+      </div>
+      <div className="central-validacao-info__grid central-validacao-info__grid--4col">
+        <InfoField label="Data do alerta" value="14/05/25" />
+        <InfoField label="Hora" value="12:32" />
+      </div>
+    </CollapsibleSection>
+
+    <CollapsibleSection title="Contatos">
+      <div className="central-validacao-info__contacts">
+        <p className="central-validacao-info__empty">
+          Contatos cadastrados para a empresa Bracell.
+        </p>
+      </div>
+    </CollapsibleSection>
   </div>
 );
 
@@ -280,15 +569,16 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   open,
   events,
   driverName,
-  alertCounterPrefix,
+  driverUnidentified = false,
   onClose,
   onReturn,
   onConfirmClose,
   onConfirmNext,
   onConfirmTreat,
 }) => {
+  const [activeTab, setActiveTab] = useState<'detalhes' | 'informacoes'>('detalhes');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [validatedIds, setValidatedIds] = useState<Set<string>>(() => {
+  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(() => {
     const ids = new Set<string>();
     events.forEach((event) => {
       if (event.validated) ids.add(event.id);
@@ -302,7 +592,8 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
     });
     return map;
   });
-  const [otherAnnotations, setOtherAnnotations] = useState<Record<string, CentralAlertType | ''>>({});
+  const [otherAnnotations, setOtherAnnotations] = useState<Record<string, string[]>>({});
+  const [selectedDriver, setSelectedDriver] = useState<string>('');
 
   useEffect(() => {
     if (open) {
@@ -316,9 +607,8 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
 
   useEffect(() => {
     if (!open) return;
-    const firstPending = events.findIndex((event) => !event.validated);
-    setActiveIndex(firstPending >= 0 ? firstPending : 0);
-  }, [open, events]);
+    setActiveTab('detalhes');
+  }, [open]);
 
   const totalEvents = events.length;
   const activeEvent = events[activeIndex];
@@ -326,9 +616,12 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   const headerTitle = activeEvent ? `${counterLabel} — ${driverName}` : driverName;
 
   const isLastEvent = activeIndex === totalEvents - 1;
+  const isCurrentConfirmed = activeEvent ? confirmedIds.has(activeEvent.id) : false;
+
+  /** Devolver só aparece se o analista ainda não confirmou nada nesta sessão */
   const isFirstSession = useMemo(
-    () => events.every((event, idx) => idx === activeIndex || !validatedIds.has(event.id)),
-    [events, validatedIds, activeIndex],
+    () => events.every((event, idx) => idx === activeIndex || !confirmedIds.has(event.id)),
+    [events, confirmedIds, activeIndex],
   );
 
   const setActiveAlertType = (value: CentralAlertType) => {
@@ -336,73 +629,72 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
     setAlertTypes((prev) => ({ ...prev, [activeEvent.id]: value }));
   };
 
-  const setActiveOtherAnnotation = (value: CentralAlertType) => {
+  const setActiveOtherAnnotations = (values: string[]) => {
     if (!activeEvent) return;
-    setOtherAnnotations((prev) => ({ ...prev, [activeEvent.id]: value }));
+    setOtherAnnotations((prev) => ({ ...prev, [activeEvent.id]: values }));
   };
 
-  const validateActive = () => {
+  const handleConfirm = () => {
     if (!activeEvent) return;
-    setValidatedIds((prev) => {
+    setConfirmedIds((prev) => {
       const next = new Set(prev);
       next.add(activeEvent.id);
       return next;
     });
   };
 
-  const handleConfirmAndNext = () => {
-    validateActive();
+  const handleSendAndNext = () => {
+    if (!isCurrentConfirmed) return;
     setActiveIndex((current) => Math.min(current + 1, totalEvents - 1));
     onConfirmNext();
   };
 
-  const handleConfirmAndClose = () => {
-    validateActive();
+  const handleSendAndClose = () => {
+    if (!isCurrentConfirmed) return;
     onConfirmClose();
   };
 
-  const handleConfirmAndTreat = () => {
-    validateActive();
+  const handleSendAndTreat = () => {
+    if (!isCurrentConfirmed) return;
     onConfirmTreat();
   };
 
   if (!open || !activeEvent) return null;
 
   return (
-    <div className="central-validacao-modal" role="dialog" aria-modal="true" aria-labelledby="central-validacao-title">
+    <div
+      className="central-validacao-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="central-validacao-title"
+    >
       <aside className="central-validacao-sidebar" aria-label="Eventos pendentes de validação">
         <ul className="central-validacao-events-list">
           {events.map((event, index) => {
             const isActive = index === activeIndex;
-            const isValidated = validatedIds.has(event.id);
+            const isConfirmed = confirmedIds.has(event.id);
             return (
               <li
                 key={event.id}
-                className={`central-validacao-event${isActive ? ' central-validacao-event--active' : ''}${isValidated ? ' central-validacao-event--validated' : ''}`}
+                className={`central-validacao-event${isActive ? ' central-validacao-event--active' : ''}${isConfirmed ? ' central-validacao-event--validated' : ''}`}
+                aria-current={isActive ? 'step' : undefined}
               >
-                <button
-                  type="button"
-                  className="central-validacao-event__btn"
-                  onClick={() => setActiveIndex(index)}
-                >
+                <div className="central-validacao-event__btn">
                   <div className="central-validacao-event__main">
                     <span className="central-validacao-event__time">{event.time}</span>
                     <span className="central-validacao-event__plate">{event.plate}</span>
-                    {isActive && !isValidated && (
-                      <span className="central-validacao-event__alert">
-                        {ALERT_LABELS[alertTypes[event.id] ?? event.suggestedAlert]}
-                      </span>
-                    )}
-                    {isValidated && !isActive && (
-                      <span className="central-validacao-event__alert central-validacao-event__alert--muted">
+                    {(isActive || isConfirmed) && (
+                      <span
+                        className={`central-validacao-event__alert${!isActive && isConfirmed ? ' central-validacao-event__alert--muted' : ''}`}
+                      >
                         {ALERT_LABELS[alertTypes[event.id] ?? event.suggestedAlert]}
                       </span>
                     )}
                   </div>
                   <span className="central-validacao-event__status" aria-hidden>
-                    {isValidated ? <IconCheckCircle /> : <IconHourglass />}
+                    {isConfirmed ? <IconCheckCircle /> : <IconHourglass />}
                   </span>
-                </button>
+                </div>
               </li>
             );
           })}
@@ -415,7 +707,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
       <section className="central-validacao-content">
         <header className="central-validacao-header">
           <h2 id="central-validacao-title" className="central-validacao-header__title">
-            {alertCounterPrefix ?? headerTitle}
+            {headerTitle}
           </h2>
           <button
             type="button"
@@ -428,104 +720,159 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
         </header>
 
         <nav className="central-validacao-tabs" aria-label="Abas de detalhe">
-          <button type="button" className="central-validacao-tab central-validacao-tab--active">
-            Detalhes
-          </button>
-          <button type="button" className="central-validacao-tab">Informações</button>
-        </nav>
-
-        <div className="central-validacao-body">
-          <div className="central-validacao-videos" role="group" aria-label="Câmeras">
-            <VideoTile label="Condutor" placeholder="Visão do condutor" />
-            <VideoTile label="Frontal" placeholder="Visão frontal" />
-            <VideoTile label="Cabine" placeholder="Visão cabine" />
-            <VideoTile label="Lateral esquerda" placeholder="Visão lateral" />
-          </div>
-
-          <MapPanel />
-        </div>
-
-        <div className="central-validacao-controls">
-          <button type="button" className="central-validacao-play" aria-label="Reproduzir">
-            <IconPlay />
-          </button>
-
-          <AlertTypeSelect
-            id={`alert-type-${activeEvent.id}`}
-            value={alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert}
-            onChange={setActiveAlertType}
-            showAiBadge={activeEvent.fromAi}
-          />
-
-          <AlertTypeSelect
-            id={`other-annotation-${activeEvent.id}`}
-            value={otherAnnotations[activeEvent.id] || ('' as CentralAlertType)}
-            onChange={setActiveOtherAnnotation}
-            placeholder="Outros apontamentos"
-          />
-
           <button
             type="button"
-            className="central-validacao-confirm"
-            onClick={validateActive}
-            disabled={validatedIds.has(activeEvent.id)}
+            className={`central-validacao-tab${activeTab === 'detalhes' ? ' central-validacao-tab--active' : ''}`}
+            onClick={() => setActiveTab('detalhes')}
           >
-            Confirmar
+            Detalhes
           </button>
+          <button
+            type="button"
+            className={`central-validacao-tab${activeTab === 'informacoes' ? ' central-validacao-tab--active' : ''}`}
+            onClick={() => setActiveTab('informacoes')}
+          >
+            Informações
+          </button>
+        </nav>
 
-          <div className="central-validacao-zoom" aria-hidden>
-            <button type="button" className="central-validacao-zoom__btn" aria-label="Diminuir zoom">
-              <IconZoomOut />
-            </button>
-            <button type="button" className="central-validacao-zoom__btn" aria-label="Aumentar zoom">
-              <IconZoomIn />
-            </button>
-          </div>
-        </div>
+        {activeTab === 'detalhes' ? (
+          <>
+            <div className="central-validacao-body">
+              <div className="central-validacao-videos" role="group" aria-label="Câmeras">
+                <VideoTile label="Condutor" placeholder="Visão do condutor" />
+                <VideoTile label="Frontal" placeholder="Visão frontal" />
+                <VideoTile label="Cabine" placeholder="Visão cabine" />
+                <VideoTile label="Lateral esquerda" placeholder="Visão lateral" />
+              </div>
 
-        <div className="central-validacao-timeline" aria-hidden>
-          <div className="central-validacao-timeline__bar">
-            <div className="central-validacao-timeline__marker" />
-          </div>
-          <div className="central-validacao-timeline__labels">
-            <span>00:00</span>
-            <span>00:02</span>
-            <span>00:04</span>
-            <span>00:06</span>
-            <span>00:08</span>
-            <span>00:10</span>
-          </div>
-        </div>
+              <MapPanel />
+            </div>
+
+            <div className="central-validacao-controls">
+              <button type="button" className="central-validacao-play" aria-label="Reproduzir">
+                <IconPlay />
+              </button>
+
+              <AlertTypeSelect
+                id={`alert-type-${activeEvent.id}`}
+                value={alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert}
+                onChange={setActiveAlertType}
+                showAiBadge={activeEvent.fromAi}
+                disabled={isCurrentConfirmed}
+              />
+
+              <OutrosApontamentosSelect
+                id={`other-annotation-${activeEvent.id}`}
+                values={otherAnnotations[activeEvent.id] ?? []}
+                onChange={setActiveOtherAnnotations}
+                placeholder="Outros apontamentos"
+                disabled={isCurrentConfirmed}
+              />
+
+              <button
+                type="button"
+                className="central-validacao-confirm"
+                onClick={handleConfirm}
+                disabled={isCurrentConfirmed}
+              >
+                Confirmar
+              </button>
+            </div>
+
+            <div className="central-validacao-timeline" aria-hidden>
+              <div className="central-validacao-timeline__bar">
+                <div className="central-validacao-timeline__marker" />
+              </div>
+              <div className="central-validacao-timeline__labels">
+                <span>00:00</span>
+                <span>00:02</span>
+                <span>00:04</span>
+                <span>00:06</span>
+                <span>00:08</span>
+                <span>00:10</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <InfoTab
+            driverName={driverName}
+            driverUnidentified={driverUnidentified}
+            selectedDriver={selectedDriver}
+            onChangeDriver={setSelectedDriver}
+          />
+        )}
 
         <footer className="central-validacao-footer">
           {isFirstSession && (
-            <button type="button" className="central-validacao-btn central-validacao-btn--ghost" onClick={onReturn}>
+            <button
+              type="button"
+              className="central-validacao-btn central-validacao-btn--ghost"
+              onClick={onReturn}
+            >
               Devolver
             </button>
           )}
-          <button
-            type="button"
-            className="central-validacao-btn central-validacao-btn--secondary"
-            onClick={handleConfirmAndClose}
-          >
-            Confirmar e fechar
-          </button>
-          {isLastEvent ? (
+          {isCurrentConfirmed ? (
             <button
               type="button"
-              className="central-validacao-btn central-validacao-btn--primary"
-              onClick={handleConfirmAndTreat}
+              className="central-validacao-btn central-validacao-btn--secondary"
+              onClick={handleSendAndClose}
             >
-              Confirmar e tratar
+              Enviar e fechar
             </button>
           ) : (
+            <LevelTooltip text="Confirme antes de continuar" topLayer nowrap>
+              <button
+                type="button"
+                className="central-validacao-btn central-validacao-btn--secondary"
+                disabled
+                aria-disabled="true"
+              >
+                Enviar e fechar
+              </button>
+            </LevelTooltip>
+          )}
+          {isLastEvent ? (
+            isCurrentConfirmed ? (
+              <button
+                type="button"
+                className="central-validacao-btn central-validacao-btn--primary"
+                onClick={handleSendAndTreat}
+              >
+                Enviar e tratar
+              </button>
+            ) : (
+              <LevelTooltip text="Confirme antes de continuar" topLayer nowrap>
+                <button
+                  type="button"
+                  className="central-validacao-btn central-validacao-btn--primary"
+                  disabled
+                  aria-disabled="true"
+                >
+                  Enviar e tratar
+                </button>
+              </LevelTooltip>
+            )
+          ) : isCurrentConfirmed ? (
             <button
               type="button"
               className="central-validacao-btn central-validacao-btn--primary"
-              onClick={handleConfirmAndNext}
+              onClick={handleSendAndNext}
             >
-              Confirmar e ver o próximo
+              Enviar e ver o próximo
             </button>
+          ) : (
+            <LevelTooltip text="Confirme antes de continuar" topLayer nowrap>
+              <button
+                type="button"
+                className="central-validacao-btn central-validacao-btn--primary"
+                disabled
+                aria-disabled="true"
+              >
+                Enviar e ver o próximo
+              </button>
+            </LevelTooltip>
           )}
         </footer>
       </section>
