@@ -4,6 +4,7 @@ import type {
   TratativaContact,
   TratativaAction,
 } from '../types/tratativaOcorrencia.types';
+import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
 
 interface TratativaOcorrenciaModalProps {
   open: boolean;
@@ -21,6 +22,13 @@ const SEVERITY_DOT_CLASS: Record<string, string> = {
   medium: 'tratativa-card__dot--medium',
   low: 'tratativa-card__dot--low',
 };
+
+const VIDEO_CHANNELS = [
+  { id: 'canal-1', label: 'Canal 1', placeholder: 'Canal 1' },
+  { id: 'canal-2', label: 'Canal 2', placeholder: 'Canal 2' },
+  { id: 'canal-3', label: 'Canal 3', placeholder: 'Canal 3' },
+  { id: 'canal-4', label: 'Canal 4', placeholder: 'Canal 4' },
+] as const;
 
 /** Formata milissegundos no padrão "8m 22s" / "1h 03m 22s". */
 function formatElapsed(ms: number): string {
@@ -47,7 +55,6 @@ const IconHourglassPending: React.FC = () => (
   </svg>
 );
 
-/** Ícone de telefone do contato (azul, no padrão da tela). */
 const IconPhoneCall: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
     <path
@@ -83,13 +90,25 @@ const IconCaretDown: React.FC = () => (
   </svg>
 );
 
-interface TrailSelectProps {
-  value: string;
-  options: { id: string; label: string }[];
-  onChange: (value: string) => void;
+const IconPlayBlue: React.FC = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+    <path d="M5 3.5L16 10L5 16.5V3.5Z" stroke="#169EFF" strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+);
+
+interface SelectFieldProps<T> {
+  value: T;
+  options: { id: T; label: string }[];
+  onChange: (value: T) => void;
+  ariaLabel?: string;
 }
 
-const TrailSelect: React.FC<TrailSelectProps> = ({ value, options, onChange }) => {
+function SelectField<T extends string>({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: SelectFieldProps<T>) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const selected = options.find((opt) => opt.id === value);
@@ -110,6 +129,7 @@ const TrailSelect: React.FC<TrailSelectProps> = ({ value, options, onChange }) =
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={ariaLabel}
       >
         <span className="tratativa-select__value">{selected?.label ?? 'Selecionar'}</span>
         <span className="tratativa-select__chevron" aria-hidden>
@@ -137,14 +157,14 @@ const TrailSelect: React.FC<TrailSelectProps> = ({ value, options, onChange }) =
       )}
     </div>
   );
-};
+}
 
 interface ActionCardProps {
   action: TratativaAction;
   status: 'done' | 'active' | 'pending';
   observation: string;
   onChangeObservation: (value: string) => void;
-  onMarkDone: () => void;
+  onToggleDone: () => void;
   done: boolean;
 }
 
@@ -153,7 +173,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
   status,
   observation,
   onChangeObservation,
-  onMarkDone,
+  onToggleDone,
   done,
 }) => {
   if (status === 'pending') {
@@ -187,17 +207,13 @@ const ActionCard: React.FC<ActionCardProps> = ({
         placeholder="Observação (Opcional)"
         value={observation}
         onChange={(event) => onChangeObservation(event.target.value)}
-        disabled={done}
         rows={3}
       />
       <label className="tratativa-action__check">
         <input
           type="checkbox"
           checked={done}
-          onChange={(event) => {
-            if (event.target.checked) onMarkDone();
-          }}
-          disabled={done}
+          onChange={onToggleDone}
         />
         <span>Feito</span>
       </label>
@@ -256,10 +272,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   onConclude,
 }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('tratativa');
-  const [currentActionIndex, setCurrentActionIndex] = useState(0);
   const [observations, setObservations] = useState<Record<string, string>>({});
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
-  const [trailId, setTrailId] = useState(data.selectedTrailId);
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(
+    data.selectedDriverId,
+  );
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
+    data.selectedVehicleId,
+  );
+  const [selectedEventId, setSelectedEventId] = useState<string>(
+    data.validatedEvents[0]?.id ?? '',
+  );
+  /** Vídeo expandido na aba Eventos (mesma mecânica do modal de validação). */
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
 
   /** Tempo em tratativa atualizado em tempo real (cronômetro). */
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -295,24 +320,35 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   useEffect(() => {
     if (!open) return;
     setActiveTab('tratativa');
-    setCurrentActionIndex(0);
     setObservations({});
     setDoneIds(new Set());
-    setTrailId(data.selectedTrailId);
-  }, [open, data.selectedTrailId]);
+    setSelectedDriverId(data.selectedDriverId);
+    setSelectedVehicleId(data.selectedVehicleId);
+    setSelectedEventId(data.validatedEvents[0]?.id ?? '');
+    setExpandedVideo(null);
+  }, [open, data]);
 
   const allActionsDone = useMemo(
     () => data.actions.length > 0 && data.actions.every((action) => doneIds.has(action.id)),
     [data.actions, doneIds],
   );
 
-  const handleMarkDone = (actionId: string, index: number) => {
+  /** Índice da próxima ação ainda não concluída — define qual card está "ativo". */
+  const currentActionIndex = useMemo(() => {
+    const idx = data.actions.findIndex((action) => !doneIds.has(action.id));
+    return idx === -1 ? data.actions.length : idx;
+  }, [data.actions, doneIds]);
+
+  const handleToggleDone = (actionId: string) => {
     setDoneIds((prev) => {
       const next = new Set(prev);
-      next.add(actionId);
+      if (next.has(actionId)) {
+        next.delete(actionId);
+      } else {
+        next.add(actionId);
+      }
       return next;
     });
-    setCurrentActionIndex((current) => Math.max(current, index + 1));
   };
 
   const handleObservationChange = (actionId: string, value: string) => {
@@ -324,9 +360,23 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     onConclude?.();
   };
 
+  const selectedDriver = data.driverOptions.find((d) => d.id === selectedDriverId);
+  const selectedVehicle = data.vehicleOptions.find((v) => v.id === selectedVehicleId);
+
   if (!open) return null;
 
   const dotClass = SEVERITY_DOT_CLASS[data.severity] ?? '';
+
+  const driverSelectOptions = data.driverOptions.map((d) => ({ id: d.id, label: d.name }));
+  const vehicleSelectOptions = data.vehicleOptions.map((v) => ({
+    id: v.id,
+    label: `${v.placa} / ${v.prefixo}`,
+  }));
+  const eventSelectOptions = data.validatedEvents.map((e) => ({
+    id: e.id,
+    label: `${String(e.sequence).padStart(2, '0')} — ${e.time}`,
+  }));
+  const selectedEvent = data.validatedEvents.find((e) => e.id === selectedEventId);
 
   return (
     <div
@@ -411,27 +461,22 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               <ReadOnlyField
                 label="Tipo de evento"
                 value={data.eventTypeLabel}
-                className="tratativa-field--col-1-3"
+                className="tratativa-field--col-1-2"
               />
               <ReadOnlyField
                 label="Gravidade"
                 value={data.gravityLabel}
-                className="tratativa-field--col-3-4"
+                className="tratativa-field--col-2-3"
               />
-
-              <div className="tratativa-field tratativa-field--col-4-6">
-                <span className="tratativa-field__label">Tratativa</span>
-                <TrailSelect
-                  value={trailId}
-                  options={data.trailOptions}
-                  onChange={setTrailId}
-                />
-              </div>
-
+              <ReadOnlyField
+                label="Tratativa"
+                value={data.trailLabel}
+                className="tratativa-field--col-4-5"
+              />
               <ReadOnlyField
                 label="Tempo em tratativa"
                 value={formatElapsed(elapsedMs)}
-                className="tratativa-field--col-6-7 tratativa-field--timer"
+                className="tratativa-field--col-5-6 tratativa-field--timer"
               />
             </div>
 
@@ -440,12 +485,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 <h3 className="tratativa-pane__title">Ações</h3>
                 <div className="tratativa-actions-list">
                   {data.actions.map((action, index) => {
-                    const status: ActionCardProps['status'] =
-                      index < currentActionIndex
-                        ? 'done'
-                        : index === currentActionIndex
-                          ? 'active'
-                          : 'pending';
+                    const isDone = doneIds.has(action.id);
+                    const status: ActionCardProps['status'] = isDone
+                      ? 'done'
+                      : index === currentActionIndex
+                        ? 'active'
+                        : 'pending';
                     return (
                       <ActionCard
                         key={action.id}
@@ -455,8 +500,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                         onChangeObservation={(value) =>
                           handleObservationChange(action.id, value)
                         }
-                        onMarkDone={() => handleMarkDone(action.id, index)}
-                        done={doneIds.has(action.id)}
+                        onToggleDone={() => handleToggleDone(action.id)}
+                        done={isDone}
                       />
                     );
                   })}
@@ -490,69 +535,174 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               </div>
             </section>
 
-            {data.driver && (
-              <section className="tratativa-info-section">
-                <header className="tratativa-info-section__header">
-                  <h3 className="tratativa-info-section__title">Dados do motorista</h3>
-                </header>
-                <div className="tratativa-info-grid tratativa-info-grid--2">
-                  <ReadOnlyField label="Nome" value={data.driver.name} />
+            <section className="tratativa-info-section">
+              <header className="tratativa-info-section__header">
+                <h3 className="tratativa-info-section__title">Dados do motorista</h3>
+              </header>
+              <div className="tratativa-info-grid tratativa-info-grid--2">
+                <div className="tratativa-field">
+                  <span className="tratativa-field__label">Nome</span>
+                  {selectedDriverId ? (
+                    <SelectField
+                      value={selectedDriverId}
+                      options={driverSelectOptions}
+                      onChange={(id) => setSelectedDriverId(id)}
+                      ariaLabel="Selecionar motorista"
+                    />
+                  ) : (
+                    <div className="tratativa-field__value tratativa-field__value--readonly">
+                      Não identificado
+                    </div>
+                  )}
+                </div>
+                {selectedDriver && (
                   <div className="tratativa-field">
                     <span className="tratativa-field__label">Grupos de organização</span>
                     <div className="tratativa-field__chips">
-                      {data.driver.organizationGroups.map((g, idx) => (
+                      {selectedDriver.organizationGroups.map((g, idx) => (
                         <Chip
                           key={g.id}
                           label={g.label}
-                          tone={idx === data.driver!.organizationGroups.length - 1
-                            ? 'highlight'
-                            : 'default'}
+                          tone={
+                            idx === selectedDriver.organizationGroups.length - 1
+                              ? 'highlight'
+                              : 'default'
+                          }
                         />
                       ))}
                     </div>
                   </div>
-                </div>
-              </section>
-            )}
+                )}
+              </div>
+            </section>
 
-            {data.vehicle && (
-              <section className="tratativa-info-section">
-                <header className="tratativa-info-section__header">
-                  <h3 className="tratativa-info-section__title">Dados do veículo</h3>
-                </header>
-                <div className="tratativa-info-grid tratativa-info-grid--3">
-                  <ReadOnlyField label="Placa" value={data.vehicle.placa} />
-                  <ReadOnlyField label="Prefixo" value={data.vehicle.prefixo} />
-                  <ReadOnlyField label="Tipo" value={data.vehicle.tipo} />
-                  <ReadOnlyField label="Marca" value={data.vehicle.marca} />
-                  <ReadOnlyField label="Modelo" value={data.vehicle.modelo} />
-                  <ReadOnlyField label="Ano / modelo" value={data.vehicle.anoModelo} />
-                  <ReadOnlyField label="Combustível" value={data.vehicle.combustivel} />
-                  <div className="tratativa-field tratativa-field--col-2-4">
-                    <span className="tratativa-field__label">Grupos de organização</span>
-                    <div className="tratativa-field__chips">
-                      {data.vehicle.organizationGroups.map((g, idx) => (
-                        <Chip
-                          key={g.id}
-                          label={g.label}
-                          tone={idx === data.vehicle!.organizationGroups.length - 1
-                            ? 'highlight'
-                            : 'default'}
-                        />
-                      ))}
+            <section className="tratativa-info-section">
+              <header className="tratativa-info-section__header">
+                <h3 className="tratativa-info-section__title">Dados do veículo</h3>
+              </header>
+              <div className="tratativa-info-grid tratativa-info-grid--3">
+                <div className="tratativa-field tratativa-field--col-1-2">
+                  <span className="tratativa-field__label">Placa / prefixo</span>
+                  {selectedVehicleId ? (
+                    <SelectField
+                      value={selectedVehicleId}
+                      options={vehicleSelectOptions}
+                      onChange={(id) => setSelectedVehicleId(id)}
+                      ariaLabel="Selecionar veículo"
+                    />
+                  ) : (
+                    <div className="tratativa-field__value tratativa-field__value--readonly">
+                      Não identificado
                     </div>
-                  </div>
+                  )}
                 </div>
-              </section>
-            )}
+                {selectedVehicle && (
+                  <>
+                    <ReadOnlyField label="Tipo" value={selectedVehicle.tipo} />
+                    <ReadOnlyField label="Marca" value={selectedVehicle.marca} />
+                    <ReadOnlyField label="Modelo" value={selectedVehicle.modelo} />
+                    <ReadOnlyField label="Ano / modelo" value={selectedVehicle.anoModelo} />
+                    <ReadOnlyField label="Combustível" value={selectedVehicle.combustivel} />
+                    <div className="tratativa-field tratativa-field--col-2-4">
+                      <span className="tratativa-field__label">Grupos de organização</span>
+                      <div className="tratativa-field__chips">
+                        {selectedVehicle.organizationGroups.map((g, idx) => (
+                          <Chip
+                            key={g.id}
+                            label={g.label}
+                            tone={
+                              idx === selectedVehicle.organizationGroups.length - 1
+                                ? 'highlight'
+                                : 'default'
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </section>
           </div>
         )}
 
         {activeTab === 'eventos' && (
-          <div className="tratativa-body">
-            <p className="tratativa-empty">
-              Lista de eventos da ocorrência (em construção).
-            </p>
+          <div className="tratativa-body tratativa-eventos">
+            <div className="tratativa-eventos-fields">
+              <div className="tratativa-field">
+                <span className="tratativa-field__label">Evento</span>
+                <SelectField
+                  value={selectedEventId}
+                  options={eventSelectOptions}
+                  onChange={(id) => setSelectedEventId(id)}
+                  ariaLabel="Selecionar evento"
+                />
+              </div>
+              <ReadOnlyField
+                label="Validado como"
+                value={selectedEvent?.validatedAs ?? '—'}
+              />
+              <div className="tratativa-field">
+                <span className="tratativa-field__label">Placa / prefixo</span>
+                {selectedVehicleId ? (
+                  <SelectField
+                    value={selectedVehicleId}
+                    options={vehicleSelectOptions}
+                    onChange={(id) => setSelectedVehicleId(id)}
+                    ariaLabel="Selecionar veículo"
+                  />
+                ) : (
+                  <div className="tratativa-field__value tratativa-field__value--readonly">
+                    Não identificado
+                  </div>
+                )}
+              </div>
+              <ReadOnlyField
+                label="Motorista"
+                value={selectedDriver?.name ?? 'Não identificado'}
+              />
+            </div>
+
+            <div className="tratativa-eventos-player">
+              <div
+                className={`central-validacao-videos${expandedVideo ? ' has-expanded' : ''}`}
+                role="group"
+                aria-label="Câmeras"
+              >
+                {VIDEO_CHANNELS.map((cam) => (
+                  <VideoTile
+                    key={cam.id}
+                    label={cam.label}
+                    placeholder={cam.placeholder}
+                    expanded={expandedVideo === cam.id}
+                    onToggleExpand={() =>
+                      setExpandedVideo((prev) => (prev === cam.id ? null : cam.id))
+                    }
+                  />
+                ))}
+              </div>
+              <MapPanel />
+            </div>
+
+            <div className="tratativa-eventos-timeline">
+              <button
+                type="button"
+                className="tratativa-eventos-play"
+                aria-label="Reproduzir"
+              >
+                <IconPlayBlue />
+              </button>
+              <div className="tratativa-eventos-timeline__bar" aria-hidden>
+                <span className="tratativa-eventos-timeline__cursor" />
+              </div>
+              <div className="tratativa-eventos-timeline__marks" aria-hidden>
+                {['00:00', '00:02', '00:04', '00:06', '00:08', '00:10'].map((label) => (
+                  <span key={label} className="tratativa-eventos-timeline__mark">
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

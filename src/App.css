@@ -1,4 +1,4 @@
-/* Layout padrão Creare: sidebar (launcher) + menu-header + conteúdo */
+/* Layout padr?o Creare: sidebar (launcher) + menu-header + conte?do */
 
 html, body {
   height: 100%;
@@ -46,7 +46,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Sidebar conforme padrão: launcher-sidebar */
+/* Sidebar conforme padr?o: launcher-sidebar */
 .launcher-sidebar {
   width: var(--sidebar-expanded-width);
   min-width: var(--sidebar-expanded-width);
@@ -67,7 +67,7 @@ html, body {
   flex-shrink: 0;
 }
 
-/* Cabeçalho do menu (área do logo + ícone, conforme plataforma) */
+/* Cabe?alho do menu (?rea do logo + ?cone, conforme plataforma) */
 .menu-header {
   display: flex;
   flex-direction: column;
@@ -83,7 +83,7 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Linha cinza com margem lateral (conforme referência da plataforma) */
+/* Linha cinza com margem lateral (conforme refer?ncia da plataforma) */
 .menu-header-separator {
   height: 0;
   border-bottom: 0.063rem solid color-mix(in srgb, var(--color-separator) 30%, transparent);
@@ -106,7 +106,7 @@ html, body {
   align-items: center;
 }
 
-/* Logo Creare: mesmas proporções da imagem (viewBox 1539x391) + ícone ao lado */
+/* Logo Creare: mesmas propor??es da imagem (viewBox 1539x391) + ?cone ao lado */
 .menu-header-logo {
   width: 100%;
   height: auto;
@@ -131,7 +131,7 @@ html, body {
   height: 100%;
 }
 
-/* Navegação do menu – padrão visual da plataforma */
+/* Navega??o do menu ??? padr?o visual da plataforma */
 .launcher-sidebar nav {
   display: flex;
   flex-direction: column;
@@ -196,7 +196,7 @@ html, body {
   line-height: 1;
 }
 
-/* Item pai (Configurações / Cadastros / Operações): negrito (700) */
+/* Item pai (Configura??es / Cadastros / Opera??es): negrito (700) */
 .launcher-sidebar nav .nav-item-parent {
   color: #101828;
   font-weight: 700;
@@ -219,7 +219,7 @@ html, body {
   display: none;
 }
 
-/* Menu raiz: Cadastros e Configurações – ícone na cor do item pai (#101828) */
+/* Menu raiz: Cadastros e Configura??es ??? ?cone na cor do item pai (#101828) */
 .launcher-sidebar nav .nav-item--root .nav-item-icon--cadastros,
 .launcher-sidebar nav .nav-item--root .nav-item-icon--settings {
   color: #101828;
@@ -239,7 +239,7 @@ html, body {
   background: rgba(16, 24, 40, 0.04);
 }
 
-/* Segundo nível: mesma tipografia do conteúdo (ex.: aba Histórico) */
+/* Segundo n?vel: mesma tipografia do conte?do (ex.: aba Hist?rico) */
 .launcher-sidebar nav .nav-item--child {
   font-size: 0.875rem;
   font-weight: 400;
@@ -254,7 +254,7 @@ html, body {
   font-weight: 400;
 }
 
-/* Itens não selecionados: mesma cor de texto que Regras de Tratativa (#101828), ícone #20ACAC */
+/* Itens n?o selecionados: mesma cor de texto que Regras de Tratativa (#101828), ?cone #20ACAC */
 .launcher-sidebar nav a.nav-item:not(.nav-item-parent):not(.active),
 .launcher-sidebar nav button.nav-item:not(.nav-item-parent):not(.active):not(.nav-item--root) {
   color: #101828;
@@ -287,7 +287,7 @@ html, body {
   color: #667085;
 }
 
-/* Item ativo: fundo #d7dcdc, ícone azul primário */
+/* Item ativo: fundo #d7dcdc, ?cone azul prim?rio */
 .launcher-sidebar nav a.nav-item.active,
 .launcher-sidebar nav button.nav-item.active {
   background: #d7dcdc;
@@ -319,7 +319,7 @@ html, body {
   display: none;
 }
 
-/* Páginas de cadastro (Contatos, E-mail, Mensagem voz) – conteúdo em tela cheia */
+/* P?ginas de cadastro (Contatos, E-mail, Mensagem voz) ??? conte?do em tela cheia */
 .cadastro-page {
   position: relative;
   flex: 1;
@@ -413,7 +413,7 @@ html, body {
   background: var(--color-background);
 }
 
-/* Top bar do sistema (cabeçalho principal) */
+/* Top bar do sistema (cabe?alho principal) */
 .top-bar {
   width: 100%;
   display: flex;
@@ -451,13 +451,13 @@ html, body {
   position: relative;
 }
 
-/* Corpo da tela – padrão Figma (área principal, sem menu) */
+/* Corpo da tela ??? padr?o Figma (?rea principal, sem menu) */
 .content-body {
   width: 100%;
   min-height: 0;
 }
 
-/* Barra superior do conteúdo: título + ações – padrão Empresas (fundo cinza, borda inferior #E9EEEE 50%) */
+/* Barra superior do conte?do: t?tulo + a??es ??? padr?o Empresas (fundo cinza, borda inferior #E9EEEE 50%) */
 .content-toolbar {
   width: 100%;
   display: flex;
@@ -489,7 +489,7 @@ html, body {
   gap: 0.5rem;
 }
 
-/* Botões da área superior – conforme design system */
+/* Bot?es da ?rea superior ??? conforme design system */
 .content-toolbar .btn {
   display: inline-flex;
   align-items: center;
@@ -552,7 +552,7 @@ html, body {
   border-color: rgb(22, 158, 255);
 }
 
-/* Título da página no corpo (ex.: Crachás, Regras de Tratativa) – conforme design system */
+/* T?tulo da p?gina no corpo (ex.: Crach?s, Regras de Tratativa) ??? conforme design system */
 .body-page-title {
   font-size: 14.5px;
   font-weight: 600;
@@ -560,7 +560,7 @@ html, body {
   margin: 0;
 }
 
-/* Filtro: exatamente como na imagem (Visão Geral) – proporções, espaçamento, formato do balão */
+/* Filtro: exatamente como na imagem (Vis?o Geral) ??? propor??es, espa?amento, formato do bal?o */
 .type-filter-wrap {
   position: relative;
   display: inline-flex;
@@ -596,7 +596,7 @@ html, body {
   display: block;
 }
 
-/* Balão: cantos arredondados, margem interna para o destaque não tocar a borda (igual multiselect das modais) */
+/* Bal?o: cantos arredondados, margem interna para o destaque n?o tocar a borda (igual multiselect das modais) */
 .type-filter-dropdown {
   position: absolute;
   left: 0;
@@ -656,7 +656,7 @@ html, body {
   color: var(--color-text-secondary);
 }
 
-/* Botões – padrão Figma (azul primário #169EFF) */
+/* Bot?es ??? padr?o Figma (azul prim?rio #169EFF) */
 .btn {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
@@ -708,7 +708,7 @@ html, body {
   font-size: 0.8125rem;
 }
 
-/* Badges – padrão Figma (tags arredondadas, ex.: Vinculado) */
+/* Badges ??? padr?o Figma (tags arredondadas, ex.: Vinculado) */
 .badge {
   display: inline-block;
   padding: 0.25rem 0.625rem;
@@ -735,7 +735,7 @@ html, body {
   padding-right: 1.375rem;
 }
 
-/* Risk badges (nível por score: sem risco, baixo, médio, alto) – mesma largura */
+/* Risk badges (n?vel por score: sem risco, baixo, m?dio, alto) ??? mesma largura */
 .risk-badge {
   display: inline-block;
   min-width: 5.5rem;
@@ -753,7 +753,7 @@ html, body {
 .risk-badge--high { background: #FFEBEE; color: #C62828; }
 .risk-badge--critical { background: #F3E5F5; color: #6A1B9A; }
 
-/* Tooltip padrão: fundo branco, bordas arredondadas (6px), sombra cinza, fonte Noto Sans + perninha */
+/* Tooltip padr?o: fundo branco, bordas arredondadas (6px), sombra cinza, fonte Noto Sans + perninha */
 .app-tooltip-bubble {
   position: relative;
   display: block;
@@ -857,7 +857,7 @@ html, body {
   transform: translateY(-50%) rotate(45deg);
 }
 
-/* Legado: mantém compatibilidade se algum tooltip antigo ainda usar só .level-tooltip */
+/* Legado: mant?m compatibilidade se algum tooltip antigo ainda usar s? .level-tooltip */
 .level-tooltip {
   position: absolute;
   bottom: 100%;
@@ -894,7 +894,7 @@ html, body {
   display: block;
 }
 
-/* Tooltip à direita do ícone (evita corte na borda da tela) */
+/* Tooltip ? direita do ?cone (evita corte na borda da tela) */
 .level-tooltip-wrap--tooltip-right .level-tooltip:not(.app-tooltip-bubble) {
   bottom: auto;
   left: 100%;
@@ -912,7 +912,7 @@ html, body {
   transform: translateY(-50%) rotate(45deg);
 }
 
-/* Tooltip posicionada acima do título da coluna (portal) */
+/* Tooltip posicionada acima do t?tulo da coluna (portal) */
 .level-tooltip--above-header {
   bottom: auto !important;
   left: auto !important;
@@ -927,7 +927,7 @@ html, body {
   z-index: 99999 !important;
 }
 
-/* Tabs – mesma cor em todas, só linha azul na ativa (mais grossa), sem linha cinza */
+/* Tabs ??? mesma cor em todas, s? linha azul na ativa (mais grossa), sem linha cinza */
 .risk-tabs {
   display: flex;
   gap: 0;
@@ -959,7 +959,7 @@ html, body {
   border-bottom: 0.2rem solid var(--color-primary);
 }
 
-/* Tables – padrão Empresas (cabeçalho com fundo cinza #F2F4F7, bordas arredondadas, sem border) */
+/* Tables ??? padr?o Empresas (cabe?alho com fundo cinza #F2F4F7, bordas arredondadas, sem border) */
 .list-table {
   width: 100%;
   table-layout: fixed;
@@ -1015,7 +1015,7 @@ html, body {
   background: var(--color-background);
 }
 
-/* Histórico: 4 colunas (Data/Hora, Tipo, Ação, Usuário); 2rem entre colunas; coluna Ação mais larga */
+/* Hist?rico: 4 colunas (Data/Hora, Tipo, A??o, Usu?rio); 2rem entre colunas; coluna A??o mais larga */
 .history-list .list-table thead th,
 .history-list .list-table tbody td {
   padding-left: 1rem;
@@ -1056,7 +1056,7 @@ html, body {
   display: inline;
 }
 
-/* Histórico vazio: ilustração e mensagem centralizados no centro da página */
+/* Hist?rico vazio: ilustra??o e mensagem centralizados no centro da p?gina */
 .history-list.history-list--empty {
   display: flex;
   align-items: center;
@@ -1089,7 +1089,7 @@ html, body {
   font-weight: 400;
 }
 
-/* Política: todas as colunas dentro da tabela (100% do container), sem overflow */
+/* Pol?tica: todas as colunas dentro da tabela (100% do container), sem overflow */
 .policy-list {
   width: 100%;
   max-width: 100%;
@@ -1110,8 +1110,8 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Larguras em % para 7 colunas: Empresa, Nome, Tipo, Eventos, Nível de gravidade, Status, Ações.
-   Distribuição mais equilibrada para evitar texto cortado mantendo Ações fixa e estreita. */
+/* Larguras em % para 7 colunas: Empresa, Nome, Tipo, Eventos, N?vel de gravidade, Status, A??es.
+   Distribui??o mais equilibrada para evitar texto cortado mantendo A??es fixa e estreita. */
 .policy-list .list-table th:first-child,
 .policy-list .list-table td:first-child {
   width: 14%;
@@ -1142,7 +1142,7 @@ html, body {
   min-width: 4.5rem;
   box-sizing: border-box;
 }
-/* Permite quebra de palavras longas em todas as colunas de conteúdo (não em Ações) */
+/* Permite quebra de palavras longas em todas as colunas de conte?do (n?o em A??es) */
 .policy-list .list-table td:not(:last-child) {
   white-space: normal;
   overflow: hidden;
@@ -1151,11 +1151,11 @@ html, body {
   overflow-wrap: anywhere;
 }
 
-/* Tela de Eventos: margem ao término da tabela para não cortar o texto ao rolar até o final */
+/* Tela de Eventos: margem ao t?rmino da tabela para n?o cortar o texto ao rolar at? o final */
 .score-list {
   margin-bottom: 2rem;
 }
-/* Pontuações e Tratativas: larguras fixas para Status e Ações no mesmo local ao trocar de aba */
+/* Pontua??es e Tratativas: larguras fixas para Status e A??es no mesmo local ao trocar de aba */
 .score-list .list-table th:first-child,
 .score-list .list-table td:first-child {
   width: 35%;
@@ -1201,7 +1201,7 @@ html, body {
   min-width: 4.5rem;
 }
 
-/* Política: padding equilibrado entre colunas (sem padding zero, para texto não colar nas bordas) */
+/* Pol?tica: padding equilibrado entre colunas (sem padding zero, para texto n?o colar nas bordas) */
 .policy-list .list-table th:nth-child(3),
 .policy-list .list-table td:nth-child(3),
 .policy-list .list-table th:nth-child(4),
@@ -1227,7 +1227,7 @@ html, body {
   padding-right: 0.75rem;
 }
 
-/* Pontuações: 3rem entre Tipo, Pontuação, Nível e Ações (coluna Evento inalterada); ação→fim da tabela inalterado */
+/* Pontua??es: 3rem entre Tipo, Pontua??o, N?vel e A??es (coluna Evento inalterada); a??o???fim da tabela inalterado */
 .score-list .list-table th:nth-child(2),
 .score-list .list-table td:nth-child(2),
 .score-list .list-table th:nth-child(3),
@@ -1246,7 +1246,7 @@ html, body {
   padding-right: 0.5rem;
 }
 
-/* Tratativas: 3rem entre Nível de risco, Etapas, Status e Ações; ação→fim da tabela inalterado */
+/* Tratativas: 3rem entre N?vel de risco, Etapas, Status e A??es; a??o???fim da tabela inalterado */
 .treatment-list .list-table th:nth-child(2),
 .treatment-list .list-table td:nth-child(2) {
   min-width: 8rem;
@@ -1304,7 +1304,7 @@ html, body {
   font-family: var(--font-noto-sans);
 }
 
-/* Regras de tratativa: Empresa, Nome, Ações(contagem), Status, [Ações] */
+/* Regras de tratativa: Empresa, Nome, A??es(contagem), Status, [A??es] */
 .trail-list .list-table th:first-child,
 .trail-list .list-table td:first-child {
   width: 22%;
@@ -1353,7 +1353,7 @@ html, body {
   padding-right: 0.75rem;
 }
 
-/* Pontuações: valor preenche a coluna, números centralizados */
+/* Pontua??es: valor preenche a coluna, n?meros centralizados */
 .score-value-cell {
   display: flex;
   align-items: center;
@@ -1369,7 +1369,7 @@ html, body {
   font-family: var(--font-noto-sans);
   box-sizing: border-box;
 }
-/* Na aba Pontuações: componente do número com metade da largura da coluna */
+/* Na aba Pontua??es: componente do n?mero com metade da largura da coluna */
 .score-list .score-value-cell {
   width: 50%;
 }
@@ -1389,8 +1389,8 @@ html, body {
   align-items: center;
 }
 
-/* Célula de ações sempre visível; apenas os ícones (botões) aparecem ao passar o cursor.
-   Padding à esquerda aumenta a distância entre Status (e colunas de conteúdo) e os ícones. */
+/* C?lula de a??es sempre vis?vel; apenas os ?cones (bot?es) aparecem ao passar o cursor.
+   Padding ? esquerda aumenta a dist?ncia entre Status (e colunas de conte?do) e os ?cones. */
 .list-table .list-cell-actions {
   transition: opacity 0.2s ease;
   padding-left: 0.5rem;
@@ -1409,7 +1409,7 @@ html, body {
   opacity: 1;
 }
 
-/* Botões de ação somente ícone (lápis = editar, lixeira = excluir) – padrão Figma */
+/* Bot?es de a??o somente ?cone (l?pis = editar, lixeira = excluir) ??? padr?o Figma */
 .btn-icon-action {
   display: inline-flex;
   align-items: center;
@@ -1448,7 +1448,7 @@ html, body {
   flex-shrink: 0;
 }
 
-/* Forms – padrão Figma */
+/* Forms ??? padr?o Figma */
 .form-card {
   max-width: 35rem;
   padding: 1.5rem;
@@ -1506,7 +1506,7 @@ html, body {
   margin-top: 1.5rem;
 }
 
-/* Modal – tamanhos conforme design system */
+/* Modal ??? tamanhos conforme design system */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1516,12 +1516,12 @@ html, body {
   justify-content: center;
   z-index: 1000;
 }
-/* Modal de exclusão/confirmação acima das demais modais */
+/* Modal de exclus?o/confirma??o acima das demais modais */
 .confirm-modal-overlay {
   z-index: 10050;
 }
 
-/* Modal de confirmação (sair sem salvar + alteração aplicada): 384x271, raio 8px, ícone 52x52 #E29C2C */
+/* Modal de confirma??o (sair sem salvar + altera??o aplicada): 384x271, raio 8px, ?cone 52x52 #E29C2C */
 .unsaved-confirm-overlay {
   z-index: 10050;
 }
@@ -1577,7 +1577,7 @@ html, body {
   flex-shrink: 0;
   margin-top: auto;
 }
-/* Mesmo tamanho dos botões Salvar/Cancelar da modal Nova política; Ok e Cancelar com a mesma largura */
+/* Mesmo tamanho dos bot?es Salvar/Cancelar da modal Nova pol?tica; Ok e Cancelar com a mesma largura */
 .unsaved-confirm-modal__actions .unsaved-confirm-btn--outline,
 .unsaved-confirm-modal__actions .unsaved-confirm-btn--primary {
   min-width: 7rem;
@@ -1641,7 +1641,7 @@ html, body {
   justify-content: flex-end;
 }
 
-/* Modal de exclusão: Cancelar com o mesmo formato das outras modais (cor da fonte e borda = Nova política) */
+/* Modal de exclus?o: Cancelar com o mesmo formato das outras modais (cor da fonte e borda = Nova pol?tica) */
 .confirm-modal .modal-actions .btn-secondary {
   border-color: rgb(22, 158, 255);
   color: rgb(22, 158, 255);
@@ -1653,7 +1653,7 @@ html, body {
   color: rgb(22, 158, 255);
 }
 
-/* Modal de exclusão: botão Excluir com a mesma cor de preenchimento do Nova política */
+/* Modal de exclus?o: bot?o Excluir com a mesma cor de preenchimento do Nova pol?tica */
 .confirm-modal .modal-actions .btn-danger {
   background-color: rgb(22, 158, 255);
   border-color: rgb(22, 158, 255);
@@ -1665,7 +1665,7 @@ html, body {
   color: #fff;
 }
 
-/* Toast – acima das modais (z-index maior que .unsaved-confirm-overlay 10050) */
+/* Toast ??? acima das modais (z-index maior que .unsaved-confirm-overlay 10050) */
 .toast {
   position: fixed;
   bottom: 1.5rem;
@@ -1716,7 +1716,7 @@ html, body {
   line-height: 1.4;
 }
 
-/* Page layout – corpo da tela */
+/* Page layout ??? corpo da tela */
 .page-layout {
   display: flex;
   flex-direction: column;
@@ -1738,7 +1738,7 @@ html, body {
   margin-bottom: 1rem;
 }
 
-/* Treatment step card – padrão Figma */
+/* Treatment step card ??? padr?o Figma */
 .treatment-step-card {
   display: flex;
   align-items: center;
@@ -1787,7 +1787,7 @@ html, body {
   min-width: 2rem;
 }
 
-/* Tooltip de informação (aba Pontuações – régua de risco) */
+/* Tooltip de informa??o (aba Pontua??es ??? r?gua de risco) */
 .score-info-tooltip-wrap {
   position: relative;
   display: inline-flex;
@@ -1841,7 +1841,7 @@ html, body {
   visibility: visible;
 }
 
-/* Modal Editar pontuação */
+/* Modal Editar pontua??o */
 .edit-score-modal .form-group {
   margin-bottom: 1rem;
 }
@@ -1862,7 +1862,7 @@ html, body {
   margin-top: 0.25rem;
 }
 
-/* Ícone de exclamação: tamanho único em todo o sistema, à esquerda do label */
+/* ?cone de exclama??o: tamanho ?nico em todo o sistema, ? esquerda do label */
 .field-error-icon {
   display: inline-flex;
   align-items: center;
@@ -1936,7 +1936,7 @@ html, body {
   border-color: var(--color-error);
   border-width: 1px;
 }
-/* Blocos de checkbox/radio em erro (ex.: Eventos contemplados, Usuários) */
+/* Blocos de checkbox/radio em erro (ex.: Eventos contemplados, Usu?rios) */
 .policy-form .form-group.has-error .policy-form-eventos-list,
 .policy-form .form-group.has-error .policy-form-usuarios-list {
   outline: 1px solid var(--color-error);
@@ -1975,7 +1975,7 @@ html, body {
   margin-bottom: 1.25rem;
 }
 
-/* Botões na toolbar de Pontuações – mesmo padrão da área superior */
+/* Bot?es na toolbar de Pontua??es ??? mesmo padr?o da ?rea superior */
 .scores-toolbar .btn {
   display: inline-flex;
   align-items: center;
@@ -2021,7 +2021,7 @@ html, body {
   border-color: var(--color-outline-hover);
 }
 
-/* ========== Modal Creare (abertura ao clicar botão superior) ========== */
+/* ========== Modal Creare (abertura ao clicar bot?o superior) ========== */
 .cr-modal-overlay {
   position: fixed;
   inset: 0;
@@ -2183,12 +2183,12 @@ html, body {
   padding: 16px 24px 20px 24px;
 }
 
-/* Com modal tela cheia aberta: bloqueia scroll do conteúdo (mesmo comportamento da modal Nova tratativa) */
+/* Com modal tela cheia aberta: bloqueia scroll do conte?do (mesmo comportamento da modal Nova tratativa) */
 body.cr-fullscreen-modal-open .app-content {
   overflow: hidden !important;
 }
 
-/* Modal tela cheia: mesma formatação da Nova tratativa – cobre só a área de conteúdo (não cobre menu nem cabeçalho da página) */
+/* Modal tela cheia: mesma formata??o da Nova tratativa ??? cobre s? a ?rea de conte?do (n?o cobre menu nem cabe?alho da p?gina) */
 .cr-modal-overlay--fullscreen {
   position: absolute;
   inset: 0;
@@ -2216,7 +2216,7 @@ body.cr-fullscreen-modal-open .app-content {
   background: #ffffff;
   overflow: hidden;
 }
-/* Cabeçalho da modal = mesmo estilo e mesma margem título/menu lateral que a barra "Regras de Tratativa" */
+/* Cabe?alho da modal = mesmo estilo e mesma margem t?tulo/menu lateral que a barra "Regras de Tratativa" */
 .cr-modal--fullscreen .cr-modal__header {
   display: flex;
   align-items: center;
@@ -2278,7 +2278,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin: 0;
 }
 
-/* Drawer lateral (padrão do sistema) */
+/* Drawer lateral (padr?o do sistema) */
 .cr-drawer-overlay {
   position: fixed;
   inset: 0;
@@ -2489,7 +2489,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
-/* Campo Ação e Mensagem de voz: largura do componente = largura do dropdown (lista não maior que o campo) */
+/* Campo A??o e Mensagem de voz: largura do componente = largura do dropdown (lista n?o maior que o campo) */
 .trail-step-action .modal-select {
   width: fit-content;
   max-width: 38ch;
@@ -2540,19 +2540,19 @@ body.cr-fullscreen-modal-open .app-content {
   font-style: italic;
   margin: 0 0 0.5rem 0;
 }
-/* Alinhar título da seção (ex.: "Contatos que recebem email") ao início do conteúdo da tabela (coluna Contato) */
+/* Alinhar t?tulo da se??o (ex.: "Contatos que recebem email") ao in?cio do conte?do da tabela (coluna Contato) */
 .trail-step-config > label:first-child:not(.trail-step-config__section-title) {
   padding-left: calc(2.5rem + 0.6rem * 2);
   box-sizing: border-box;
 }
-/* Mesma altura entre "Selecionar todos" e a lista que entre "Pontuação mínima" e o input (0.25rem) */
+/* Mesma altura entre "Selecionar todos" e a lista que entre "Pontua??o m?nima" e o input (0.25rem) */
 .trail-step-config > .policy-form-checkbox-option {
   margin-bottom: 0;
 }
 .trail-step-config select[multiple] {
   min-height: 80px;
 }
-/* Bloco Etapas: fundo cinza, mesmo estilo do bloco Gatilhos da política */
+/* Bloco Etapas: fundo cinza, mesmo estilo do bloco Gatilhos da pol?tica */
 .trail-form-etapas-section {
   background: #F5F6F8;
   border: 1px solid #E9EEEE;
@@ -2636,7 +2636,7 @@ body.cr-fullscreen-modal-open .app-content {
   display: flex;
   justify-content: flex-end;
 }
-/* Mesmo tamanho do botão Nova tratativa */
+/* Mesmo tamanho do bot?o Nova tratativa */
 .drawer-toolbar .btn {
   min-width: 5.5rem;
   min-height: 2rem;
@@ -2645,7 +2645,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: 600;
   border-radius: 0.5rem;
 }
-/* Tabela no drawer Gerenciar contatos: ações dentro da tabela; Turnos com quebra quando há horário */
+/* Tabela no drawer Gerenciar contatos: a??es dentro da tabela; Turnos com quebra quando h? hor?rio */
 .contacts-table-wrap.drawer-contacts-table {
   overflow-x: auto;
   width: 100%;
@@ -2661,7 +2661,7 @@ body.cr-fullscreen-modal-open .app-content {
   padding-right: 1rem;
   vertical-align: middle;
 }
-/* 7 colunas (Empresa adicionada como primeira): distribuição mais equilibrada */
+/* 7 colunas (Empresa adicionada como primeira): distribui??o mais equilibrada */
 .drawer-contacts-table .list-table th:first-child,
 .drawer-contacts-table .list-table td:first-child {
   width: 13%;
@@ -2725,7 +2725,7 @@ body.cr-fullscreen-modal-open .app-content {
   vertical-align: middle;
 }
 
-/* Tabela no drawer Gerenciar mensagens de voz: sem scroll; ações dentro da tabela; larguras em % */
+/* Tabela no drawer Gerenciar mensagens de voz: sem scroll; a??es dentro da tabela; larguras em % */
 .voice-messages-table-wrap.drawer-voice-messages-table {
   width: 100%;
   overflow-x: hidden;
@@ -2744,7 +2744,7 @@ body.cr-fullscreen-modal-open .app-content {
   word-break: break-word;
   max-width: 0;
 }
-/* 6 colunas (Empresa, Identificação, Mensagem, Dispositivo, Status, Ações) */
+/* 6 colunas (Empresa, Identifica??o, Mensagem, Dispositivo, Status, A??es) */
 .drawer-voice-messages-table .list-table th:first-child,
 .drawer-voice-messages-table .list-table td:first-child {
   width: 16%;
@@ -2801,7 +2801,7 @@ body.cr-fullscreen-modal-open .app-content {
   text-overflow: clip;
 }
 
-/* Tabela no drawer E-mail automático: Título, Descrição, Status, Ações */
+/* Tabela no drawer E-mail autom?tico: T?tulo, Descri??o, Status, A??es */
 .email-templates-table-wrap.drawer-email-templates-table {
   width: 100%;
   overflow-x: auto;
@@ -2811,7 +2811,7 @@ body.cr-fullscreen-modal-open .app-content {
   width: 100%;
   max-width: 100%;
 }
-/* 5 colunas (Empresa, Título, Descrição, Status, Ações) */
+/* 5 colunas (Empresa, T?tulo, Descri??o, Status, A??es) */
 .drawer-email-templates-table .list-table th:first-child,
 .drawer-email-templates-table .list-table td:first-child {
   width: 18%;
@@ -2859,7 +2859,7 @@ body.cr-fullscreen-modal-open .app-content {
   padding-right: 0.75rem;
 }
 
-/* Modal tela cheia: template de e-mail — esquerda variáveis, direita prévia (preview) */
+/* Modal tela cheia: template de e-mail ??? esquerda vari?veis, direita pr?via (preview) */
 .email-template-form {
   display: flex;
   flex-direction: column;
@@ -2987,7 +2987,7 @@ body.cr-fullscreen-modal-open .app-content {
   transform: translateX(1.25rem);
 }
 
-/* Área de prévia: aparência de cliente de e-mail, moderna e clara */
+/* ?rea de pr?via: apar?ncia de cliente de e-mail, moderna e clara */
 .email-template-form__preview {
   display: flex;
   flex-direction: column;
@@ -3082,7 +3082,7 @@ body.cr-fullscreen-modal-open .app-content {
   max-width: 18rem;
 }
 
-/* Modelo de e-mail COMUNICADO DE ALERTA (prévia) – estrutura sempre visível */
+/* Modelo de e-mail COMUNICADO DE ALERTA (pr?via) ??? estrutura sempre vis?vel */
 .email-preview-model {
   font-size: 0.8125rem;
   line-height: 1.5;
@@ -3366,7 +3366,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin-top: 0.25rem;
 }
 
-/* Responsivo: em telas menores, preview abaixo do formulário */
+/* Responsivo: em telas menores, preview abaixo do formul?rio */
 @media (max-width: 900px) {
   .email-template-form__body {
     grid-template-columns: 1fr;
@@ -3377,14 +3377,14 @@ body.cr-fullscreen-modal-open .app-content {
   }
 }
 
-/* Altura/distância entre blocos: Nome↔Turno igual a Horário↔Descrição */
+/* Altura/dist?ncia entre blocos: Nome???Turno igual a Hor?rio???Descri??o */
 .form-card.contact-form .form-group + .form-group,
 .form-card.contact-form .form-group + .contact-form-row,
 .form-card.contact-form .contact-form-row + .form-group,
 .form-card.contact-form .contact-form-row + .contact-form-row {
   margin-top: 1rem;
 }
-/* Reduzir distância entre a primeira linha (Nome/Telefone/Email) e Turno */
+/* Reduzir dist?ncia entre a primeira linha (Nome/Telefone/Email) e Turno */
 .form-card.contact-form .form-row + .form-group {
   margin-top: 0.5rem;
 }
@@ -3403,7 +3403,7 @@ body.cr-fullscreen-modal-open .app-content {
   line-height: 1.25;
   box-sizing: border-box;
 }
-/* Primeira linha do modal de contato: Nome, Telefone, Email — Grid 3 colunas iguais */
+/* Primeira linha do modal de contato: Nome, Telefone, Email ??? Grid 3 colunas iguais */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -3487,7 +3487,7 @@ body.cr-fullscreen-modal-open .app-content {
   width: 100%;
   box-sizing: border-box;
 }
-/* TimePicker no modal de contato: mesmo padrão dos outros campos (borda, cor, foco); 24h sem AM/PM */
+/* TimePicker no modal de contato: mesmo padr?o dos outros campos (borda, cor, foco); 24h sem AM/PM */
 .contact-form-row--time .time-picker .modal-select__label {
   font-size: 0.875rem;
   color: #344054;
@@ -3515,7 +3515,7 @@ body.cr-fullscreen-modal-open .app-content {
   background-color: #169EFF;
   color: #fff;
 }
-/* TimePicker: só horas; fonte proporcional à modal (0.875rem como os demais campos) */
+/* TimePicker: s? horas; fonte proporcional ? modal (0.875rem como os demais campos) */
 .contact-form-row--time .time-picker .modal-select__input-wrap.time-picker__trigger {
   min-height: 28px;
   padding: 6px 10px;
@@ -3563,7 +3563,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin: 0.5rem 0 0;
 }
 
-/* Campos de descrição: só redimensionar em altura, mín. 1 linha, máx. 3 linhas */
+/* Campos de descri??o: s? redimensionar em altura, m?n. 1 linha, m?x. 3 linhas */
 .textarea-description {
   resize: vertical;
   min-height: 2.5rem;
@@ -3582,7 +3582,7 @@ body.cr-fullscreen-modal-open .app-content {
   white-space: nowrap;
 }
 
-/* Mesmo tamanho do botão Nova tratativa (content-toolbar .btn) */
+/* Mesmo tamanho do bot?o Nova tratativa (content-toolbar .btn) */
 .cr-btn {
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
@@ -3604,7 +3604,7 @@ body.cr-fullscreen-modal-open .app-content {
   background: rgba(22, 158, 255, 0.08);
 }
 
-/* Mesma cor do botão Nova tratativa */
+/* Mesma cor do bot?o Nova tratativa */
 .cr-btn--primary {
   background-color: rgb(22, 158, 255);
   color: #fff;
@@ -3614,7 +3614,7 @@ body.cr-fullscreen-modal-open .app-content {
   background-color: var(--color-action-hover);
 }
 
-/* Conteúdo Editar todas as pontuações (modal tela cheia); max-width evita overflow e mantém margem direita do body (24px) */
+/* Conte?do Editar todas as pontua??es (modal tela cheia); max-width evita overflow e mant?m margem direita do body (24px) */
 .edit-all-scores-list {
   display: flex;
   flex-direction: column;
@@ -3622,7 +3622,7 @@ body.cr-fullscreen-modal-open .app-content {
   box-sizing: border-box;
   max-width: 100%;
 }
-/* Coluna Evento +7rem; Tipo, Pontuação e Níveis −7rem no total na modal Editar todos */
+/* Coluna Evento +7rem; Tipo, Pontua??o e N?veis ???7rem no total na modal Editar todos */
 .edit-all-scores-row {
   display: grid;
   grid-template-columns: calc(25% + 7rem) calc((75% - 7rem) / 3) calc((75% - 7rem) / 3) calc((75% - 7rem) / 3);
@@ -3692,7 +3692,7 @@ body.cr-fullscreen-modal-open .app-content {
   justify-content: flex-start;
 }
 
-/* Formulários dentro do cr-modal (remover card e alinhar ao corpo) */
+/* Formul?rios dentro do cr-modal (remover card e alinhar ao corpo) */
 .cr-modal__body .form-card {
   max-width: none;
   padding: 0;
@@ -3707,7 +3707,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: normal;
   color: #344054;
 }
-/* Modal Nova/Editar política: mesma formatação de texto da modal nova tratativa (fonte, tamanho, peso) */
+/* Modal Nova/Editar pol?tica: mesma formata??o de texto da modal nova tratativa (fonte, tamanho, peso) */
 .cr-modal__body .policy-form .form-group label,
 .cr-modal__body .policy-form .modal-select__label {
   font-size: 0.875rem;
@@ -3738,7 +3738,7 @@ body.cr-fullscreen-modal-open .app-content {
   box-shadow: none;
 }
 
-/* Campos em erro: borda na mesma cor do ícone de exclamação (var(--color-error)) até ser preenchido */
+/* Campos em erro: borda na mesma cor do ?cone de exclama??o (var(--color-error)) at? ser preenchido */
 .cr-modal__body .form-group.has-error input,
 .cr-modal__body .form-group.has-error select,
 .cr-modal__body .form-group.has-error textarea,
@@ -3751,7 +3751,7 @@ body.cr-fullscreen-modal-open .app-content {
   border-style: solid;
 }
 
-/* Select no modelo da imagem: pesquisável, dropdown com pills e checkboxes (modais) */
+/* Select no modelo da imagem: pesquis?vel, dropdown com pills e checkboxes (modais) */
 .cr-modal__body .modal-select {
   font-family: var(--font-noto-sans);
   font-size: 0.875rem;
@@ -3777,7 +3777,7 @@ body.cr-fullscreen-modal-open .app-content {
   color: #344054;
   margin-bottom: 6px;
 }
-/* Uma só borda fina (imagem 1); multiselect: espaçamento da seta como imagem 1 */
+/* Uma s? borda fina (imagem 1); multiselect: espa?amento da seta como imagem 1 */
 .modal-select__input-wrap {
   position: relative;
   display: flex;
@@ -3889,7 +3889,7 @@ body.cr-fullscreen-modal-open .app-content {
 .modal-select__option--selected .modal-select__chevron {
   color: #fff !important;
 }
-/* Check (v) branco quando opção selecionada, conforme referência (quadrado azul + check branco) */
+/* Check (v) branco quando op??o selecionada, conforme refer?ncia (quadrado azul + check branco) */
 .modal-select__option:hover .modal-select__checkbox,
 .modal-select__option--selected .modal-select__checkbox {
   color: #fff !important;
@@ -3901,7 +3901,7 @@ body.cr-fullscreen-modal-open .app-content {
   background: #F4ECFC;
   color: #344054;
 }
-/* Multiselect sem caixinha de seleção e sem fundo colorido no item (ex.: Turnos no editar contato) */
+/* Multiselect sem caixinha de sele??o e sem fundo colorido no item (ex.: Turnos no editar contato) */
 .modal-select--no-pill .modal-select__checkbox {
   display: none;
 }
@@ -3922,7 +3922,7 @@ body.cr-fullscreen-modal-open .app-content {
   gap: 1.5rem;
   align-items: start;
 }
-/* Configuração por evento: título e lupa na mesma linha; lupa expande para busca ao hover */
+/* Configura??o por evento: t?tulo e lupa na mesma linha; lupa expande para busca ao hover */
 .policy-form-eventos-header {
   display: flex;
   align-items: center;
@@ -3948,7 +3948,7 @@ body.cr-fullscreen-modal-open .app-content {
   transition: width 0.2s ease, min-width 0.2s ease, height 0.2s ease, background 0.2s ease, border 0.2s ease;
   box-sizing: border-box;
 }
-/* Uma só borda externa contornando lupa e texto; sem borda azul; altura reduzida */
+/* Uma s? borda externa contornando lupa e texto; sem borda azul; altura reduzida */
 .policy-form-eventos-search-expand.is-expanded {
   min-width: 12rem;
   width: 12rem;
@@ -3966,7 +3966,7 @@ body.cr-fullscreen-modal-open .app-content {
   outline: none;
   box-shadow: none;
 }
-/* Recolhido: input não ocupa espaço nem recebe hover — só a lupa é clicável */
+/* Recolhido: input n?o ocupa espa?o nem recebe hover ??? s? a lupa ? clic?vel */
 .policy-form-eventos-search-expand:not(.is-expanded) .policy-form-eventos-search-input {
   width: 0;
   min-width: 0;
@@ -4000,7 +4000,7 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-form-eventos-search-input::placeholder {
   color: #A9A9A9;
 }
-/* Lupa recolhida: só o ícone, fundo transparente; altura reduzida */
+/* Lupa recolhida: s? o ?cone, fundo transparente; altura reduzida */
 .policy-form-eventos-search-icon {
   display: inline-flex;
   align-items: center;
@@ -4029,7 +4029,7 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-form-eventos-search-expand.is-expanded .policy-form-eventos-search-icon .ds-icon {
   color: #00aaff;
 }
-/* Configuração por evento: mesma formatação da seção Gatilhos (fundo cinza, título) */
+/* Configura??o por evento: mesma formata??o da se??o Gatilhos (fundo cinza, t?tulo) */
 .policy-form-eventos-section {
   background: #F5F6F8;
   border: 1px solid #E9EEEE;
@@ -4055,7 +4055,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-style: italic;
   margin: 0 0 0.5rem 0;
 }
-/* Reduzir distância entre título "Configuração por evento" e "Selecione os eventos..." em 1rem */
+/* Reduzir dist?ncia entre t?tulo "Configura??o por evento" e "Selecione os eventos..." em 1rem */
 .policy-form-eventos-section .policy-form-eventos-header {
   margin-bottom: -0.25rem;
 }
@@ -4091,7 +4091,7 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-form-eventos-config-table-wrap {
   margin-top: 0.5rem;
 }
-/* Uma tabela: cabeçalho fixo ao rolar, Pontos e Duração ativa na mesma linha */
+/* Uma tabela: cabe?alho fixo ao rolar, Pontos e Dura??o ativa na mesma linha */
 .policy-form-eventos-config {
   width: 100%;
   min-width: 32rem;
@@ -4153,7 +4153,7 @@ body.cr-fullscreen-modal-open .app-content {
 }
 .policy-form-eventos-config th:last-child,
 .policy-form-eventos-config td:last-child { width: auto; }
-/* Coluna Duração ativa: título na mesma posição horizontal que o componente (ex.: "1 h") – alinhado à esquerda */
+/* Coluna Dura??o ativa: t?tulo na mesma posi??o horizontal que o componente (ex.: "1 h") ??? alinhado ? esquerda */
 .policy-form-eventos-config th:last-child,
 .policy-form-eventos-config td:last-child {
   padding: 0.5rem 0.25rem 0.5rem 0.5rem;
@@ -4184,7 +4184,7 @@ body.cr-fullscreen-modal-open .app-content {
   padding-bottom: 0.5rem;
   line-height: 1.25;
 }
-/* Checkbox e ícones de info na mesma altura que o texto "Evento" */
+/* Checkbox e ?cones de info na mesma altura que o texto "Evento" */
 .policy-form-eventos-config thead th:first-child,
 .policy-form-eventos-config thead th.policy-form-eventos-config-header__th-with-info {
   vertical-align: middle;
@@ -4196,12 +4196,12 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-form-eventos-config-table-wrap .policy-form-eventos-config thead th:last-child {
   border-radius: 0 8px 0 0;
 }
-/* Cabeçalho coluna Duração ativa: mesmo padding e alinhamento das células (como na coluna Tipo) */
+/* Cabe?alho coluna Dura??o ativa: mesmo padding e alinhamento das c?lulas (como na coluna Tipo) */
 .policy-form-eventos-config thead th:last-child {
   padding: 0.5rem 0.25rem 0.5rem 0.5rem !important;
   vertical-align: middle;
 }
-/* Cabeçalho com ícone de info: mesmo alinhamento que os outros th (sem flex); ícone inline ao lado do texto */
+/* Cabe?alho com ?cone de info: mesmo alinhamento que os outros th (sem flex); ?cone inline ao lado do texto */
 .policy-form-eventos-config thead th.policy-form-eventos-config-header__th-with-info {
   vertical-align: middle;
 }
@@ -4209,7 +4209,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin-left: 0.35rem;
   vertical-align: middle;
 }
-/* Label "Tipo de acompanhamento" com ícone de informação (mesmo padrão de Pontos) */
+/* Label "Tipo de acompanhamento" com ?cone de informa??o (mesmo padr?o de Pontos) */
 .policy-form-tracking-label-wrap {
   display: inline-flex;
   align-items: baseline;
@@ -4219,7 +4219,7 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-form-tracking-label-wrap .policy-form-header-info-wrap {
   margin-left: 0;
 }
-/* Ícone de informação alinhado ao pé da letra do texto ao lado */
+/* ?cone de informa??o alinhado ao p? da letra do texto ao lado */
 .policy-form-header-info-wrap {
   display: inline-flex;
   align-items: center;
@@ -4267,14 +4267,14 @@ body.cr-fullscreen-modal-open .app-content {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   transform: translateX(-50%) rotate(45deg);
 }
-/* Coluna Tipo: alinhar à esquerda como a coluna Evento (título e todas as linhas) */
+/* Coluna Tipo: alinhar ? esquerda como a coluna Evento (t?tulo e todas as linhas) */
 .score-list .list-table th:nth-child(2),
 .score-list .list-table td:nth-child(2) {
   text-align: left !important;
   padding: 0.75rem 1.25rem;
   vertical-align: middle;
 }
-/* Na aba Eventos a coluna Tipo é a última: anular o padding do last-child para o título ficar alinhado com as linhas "Vídeo" */
+/* Na aba Eventos a coluna Tipo ? a ?ltima: anular o padding do last-child para o t?tulo ficar alinhado com as linhas "V?deo" */
 .score-list .list-table thead th:nth-child(2),
 .score-list .list-table thead th:last-child:nth-child(2) {
   padding: 0.75rem 1.25rem !important;
@@ -4288,7 +4288,7 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0.5rem 0.75rem;
   vertical-align: middle;
 }
-/* Cabeçalho da coluna Tipo na política: mesmo padding e alinhamento das células */
+/* Cabe?alho da coluna Tipo na pol?tica: mesmo padding e alinhamento das c?lulas */
 .policy-form-eventos-config thead th:nth-child(3),
 .cr-modal__body .policy-form .policy-form-eventos-config thead th:nth-child(3) {
   text-align: left !important;
@@ -4298,7 +4298,7 @@ body.cr-fullscreen-modal-open .app-content {
 .score-list .list-table tbody td {
   padding: 0.75rem 1.25rem;
 }
-/* ~5 linhas visíveis: thead fixo opcional; scroll só no tbody exigiria layout extra, então scroll no wrap */
+/* ~5 linhas vis?veis: thead fixo opcional; scroll s? no tbody exigiria layout extra, ent?o scroll no wrap */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -4341,7 +4341,7 @@ body.cr-fullscreen-modal-open .app-content {
   flex-shrink: 0;
   margin-bottom: 0.25rem;
 }
-/* Seção Gatilhos: mesmo visual da seção Etapas (fundo cinza, título no topo) */
+/* Se??o Gatilhos: mesmo visual da se??o Etapas (fundo cinza, t?tulo no topo) */
 .policy-form-gatilhos-section {
   background: #F5F6F8;
   border: 1px solid #E9EEEE;
@@ -4358,7 +4358,7 @@ body.cr-fullscreen-modal-open .app-content {
   color: #344054;
   margin: 0;
 }
-/* Mesma formatação que "Selecione os eventos desta política..." + 1rem acima (distância da caixa de ocorrência) */
+/* Mesma formata??o que "Selecione os eventos desta pol?tica..." + 1rem acima (dist?ncia da caixa de ocorr?ncia) */
 .policy-form-gatilhos-hint {
   font-size: 0.6875rem;
   color: var(--color-text-secondary);
@@ -4368,12 +4368,12 @@ body.cr-fullscreen-modal-open .app-content {
 .cr-modal__body .policy-form .policy-form-gatilhos-hint {
   font-size: 0.6875rem;
 }
-/* Título dentro do card: negrito (Gatilho 1) */
+/* T?tulo dentro do card: negrito (Gatilho 1) */
 .policy-form-gatilhos-section .trail-step-title {
   font-weight: 700;
   color: #344054;
 }
-/* Ícone de lixeira no padrão azul */
+/* ?cone de lixeira no padr?o azul */
 .policy-form-gatilhos-section .trail-step-remove-btn {
   color: rgb(22, 158, 255);
 }
@@ -4381,7 +4381,7 @@ body.cr-fullscreen-modal-open .app-content {
   background: rgba(22, 158, 255, 0.08);
   color: var(--color-action-hover, #169EFF);
 }
-/* Corpo do gatilho: texto na cor padrão */
+/* Corpo do gatilho: texto na cor padr?o */
 .policy-form-gatilho-body,
 .policy-form-gatilho-body .trail-step-action label,
 .policy-form-gatilho-body .modal-select__label {
@@ -4392,7 +4392,7 @@ body.cr-fullscreen-modal-open .app-content {
   border: 1px solid #E9EEEE;
   border-radius: 8px;
 }
-/* Gatilhos na política: mesmo layout das etapas da tratativa (trail-step-card) */
+/* Gatilhos na pol?tica: mesmo layout das etapas da tratativa (trail-step-card) */
 .policy-form-gatilho-points-inline label,
 .policy-form-gatilho-trail-inline .modal-select__label {
   font-size: 0.75rem;
@@ -4412,7 +4412,7 @@ body.cr-fullscreen-modal-open .app-content {
   max-width: 38ch;
 }
 
-/* Usuários atribuídos: mesmo fundo e formatação da seção Gatilhos */
+/* Usu?rios atribu?dos: mesmo fundo e formata??o da se??o Gatilhos */
 .policy-form-usuarios-section {
   background: #F5F6F8;
   border: 1px solid #E9EEEE;
@@ -4440,7 +4440,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin-top: 0.25rem;
 }
 
-/* Tabela de usuários existentes: mesmo cabeçalho da tabela de eventos (Nome, Email, Grupo de organização) */
+/* Tabela de usu?rios existentes: mesmo cabe?alho da tabela de eventos (Nome, Email, Grupo de organiza??o) */
 .policy-form-usuarios-table-wrap {
   background: #F0F0F0;
   border: 1px solid #E9EEEE;
@@ -4511,7 +4511,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: 500;
 }
 
-/* Garantir estilos da seção Gatilhos dentro do modal Nova/Editar política */
+/* Garantir estilos da se??o Gatilhos dentro do modal Nova/Editar pol?tica */
 .cr-modal__body .policy-form .policy-form-gatilhos-section {
   background: #F5F6F8;
   border: 1px solid #E9EEEE;
@@ -4542,8 +4542,8 @@ body.cr-fullscreen-modal-open .app-content {
   box-sizing: border-box;
 }
 
-/* Formato padrão de multiselect (igual ao nível de risco na modal tratativa): label + lista com borda */
-/* Exceção: modal Nova/Editar política – títulos dos campos em negrito */
+/* Formato padr?o de multiselect (igual ao n?vel de risco na modal tratativa): label + lista com borda */
+/* Exce??o: modal Nova/Editar pol?tica ??? t?tulos dos campos em negrito */
 .policy-form .form-group > label:not([for]),
 .policy-form .form-group .policy-form-multiselect-label {
   display: block;
@@ -4581,7 +4581,7 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-form-usuarios-list .policy-form-checkbox-option:not(:last-child) {
   border-bottom: 1px solid #E4E7EC;
 }
-/* Alinhar ícone de seleção com o texto (ex.: "Selecionar todos") em toda modal */
+/* Alinhar ?cone de sele??o com o texto (ex.: "Selecionar todos") em toda modal */
 .policy-form-checkbox-option {
   display: flex;
   align-items: center;
@@ -4608,7 +4608,7 @@ body.cr-fullscreen-modal-open .app-content {
   line-height: 1.25;
 }
 
-/* Política: descrição redimensionável só na vertical; aviso em vermelho e itálico */
+/* Pol?tica: descri??o redimension?vel s? na vertical; aviso em vermelho e it?lico */
 .policy-form-desc {
   resize: vertical;
   min-height: 2.5rem;
@@ -4621,7 +4621,7 @@ body.cr-fullscreen-modal-open .app-content {
   color: #c62828;
   font-style: italic;
 }
-/* Opções fora da lista (Selecionar todos, Todos/Específicos) */
+/* Op??es fora da lista (Selecionar todos, Todos/Espec?ficos) */
 .policy-form .form-group > .policy-form-checkbox-option {
   margin-bottom: 0.25rem;
   display: flex;
@@ -4632,7 +4632,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin: 0;
 }
 
-/* Nível de risco (política e tratativa): somente texto, sem fundo colorido */
+/* N?vel de risco (pol?tica e tratativa): somente texto, sem fundo colorido */
 .policy-form .modal-select .modal-select__option-pill,
 .treatment-form .modal-select .modal-select__option-pill,
 .trail-form .modal-select .modal-select__option-pill,
@@ -4679,7 +4679,7 @@ body.cr-fullscreen-modal-open .app-content {
   color: var(--color-text-secondary);
 }
 
-/* Corpo da página e conteúdo das abas/modais: 14px, Noto Sans, regular (como títulos das tabelas) */
+/* Corpo da p?gina e conte?do das abas/modais: 14px, Noto Sans, regular (como t?tulos das tabelas) */
 .risk-rules-content,
 .risk-rules-content .risk-tab,
 .risk-rules-content .list-table th,
@@ -4706,7 +4706,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: 400;
 }
 
-/* Aviso fixo: eventos não contemplados em nenhuma política (mesma cor do toast de aviso) */
+/* Aviso fixo: eventos n?o contemplados em nenhuma pol?tica (mesma cor do toast de aviso) */
 .policy-coverage-warning {
   position: sticky;
   top: 0;
@@ -4751,7 +4751,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: 400;
 }
 
-/* Botões CTA: Noto Sans Semibold 12px (toolbar superior e dentro das modais) */
+/* Bot?es CTA: Noto Sans Semibold 12px (toolbar superior e dentro das modais) */
 .content-toolbar .btn,
 .scores-toolbar .btn,
 .cr-modal__footer .btn,
@@ -4764,7 +4764,7 @@ body.cr-fullscreen-modal-open .app-content {
   font-size: 12px;
 }
 
-/* —— Operações: tela de eventos —— */
+/* ?????? Opera??es: tela de eventos ?????? */
 .operacoes-eventos-page {
   display: flex;
   flex-direction: column;
@@ -4819,7 +4819,7 @@ body.cr-fullscreen-modal-open .app-content {
   display: inline-flex;
 }
 
-/** Faixa de filtro avançado em listagens de cadastros (Contatos/E-mail/Mensagem de voz/Política/Regras). */
+/** Faixa de filtro avan?ado em listagens de cadastros (Contatos/E-mail/Mensagem de voz/Pol?tica/Regras). */
 .advanced-filter-toolbar {
   display: flex;
   justify-content: flex-end;
@@ -4830,12 +4830,12 @@ body.cr-fullscreen-modal-open .app-content {
   position: relative;
 }
 
-/** Painel de filtros avançados quando aberto em listagens de cadastros. */
+/** Painel de filtros avan?ados quando aberto em listagens de cadastros. */
 .advanced-filter__panel {
   margin-bottom: 1rem;
 }
 
-/** Wrapper das abas Detalhes/Histórico dentro da política aberta. */
+/** Wrapper das abas Detalhes/Hist?rico dentro da pol?tica aberta. */
 .policy-detail-tabs {
   display: flex;
   flex-direction: column;
@@ -5060,7 +5060,7 @@ body.cr-fullscreen-modal-open .app-content {
   text-overflow: ellipsis;
 }
 
-/* Espaçamento uniforme entre Placa, Motorista e Data/hora */
+/* Espa?amento uniforme entre Placa, Motorista e Data/hora */
 .operacoes-eventos-table .operacoes-col-data {
   padding-left: 1rem;
   padding-right: 1rem;
@@ -5124,7 +5124,7 @@ body.cr-fullscreen-modal-open .app-content {
   min-width: 0;
 }
 
-/* Tooltip de texto truncado (mesmo padrão policy-form-header-info-tooltip) */
+/* Tooltip de texto truncado (mesmo padr?o policy-form-header-info-tooltip) */
 .truncated-text-tooltip-wrap {
   display: block;
   min-width: 0;
@@ -5546,8 +5546,8 @@ body.cr-fullscreen-modal-open .app-content {
   background: #ebebeb;
 }
 
-/** Bloco wrapper com título acima da barra (Ocorrências pendentes / Eventos tratados). */
-/** Container que agrupa "Ocorrências pendentes" e "Eventos tratados" no mesmo cartão. */
+/** Bloco wrapper com t?tulo acima da barra (Ocorr?ncias pendentes / Eventos tratados). */
+/** Container que agrupa "Ocorr?ncias pendentes" e "Eventos tratados" no mesmo cart?o. */
 .central-controle-status-frame {
   background: #f6fbfb;
   border-radius: 8px;
@@ -5651,7 +5651,7 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0;
 }
 
-/** Wrapper do LevelTooltip ao redor de cada segmento — recebe o flex
+/** Wrapper do LevelTooltip ao redor de cada segmento ??? recebe o flex
  *  proporcional vindo do estado (1, 4, 5, etc.), garantindo que o tooltip
  *  do componente compartilhado nao quebre o layout flex da barra. */
 .central-controle-status-segment-wrap {
@@ -5731,12 +5731,12 @@ body.cr-fullscreen-modal-open .app-content {
   background: rgba(47, 47, 47, 0.06);
 }
 
-.central-controle-status-segment:first-child,
+/* Apenas o primeiro/?ltimo wrapper na barra de indicadores recebe borda
+   arredondada ? segmentos do meio permanecem retangulares. */
 .central-controle-status-bar > .central-controle-status-segment-wrap:first-child .central-controle-status-segment {
   border-radius: 15px 0 0 15px;
 }
 
-.central-controle-status-segment:last-child,
 .central-controle-status-bar > .central-controle-status-segment-wrap:last-child .central-controle-status-segment {
   border-radius: 0 15px 15px 0;
 }
@@ -6001,6 +6001,10 @@ body.cr-fullscreen-modal-open .app-content {
   justify-content: center;
   flex-shrink: 0;
   line-height: 0;
+  /* Mesma largura do bot?o de play da ocorr?ncia principal (IconOpenOccurrence
+     32x32) para que o badge "IA" caia na mesma coluna entre as duas linhas. */
+  width: 32px;
+  height: 32px;
 }
 
 .central-controle-row__expand-btn {
@@ -6074,7 +6078,7 @@ body.cr-fullscreen-modal-open .app-content {
   border-radius: 12px;
 }
 
-/* Modal detalhe do evento (Operações → Eventos) */
+/* Modal detalhe do evento (Opera??es ??? Eventos) */
 .operacoes-event-detail-form {
   min-height: 0;
 }
@@ -6293,7 +6297,7 @@ body.cr-fullscreen-modal-open .app-content {
   }
 }
 
-/* Central de controle — seletor de período */
+/* Central de controle ??? seletor de per?odo */
 .central-controle-period-picker {
   position: relative;
   width: 100%;
@@ -6508,7 +6512,7 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 /* ===========================================================================
-   Modal de validação de alertas (botão play da Central de Controle)
+   Modal de valida??o de alertas (bot?o play da Central de Controle)
    =========================================================================== */
 
 .central-validacao-modal {
@@ -6703,13 +6707,13 @@ body.cr-fullscreen-modal-open .app-content {
   min-height: 160px;
 }
 
-/** Quando expandido, ocupa toda a área da grade (2 colunas x 2 linhas). */
+/** Quando expandido, ocupa toda a ?rea da grade (2 colunas x 2 linhas). */
 .central-validacao-video-tile.is-expanded {
   grid-column: 1 / -1;
   grid-row: 1 / -1;
 }
 
-/** Esconde os demais tiles enquanto há um expandido (sem alterar a estrutura do grid). */
+/** Esconde os demais tiles enquanto h? um expandido (sem alterar a estrutura do grid). */
 .central-validacao-videos.has-expanded .central-validacao-video-tile:not(.is-expanded) {
   display: none;
 }
@@ -6736,7 +6740,7 @@ body.cr-fullscreen-modal-open .app-content {
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
 }
 
-/** Botão flutuante para expandir vídeo, aparece somente no hover do tile. */
+/** Bot?o flutuante para expandir v?deo, aparece somente no hover do tile. */
 .central-validacao-video-tile__expand {
   position: absolute;
   top: 0.5rem;
@@ -6763,7 +6767,7 @@ body.cr-fullscreen-modal-open .app-content {
   opacity: 1;
 }
 
-/** Tile expandido: botão sempre visível para permitir o "comprimir". */
+/** Tile expandido: bot?o sempre vis?vel para permitir o "comprimir". */
 .central-validacao-video-tile.is-expanded .central-validacao-video-tile__expand {
   opacity: 1;
 }
@@ -6780,7 +6784,7 @@ body.cr-fullscreen-modal-open .app-content {
   min-height: 160px;
 }
 
-/** Controles de zoom do mapa (lupa+ / lupa-) — pareados em pílula branca. */
+/** Controles de zoom do mapa (lupa+ / lupa-) ??? pareados em p?lula branca. */
 .central-validacao-map__zoom {
   position: absolute;
   top: 0.75rem;
@@ -6931,7 +6935,7 @@ body.cr-fullscreen-modal-open .app-content {
   overflow-y: auto;
 }
 
-/* Versão dropup: dropdown abre para cima */
+/* Vers?o dropup: dropdown abre para cima */
 .central-validacao-select--dropup .central-validacao-select__dropdown {
   top: auto;
   bottom: calc(100% + 4px);
@@ -6974,7 +6978,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin: 0.25rem 0.5rem;
 }
 
-/* Outros apontamentos: opções com checkbox */
+/* Outros apontamentos: op??es com checkbox */
 .central-validacao-select__dropdown--checkbox {
   padding: 0.5rem 0.5rem;
 }
@@ -7181,13 +7185,13 @@ body.cr-fullscreen-modal-open .app-content {
   border-color: #e9eeee;
 }
 
-/* Quando o botão desabilitado fica dentro do wrapper de tooltip, o ponteiro deve passar pelo wrapper */
+/* Quando o bot?o desabilitado fica dentro do wrapper de tooltip, o ponteiro deve passar pelo wrapper */
 .central-validacao-footer .level-tooltip-wrap {
   display: inline-flex;
 }
 
 /* ===========================================================================
-   Aba "Informações" do modal de validação
+   Aba "Informa??es" do modal de valida??o
    =========================================================================== */
 
 .central-validacao-info {
@@ -7197,8 +7201,8 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0.5rem 0.25rem 1rem;
 }
 
-/** Mesmo padrão visual de "Dados do veículo" (DetailSection) — borda verde-azulada,
-   título em #344054, font-size 14px, weight 600. */
+/** Mesmo padr?o visual de "Dados do ve?culo" (DetailSection) ??? borda verde-azulada,
+   t?tulo em #344054, font-size 14px, weight 600. */
 .central-validacao-info__section {
   margin-bottom: 1.25rem;
   padding: 0;
@@ -7288,7 +7292,7 @@ body.cr-fullscreen-modal-open .app-content {
   color: #475467;
 }
 
-/* Campo Condutor aberto para seleção quando não identificado */
+/* Campo Condutor aberto para sele??o quando n?o identificado */
 .central-validacao-info__field--select .central-validacao-info__select-trigger {
   width: 100%;
   display: flex;
@@ -7388,7 +7392,7 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 /* ============================================================== */
-/* TratativaOcorrenciaModal � modal cheia exibida ao final do      */
+/* TratativaOcorrenciaModal ? modal cheia exibida ao final do      */
 /* fluxo de validacao, com sidebar do card unico, abas, acoes,     */
 /* contatos e cronometro de tempo em tratativa.                    */
 /* ============================================================== */
@@ -7480,11 +7484,16 @@ body.cr-fullscreen-modal-open .app-content {
   grid-column: span 1;
 }
 
+/* Linha 1: 2 metades de 3 colunas. */
 .tratativa-field--col-1-3 { grid-column: 1 / span 3; }
 .tratativa-field--col-3-5 { grid-column: 4 / span 3; }
-.tratativa-field--col-3-4 { grid-column: 4 / span 1; }
-.tratativa-field--col-4-6 { grid-column: 5 / span 1; }
-.tratativa-field--col-6-7 { grid-column: 6 / span 1; }
+/* Linha 2: tipo de evento (2), gravidade (1), tratativa (2), tempo (1). */
+.tratativa-field--col-1-2 { grid-column: 1 / span 2; }
+.tratativa-field--col-2-3 { grid-column: 3 / span 1; }
+.tratativa-field--col-4-5 { grid-column: 4 / span 2; }
+.tratativa-field--col-5-6 { grid-column: 6 / span 1; }
+/* Auxiliar: usado em "Grupos de organiza??o" no ve?culo (2 colunas a partir
+   da segunda celula). */
 .tratativa-field--col-2-4 { grid-column: 2 / span 2; }
 
 .tratativa-field__label {
@@ -7861,4 +7870,76 @@ body.cr-fullscreen-modal-open .app-content {
   background: rgba(22, 158, 255, 0.08);
   color: #0f6cb6;
   font-weight: 600;
+}
+
+/* ---- Aba Eventos da TratativaOcorrenciaModal ---- */
+.tratativa-eventos {
+  gap: 1rem;
+}
+
+.tratativa-eventos-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tratativa-eventos-player {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(220px, 0.4fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.tratativa-eventos-timeline {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.875rem;
+  padding-top: 0.25rem;
+}
+
+.tratativa-eventos-timeline__bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: #e9eef1;
+  grid-column: 2 / span 1;
+}
+
+.tratativa-eventos-timeline__cursor {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #169eff;
+  box-shadow: 0 0 0 3px rgba(22, 158, 255, 0.18);
+}
+
+.tratativa-eventos-timeline__marks {
+  grid-column: 2 / span 1;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-noto-sans);
+  font-size: 0.75rem;
+  color: #98a2b3;
+  margin-top: 0.375rem;
+}
+
+.tratativa-eventos-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  border-radius: 8px;
+  width: 2.5rem;
+  height: 2.5rem;
+  cursor: pointer;
+}
+
+.tratativa-eventos-play:hover {
+  background: #f8fbfd;
 }

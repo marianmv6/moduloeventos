@@ -3,12 +3,6 @@ import type { CentralOccurrenceSeverity } from './operacoesCentral.types';
 /** Tipo da política aplicada (afeta o título do card lateral). */
 export type TratativaPolicyKind = 'veiculo' | 'motorista';
 
-/** Trilha selecionável (mock — a integração real virá do cadastro de Tratativas). */
-export type TratativaTrailOption = {
-  id: string;
-  label: string;
-};
-
 /** Cada ação prevista na trilha selecionada. */
 export interface TratativaAction {
   id: string;
@@ -27,7 +21,38 @@ export interface TratativaContact {
   phone: string;
 }
 
-/** Dados gerais utilizados pelas abas Tratativa e Informações. */
+/** Motoristas disponíveis para selecionar na aba "Informações". */
+export interface TratativaDriverOption {
+  id: string;
+  name: string;
+  organizationGroups: { id: string; label: string }[];
+}
+
+/** Veículos disponíveis para selecionar na aba "Informações" / "Eventos". */
+export interface TratativaVehicleOption {
+  id: string;
+  placa: string;
+  prefixo: string;
+  tipo: string;
+  marca: string;
+  modelo: string;
+  anoModelo: string;
+  combustivel: string;
+  organizationGroups: { id: string; label: string }[];
+}
+
+/** Evento previamente validado, exibido na aba "Eventos". */
+export interface TratativaValidatedEvent {
+  id: string;
+  /** Ordem (1, 2, 3...) usada no rótulo do select ("01 — 08:13:25"). */
+  sequence: number;
+  /** Hora exibida no rótulo (HH:MM:SS). */
+  time: string;
+  /** Tipo de alerta confirmado pelo analista (ex.: "Sonolência N1"). */
+  validatedAs: string;
+}
+
+/** Dados gerais utilizados pelas abas Tratativa, Informações e Eventos. */
 export interface TratativaOcorrenciaData {
   /** Identificador da ocorrência sendo tratada. */
   occurrenceId: string;
@@ -44,25 +69,20 @@ export interface TratativaOcorrenciaData {
   eventTypeLabel: string;
   gravityLabel: string;
 
-  trailOptions: TratativaTrailOption[];
-  selectedTrailId: string;
+  /** Trilha de tratativa aplicada (campo readonly na aba "Tratativa"). */
+  trailLabel: string;
   actions: TratativaAction[];
   contacts: TratativaContact[];
 
   /** Dados exibidos na aba Informações. */
   company: { name: string };
-  driver?: {
-    name: string;
-    organizationGroups: { id: string; label: string }[];
-  };
-  vehicle?: {
-    placa: string;
-    prefixo: string;
-    tipo: string;
-    marca: string;
-    modelo: string;
-    anoModelo: string;
-    combustivel: string;
-    organizationGroups: { id: string; label: string }[];
-  };
+  driverOptions: TratativaDriverOption[];
+  /** Motorista inicialmente selecionado (id). null = não identificado. */
+  selectedDriverId: string | null;
+  vehicleOptions: TratativaVehicleOption[];
+  /** Veículo inicialmente selecionado (id). null = não identificado. */
+  selectedVehicleId: string | null;
+
+  /** Eventos validados anteriormente — alimentam o select da aba "Eventos". */
+  validatedEvents: TratativaValidatedEvent[];
 }

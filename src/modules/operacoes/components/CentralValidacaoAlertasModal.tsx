@@ -423,14 +423,14 @@ const OutrosApontamentosSelect: React.FC<OutrosApontamentosSelectProps> = ({
   );
 };
 
-interface VideoTileProps {
+export interface VideoTileProps {
   label: string;
   placeholder: string;
   expanded: boolean;
   onToggleExpand: () => void;
 }
 
-const VideoTile: React.FC<VideoTileProps> = ({ label, placeholder, expanded, onToggleExpand }) => (
+export const VideoTile: React.FC<VideoTileProps> = ({ label, placeholder, expanded, onToggleExpand }) => (
   <div
     className={`central-validacao-video-tile${expanded ? ' is-expanded' : ''}`}
     aria-label={label}
@@ -455,7 +455,7 @@ const VideoTile: React.FC<VideoTileProps> = ({ label, placeholder, expanded, onT
   </div>
 );
 
-const MapPanel: React.FC = () => (
+export const MapPanel: React.FC = () => (
   <div className="central-validacao-map" aria-label="Localização do veículo">
     <div className="central-validacao-map__bg" aria-hidden />
     <div className="central-validacao-map__pin" aria-hidden>
