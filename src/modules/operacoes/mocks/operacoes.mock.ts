@@ -3,6 +3,7 @@ import type { OperacoesEventRow } from '../types/operacoes.types';
 export const mockOperacoesEvents: OperacoesEventRow[] = [
   {
     id: 'ev-1',
+    companyId: 'creare',
     placa: 'SLE3P56',
     eventType: 'Sonolência N2',
     category: 'sonolencia',
@@ -15,6 +16,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
   },
   {
     id: 'ev-2',
+    companyId: 'bracell',
     placa: 'FAL0M70',
     eventType: 'Operação de carregamento',
     category: 'carregamento',
@@ -27,6 +29,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
   },
   {
     id: 'ev-3',
+    companyId: 'expresso-nepomuceno',
     placa: 'IQP2A01',
     eventType: 'Sem cinto de segurança',
     category: 'cinto',
@@ -39,6 +42,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
   },
   {
     id: 'ev-4',
+    companyId: 'transpetro',
     placa: 'HQH5986',
     eventType: 'Entrada / saída de cerca',
     category: 'cerca',
@@ -51,6 +55,7 @@ export const mockOperacoesEvents: OperacoesEventRow[] = [
   },
   {
     id: 'ev-5',
+    companyId: 'jbs',
     placa: 'BKR5I96',
     eventType: 'Excesso de velocidade',
     category: 'velocidade',

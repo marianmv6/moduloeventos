@@ -1110,32 +1110,45 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Larguras em % para efeito visual: Nome mais largo, demais colunas cabem em 100% */
+/* Larguras em % para 7 colunas: Empresa, Nome, Tipo, Eventos, Nível de gravidade, Status, Ações.
+   Distribuição mais equilibrada para evitar texto cortado mantendo Ações fixa e estreita. */
 .policy-list .list-table th:first-child,
 .policy-list .list-table td:first-child {
-  width: 32%;
+  width: 14%;
 }
 .policy-list .list-table th:nth-child(2),
 .policy-list .list-table td:nth-child(2) {
-  width: 10%;
+  width: 22%;
 }
 .policy-list .list-table th:nth-child(3),
 .policy-list .list-table td:nth-child(3) {
-  width: 22%;
-  text-align: center;
+  width: 12%;
 }
 .policy-list .list-table th:nth-child(4),
 .policy-list .list-table td:nth-child(4) {
-  width: 16%;
+  width: 22%;
 }
 .policy-list .list-table th:nth-child(5),
 .policy-list .list-table td:nth-child(5) {
-  width: 12%;
+  width: 14%;
+}
+.policy-list .list-table th:nth-child(6),
+.policy-list .list-table td:nth-child(6) {
+  width: 10%;
 }
 .policy-list .list-table th:last-child,
 .policy-list .list-table td:last-child {
-  width: 8%;
+  width: 6%;
+  min-width: 4.5rem;
   box-sizing: border-box;
+}
+/* Permite quebra de palavras longas em todas as colunas de conteúdo (não em Ações) */
+.policy-list .list-table td:not(:last-child) {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 /* Tela de Eventos: margem ao término da tabela para não cortar o texto ao rolar até o final */
@@ -1188,24 +1201,17 @@ html, body {
   min-width: 4.5rem;
 }
 
-/* Política: espaçamento entre colunas; ação→fim da tabela inalterado */
+/* Política: padding equilibrado entre colunas (sem padding zero, para texto não colar nas bordas) */
 .policy-list .list-table th:nth-child(3),
 .policy-list .list-table td:nth-child(3),
 .policy-list .list-table th:nth-child(4),
 .policy-list .list-table td:nth-child(4),
 .policy-list .list-table th:nth-child(5),
-.policy-list .list-table td:nth-child(5) {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-.policy-list .list-table th:first-child,
-.policy-list .list-table td:first-child {
-  padding-right: 0;
-}
-.policy-list .list-table th:nth-child(2),
-.policy-list .list-table td:nth-child(2) {
-  padding-left: 0;
-  padding-right: 1rem;
+.policy-list .list-table td:nth-child(5),
+.policy-list .list-table th:nth-child(6),
+.policy-list .list-table td:nth-child(6) {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 .policy-list .list-table .list-cell-actions {
   padding-left: 0.5rem;
@@ -1298,28 +1304,40 @@ html, body {
   font-family: var(--font-noto-sans);
 }
 
-/* Trilhas: Nome, Ações (contagem), Status, botões */
+/* Regras de tratativa: Empresa, Nome, Ações(contagem), Status, [Ações] */
 .trail-list .list-table th:first-child,
 .trail-list .list-table td:first-child {
-  width: 50%;
+  width: 22%;
 }
 .trail-list .list-table th:nth-child(2),
 .trail-list .list-table td:nth-child(2) {
-  width: 30%;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  width: 38%;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 .trail-list .list-table th:nth-child(3),
 .trail-list .list-table td:nth-child(3) {
-  width: 12%;
+  width: 18%;
   padding-left: 1rem;
   padding-right: 1rem;
+}
+.trail-list .list-table th:nth-child(4),
+.trail-list .list-table td:nth-child(4) {
+  width: 14%;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 .trail-list .list-table th:last-child,
 .trail-list .list-table td:last-child {
   width: 8%;
   min-width: 4.5rem;
   box-sizing: border-box;
+}
+.trail-list .list-table td:not(:last-child) {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 .trail-list .list-table .list-cell-actions {
   padding-left: 0.5rem;
@@ -2643,42 +2661,48 @@ body.cr-fullscreen-modal-open .app-content {
   padding-right: 1rem;
   vertical-align: middle;
 }
+/* 7 colunas (Empresa adicionada como primeira): distribuição mais equilibrada */
 .drawer-contacts-table .list-table th:first-child,
 .drawer-contacts-table .list-table td:first-child {
-  width: 16%;
-  white-space: nowrap;
+  width: 13%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .drawer-contacts-table .list-table th:nth-child(2),
 .drawer-contacts-table .list-table td:nth-child(2) {
-  width: calc(13% + 2rem);
-  white-space: nowrap;
+  width: 14%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .drawer-contacts-table .list-table th:nth-child(3),
 .drawer-contacts-table .list-table td:nth-child(3) {
-  width: 18%;
+  width: 14%;
   white-space: nowrap;
 }
 .drawer-contacts-table .list-table th:nth-child(4),
 .drawer-contacts-table .list-table td:nth-child(4) {
-  width: 20%;
-  min-width: 6rem;
+  width: 16%;
   white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 .drawer-contacts-table .list-table th:nth-child(5),
 .drawer-contacts-table .list-table td:nth-child(5) {
-  width: 18%;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  width: 16%;
+  min-width: 6rem;
   white-space: normal;
+  overflow-wrap: anywhere;
+}
+.drawer-contacts-table .list-table th:nth-child(6),
+.drawer-contacts-table .list-table td:nth-child(6) {
+  width: 19%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .drawer-contacts-table .list-table th:last-child,
 .drawer-contacts-table .list-table td:last-child {
-  width: 10%;
-  min-width: 5.5rem;
+  width: 8%;
+  min-width: 4.75rem;
   padding-left: 0.5rem;
   padding-right: 0.75rem;
   white-space: nowrap;
@@ -2720,23 +2744,30 @@ body.cr-fullscreen-modal-open .app-content {
   word-break: break-word;
   max-width: 0;
 }
+/* 6 colunas (Empresa, Identificação, Mensagem, Dispositivo, Status, Ações) */
 .drawer-voice-messages-table .list-table th:first-child,
 .drawer-voice-messages-table .list-table td:first-child {
   width: 16%;
 }
 .drawer-voice-messages-table .list-table th:nth-child(2),
 .drawer-voice-messages-table .list-table td:nth-child(2) {
-  width: 32%;
+  width: 18%;
 }
 .drawer-voice-messages-table .list-table th:nth-child(3),
 .drawer-voice-messages-table .list-table td:nth-child(3) {
-  width: 14%;
+  width: 30%;
 }
 .drawer-voice-messages-table .list-table th:nth-child(4),
 .drawer-voice-messages-table .list-table td:nth-child(4) {
-  width: 12%;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  width: 14%;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+.drawer-voice-messages-table .list-table th:nth-child(5),
+.drawer-voice-messages-table .list-table td:nth-child(5) {
+  width: 14%;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
   white-space: nowrap;
 }
 .drawer-voice-messages-table .list-table th:last-child,
@@ -2780,19 +2811,30 @@ body.cr-fullscreen-modal-open .app-content {
   width: 100%;
   max-width: 100%;
 }
+/* 5 colunas (Empresa, Título, Descrição, Status, Ações) */
 .drawer-email-templates-table .list-table th:first-child,
 .drawer-email-templates-table .list-table td:first-child {
-  width: 28%;
+  width: 18%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .drawer-email-templates-table .list-table th:nth-child(2),
 .drawer-email-templates-table .list-table td:nth-child(2) {
-  width: 38%;
+  width: 26%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .drawer-email-templates-table .list-table th:nth-child(3),
 .drawer-email-templates-table .list-table td:nth-child(3) {
+  width: 36%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.drawer-email-templates-table .list-table th:nth-child(4),
+.drawer-email-templates-table .list-table td:nth-child(4) {
   width: 12%;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 .drawer-email-templates-table .list-table th:last-child,
 .drawer-email-templates-table .list-table td:last-child {
@@ -4777,6 +4819,40 @@ body.cr-fullscreen-modal-open .app-content {
   display: inline-flex;
 }
 
+/** Faixa de filtro avançado em listagens de cadastros (Contatos/E-mail/Mensagem de voz/Política/Regras). */
+.advanced-filter-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.advanced-filter-toolbar .operacoes-view-toggle-wrap {
+  position: relative;
+}
+
+/** Painel de filtros avançados quando aberto em listagens de cadastros. */
+.advanced-filter__panel {
+  margin-bottom: 1rem;
+}
+
+/** Wrapper das abas Detalhes/Histórico dentro da política aberta. */
+.policy-detail-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.policy-detail-tabs__tabs {
+  flex-shrink: 0;
+}
+
+.policy-detail-tabs__panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
 .operacoes-view-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -4926,37 +5002,46 @@ body.cr-fullscreen-modal-open .app-content {
   table-layout: fixed;
 }
 
+.operacoes-eventos-table .operacoes-col-empresa {
+  width: 16%;
+  min-width: 8rem;
+}
+
 .operacoes-eventos-table .operacoes-col-evento {
-  width: 38%;
+  width: 28%;
   min-width: 11rem;
 }
 
 .operacoes-eventos-table .operacoes-col-placa {
-  width: 14%;
+  width: 12%;
 }
 
 .operacoes-eventos-table .operacoes-col-motorista {
-  width: 24%;
+  width: 22%;
 }
 
 .operacoes-eventos-table .operacoes-col-datetime {
+  width: 16%;
+}
+
+.operacoes-eventos-table--map-visible .operacoes-col-empresa {
   width: 18%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-evento {
-  width: 42%;
+  width: 32%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-placa {
-  width: 15%;
+  width: 13%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-motorista {
-  width: 26%;
+  width: 23%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-datetime {
-  width: 19%;
+  width: 18%;
 }
 
 .operacoes-eventos-table .operacoes-col-acoes {
@@ -5245,8 +5330,10 @@ body.cr-fullscreen-modal-open .app-content {
   margin-bottom: 1.25rem;
 }
 
+/* Linhas em grid de 4 colunas iguais (Figma): primary preenche 4, secondary 3 + 1 vazia. */
 .central-controle-filter-panel__row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   width: 100%;
 }
@@ -5254,30 +5341,6 @@ body.cr-fullscreen-modal-open .app-content {
 .central-controle-filter-panel__row > .modal-select,
 .central-controle-filter-panel__row > .central-controle-period-picker {
   min-width: 0;
-}
-
-.central-controle-filter-panel__row--primary > :nth-child(1) {
-  flex: 518 1 0;
-}
-
-.central-controle-filter-panel__row--primary > :nth-child(2) {
-  flex: 206 1 0;
-}
-
-.central-controle-filter-panel__row--primary > :nth-child(3) {
-  flex: 296 1 0;
-}
-
-.central-controle-filter-panel__row--secondary > :nth-child(1) {
-  flex: 251 1 0;
-}
-
-.central-controle-filter-panel__row--secondary > :nth-child(2) {
-  flex: 251 1 0;
-}
-
-.central-controle-filter-panel__row--secondary > :nth-child(3) {
-  flex: 203 1 0;
 }
 
 .policy-form-header-info-tooltip.app-tooltip-bubble--nowrap {
@@ -5292,11 +5355,10 @@ body.cr-fullscreen-modal-open .app-content {
   }
 
   .central-controle-filter-panel__row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .central-controle-filter-panel__row > * {
-    flex: 1 1 auto !important;
     width: 100%;
   }
 }
@@ -5484,23 +5546,109 @@ body.cr-fullscreen-modal-open .app-content {
   background: #ebebeb;
 }
 
+/** Bloco wrapper com título acima da barra (Ocorrências pendentes / Eventos tratados). */
+/** Container que agrupa "Ocorrências pendentes" e "Eventos tratados" no mesmo cartão. */
+.central-controle-status-frame {
+  background: #f6fbfb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.central-controle-status-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.central-controle-status-frame .central-controle-status-block {
+  margin-bottom: 0;
+}
+
+.central-controle-status-block__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.central-controle-status-block__title {
+  margin: 0;
+  font-family: var(--font-noto-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #2f2f2f;
+}
+
+.central-controle-status-block__percent {
+  font-family: var(--font-noto-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #2BA56C;
+}
+
+.central-controle-status-block .central-controle-status-bar {
+  margin-bottom: 0;
+}
+
+/** Barra de "Eventos tratados": progresso (tratados em verde, pendentes em cinza). */
+.central-controle-treated-bar {
+  display: flex;
+  width: 100%;
+  gap: 2px;
+  padding: 0;
+  background: transparent;
+  border-radius: 999px;
+  min-height: 1.25rem;
+  height: 1.25rem;
+  box-sizing: border-box;
+  align-items: center;
+  overflow: hidden;
+}
+
+.central-controle-treated-bar__segment {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 100%;
+  color: #fff;
+  font-family: var(--font-noto-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.central-controle-treated-bar__segment--treated {
+  background: #38B670;
+}
+
+.central-controle-treated-bar__segment--pending {
+  background: rgba(47, 47, 47, 0.2);
+  color: #ffffff;
+}
+
 .central-controle-status-bar {
   display: flex;
   width: 100%;
   gap: 2px;
-  padding: 17px;
-  background: #f6fbfb;
-  border-radius: 8px;
-  margin-bottom: 1.25rem;
-  min-height: 4rem;
-  height: 4rem;
+  padding: 0;
+  background: transparent;
+  border-radius: 999px;
+  margin-bottom: 0;
+  min-height: 1.875rem;
+  height: 1.875rem;
   box-sizing: border-box;
   align-items: center;
+  overflow: hidden;
 }
 
 .central-controle-status-bar--filtered {
   gap: 0;
-  padding: 17px;
+  padding: 0;
 }
 
 .central-controle-status-segment {
@@ -5828,6 +5976,14 @@ body.cr-fullscreen-modal-open .app-content {
 
 .central-controle-status--validado {
   color: #667085;
+}
+
+.central-controle-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
 }
 
 .central-controle-row__expand-btn {
@@ -6520,6 +6676,17 @@ body.cr-fullscreen-modal-open .app-content {
   min-height: 160px;
 }
 
+/** Quando expandido, ocupa toda a área da grade (2 colunas x 2 linhas). */
+.central-validacao-video-tile.is-expanded {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+}
+
+/** Esconde os demais tiles enquanto há um expandido (sem alterar a estrutura do grid). */
+.central-validacao-videos.has-expanded .central-validacao-video-tile:not(.is-expanded) {
+  display: none;
+}
+
 .central-validacao-video-tile__label {
   position: absolute;
   top: 0.5rem;
@@ -6542,12 +6709,86 @@ body.cr-fullscreen-modal-open .app-content {
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
 }
 
+/** Botão flutuante para expandir vídeo, aparece somente no hover do tile. */
+.central-validacao-video-tile__expand {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.central-validacao-video-tile:hover .central-validacao-video-tile__expand,
+.central-validacao-video-tile:focus-within .central-validacao-video-tile__expand,
+.central-validacao-video-tile__expand:focus-visible {
+  opacity: 1;
+}
+
+/** Tile expandido: botão sempre visível para permitir o "comprimir". */
+.central-validacao-video-tile.is-expanded .central-validacao-video-tile__expand {
+  opacity: 1;
+}
+
+.central-validacao-video-tile__expand:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
 .central-validacao-map {
   position: relative;
   background: #e6ecef;
   border-radius: 4px;
   overflow: hidden;
   min-height: 160px;
+}
+
+/** Controles de zoom do mapa (lupa+ / lupa-) — pareados em pílula branca. */
+.central-validacao-map__zoom {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid rgba(47, 47, 47, 0.2);
+  height: 40px;
+  overflow: hidden;
+}
+
+.central-validacao-map__zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #2f2f2f;
+  cursor: pointer;
+}
+
+.central-validacao-map__zoom-btn:hover {
+  background: rgba(47, 47, 47, 0.06);
+}
+
+.central-validacao-map__zoom-divider {
+  width: 1px;
+  height: 100%;
+  background: rgba(47, 47, 47, 0.2);
 }
 
 .central-validacao-map__bg {
@@ -6771,11 +7012,23 @@ body.cr-fullscreen-modal-open .app-content {
   min-height: 38px;
 }
 
-.central-validacao-confirm:disabled {
+.central-validacao-confirm:hover {
+  background: #1389e6;
+  border-color: #1389e6;
+}
+
+.central-validacao-confirm--confirmed,
+.central-validacao-confirm:disabled,
+.central-validacao-confirm[aria-disabled='true'] {
   background: #e9eeee;
   border-color: #e9eeee;
   color: #98a2b3;
   cursor: not-allowed;
+}
+
+.central-validacao-confirm--confirmed:hover {
+  background: #e9eeee;
+  border-color: #e9eeee;
 }
 
 .central-validacao-zoom {

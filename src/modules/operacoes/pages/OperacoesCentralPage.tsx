@@ -10,6 +10,8 @@ import {
   IconOnlineStatus,
   IconOpenOccurrence,
   IconRowChevron,
+  IconStatusValidated,
+  IconStatusWaitingValidation,
 } from '../components/CentralControleIcons';
 import { IconFilterBars } from '../components/IconFilterBars';
 import {
@@ -105,6 +107,32 @@ function CentralStatusBar({
           <span className="central-controle-status-segment__label">{label}</span>
         </button>
       ))}
+    </div>
+  );
+}
+
+/** Barra de "Eventos tratados": mostra a proporção tratada vs. pendente, sem clique. */
+function CentralTreatedBar({ treated, pending }: { treated: number; pending: number }) {
+  const total = treated + pending;
+  const treatedFlex = Math.max(treated, total > 0 ? 0.0001 : 0);
+  const pendingFlex = Math.max(pending, total > 0 ? 0.0001 : 0);
+
+  return (
+    <div className="central-controle-treated-bar" role="group" aria-label="Eventos tratados">
+      <div
+        className="central-controle-treated-bar__segment central-controle-treated-bar__segment--treated"
+        style={{ flex: `${treatedFlex} 1 0%` }}
+        aria-label={`Tratados: ${treated}`}
+      >
+        <span className="central-controle-treated-bar__value">{treated}</span>
+      </div>
+      <div
+        className="central-controle-treated-bar__segment central-controle-treated-bar__segment--pending"
+        style={{ flex: `${pendingFlex} 1 0%` }}
+        aria-label={`Pendentes: ${pending}`}
+      >
+        <span className="central-controle-treated-bar__value">{pending}</span>
+      </div>
     </div>
   );
 }
@@ -339,9 +367,18 @@ function EventOccurrenceRow({
           />
         ) : event.validationStatus ? (
           <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
-            <span className={`central-controle-status central-controle-status--${event.validationStatus}`}>
-              {STATUS_LABEL[event.validationStatus]}
-            </span>
+            <LevelTooltip text={STATUS_LABEL[event.validationStatus]} topLayer nowrap>
+              <span
+                className={`central-controle-status-icon central-controle-status-icon--${event.validationStatus}`}
+                aria-label={STATUS_LABEL[event.validationStatus]}
+              >
+                {event.validationStatus === 'aguardando' ? (
+                  <IconStatusWaitingValidation />
+                ) : (
+                  <IconStatusValidated />
+                )}
+              </span>
+            </LevelTooltip>
           </div>
         ) : null}
       </td>
@@ -394,6 +431,9 @@ export const OperacoesCentralPage: React.FC = () => {
     [allOccurrences],
   );
 
+  /** Mock fixo (45 tratados / 10 pendentes = 81%) — bate com o design de referência. */
+  const treatedSummary = useMemo(() => ({ treated: 45, pending: 10 }), []);
+
   const filteredOccurrences = useMemo(
     () =>
       allOccurrences.filter((entry) => {
@@ -434,7 +474,7 @@ export const OperacoesCentralPage: React.FC = () => {
     <div className="operacoes-central-page page-layout content-body">
       <div className="content-toolbar top-bar central-controle-toolbar">
         <div className="content-toolbar-left central-controle-toolbar__title-wrap">
-          <h1 className="body-page-title">Central de controle</h1>
+          <h1 className="body-page-title">Central de tratativas</h1>
         </div>
         <div className="content-toolbar-right central-controle-toolbar__actions">
           <CentralControleToolbarSearch />
@@ -467,12 +507,34 @@ export const OperacoesCentralPage: React.FC = () => {
           <CentralControleFilterBanner appliedFilters={appliedFilters} onClear={handleClearFilters} />
         )}
 
-        <CentralStatusBar
-          summary={statusSummary}
-          selectedFilter={severityFilter}
-          onSelectFilter={setSeverityFilter}
-          onClearFilter={() => setSeverityFilter(null)}
-        />
+        <div className="central-controle-status-frame">
+          <div className="central-controle-status-block">
+            <div className="central-controle-status-block__head">
+              <h2 className="central-controle-status-block__title">Ocorrências pendentes</h2>
+            </div>
+            <CentralStatusBar
+              summary={statusSummary}
+              selectedFilter={severityFilter}
+              onSelectFilter={setSeverityFilter}
+              onClearFilter={() => setSeverityFilter(null)}
+            />
+          </div>
+
+          <div className="central-controle-status-block">
+            <div className="central-controle-status-block__head">
+              <h2 className="central-controle-status-block__title">Eventos tratados</h2>
+              <span className="central-controle-status-block__percent">
+                {(() => {
+                  const total = treatedSummary.treated + treatedSummary.pending;
+                  return total > 0
+                    ? `${Math.round((treatedSummary.treated / total) * 100)}% concluído`
+                    : '0% concluído';
+                })()}
+              </span>
+            </div>
+            <CentralTreatedBar treated={treatedSummary.treated} pending={treatedSummary.pending} />
+          </div>
+        </div>
 
         <section className="central-controle-ocorrencias" aria-label="Ocorrências">
           <div className="central-controle-ocorrencias__head">

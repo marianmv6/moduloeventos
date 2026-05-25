@@ -84,14 +84,13 @@ const IconCheckCircle: React.FC<IconProps> = (props) => (
 );
 
 const IconHourglass: React.FC<IconProps> = (props) => (
-  <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden {...props}>
-    <path
-      d="M2 1H10M2 13H10M2.5 1V4.2C2.5 4.6 2.65 4.99 2.93 5.27L5.07 7.41C5.46 7.8 5.46 8.43 5.07 8.83L2.93 10.97C2.65 11.25 2.5 11.64 2.5 12.04V13M9.5 1V4.2C9.5 4.6 9.35 4.99 9.07 5.27L6.93 7.41C6.54 7.8 6.54 8.43 6.93 8.83L9.07 10.97C9.35 11.25 9.5 11.64 9.5 12.04V13"
-      stroke="#9AA1A6"
-      strokeWidth="1.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden {...props}>
+    <g opacity="0.2">
+      <path
+        d="M5 12.5H10V10.625C10 9.9375 9.75521 9.34896 9.26562 8.85938C8.77604 8.36979 8.1875 8.125 7.5 8.125C6.8125 8.125 6.22396 8.36979 5.73438 8.85938C5.24479 9.34896 5 9.9375 5 10.625V12.5ZM2.5 13.75V12.5H3.75V10.625C3.75 9.98958 3.89844 9.39323 4.19531 8.83594C4.49219 8.27865 4.90625 7.83333 5.4375 7.5C4.90625 7.16667 4.49219 6.72135 4.19531 6.16406C3.89844 5.60677 3.75 5.01042 3.75 4.375V2.5H2.5V1.25H12.5V2.5H11.25V4.375C11.25 5.01042 11.1016 5.60677 10.8047 6.16406C10.5078 6.72135 10.0938 7.16667 9.5625 7.5C10.0938 7.83333 10.5078 8.27865 10.8047 8.83594C11.1016 9.39323 11.25 9.98958 11.25 10.625V12.5H12.5V13.75H2.5Z"
+        fill="#2F2F2F"
+      />
+    </g>
   </svg>
 );
 
@@ -121,6 +120,43 @@ const IconChevronDown: React.FC<IconProps> = (props) => (
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconExpandVideo: React.FC<IconProps> = (props) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
+    <path
+      d="M3 21V15H5V17.6L8.1 14.5L9.5 15.9L6.4 19H9V21H3ZM15.9 9.5L14.5 8.1L17.6 5H15V3H21V9H19V6.4L15.9 9.5Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+/** Ícone "comprimir" – exibido quando um vídeo está ocupando toda a área dos vídeos. */
+const IconCollapseVideo: React.FC<IconProps> = (props) => (
+  <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden {...props}>
+    <path
+      d="M7.4 26L6 24.6L12.6 18H8V16H16V24H14V19.4L7.4 26ZM16 16V8H18V12.6L24.6 6L26 7.4L19.4 14H24V16H16Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+const IconZoomIn: React.FC<IconProps> = (props) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden {...props}>
+    <path
+      d="M16.6 18L10.3 11.7C9.8 12.1 9.225 12.4167 8.575 12.65C7.925 12.8833 7.2333 13 6.5 13C4.6833 13 3.1458 12.3708 1.8875 11.1125C0.6292 9.8542 0 8.3167 0 6.5C0 4.6833 0.6292 3.1458 1.8875 1.8875C3.1458 0.6292 4.6833 0 6.5 0C8.3167 0 9.8542 0.6292 11.1125 1.8875C12.3708 3.1458 13 4.6833 13 6.5C13 7.2333 12.8833 7.925 12.65 8.575C12.4167 9.225 12.1 9.8 11.7 10.3L18 16.6L16.6 18ZM6.5 11C7.75 11 8.8125 10.5625 9.6875 9.6875C10.5625 8.8125 11 7.75 11 6.5C11 5.25 10.5625 4.1875 9.6875 3.3125C8.8125 2.4375 7.75 2 6.5 2C5.25 2 4.1875 2.4375 3.3125 3.3125C2.4375 4.1875 2 5.25 2 6.5C2 7.75 2.4375 8.8125 3.3125 9.6875C4.1875 10.5625 5.25 11 6.5 11ZM5.5 9.5V7.5H3.5V5.5H5.5V3.5H7.5V5.5H9.5V7.5H7.5V9.5H5.5Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+const IconZoomOut: React.FC<IconProps> = (props) => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden {...props}>
+    <path
+      d="M16.6 18L10.3 11.7C9.8 12.1 9.225 12.4167 8.575 12.65C7.925 12.8833 7.2333 13 6.5 13C4.6833 13 3.1458 12.3708 1.8875 11.1125C0.6292 9.8542 0 8.3167 0 6.5C0 4.6833 0.6292 3.1458 1.8875 1.8875C3.1458 0.6292 4.6833 0 6.5 0C8.3167 0 9.8542 0.6292 11.1125 1.8875C12.3708 3.1458 13 4.6833 13 6.5C13 7.2333 12.8833 7.925 12.65 8.575C12.4167 9.225 12.1 9.8 11.7 10.3L18 16.6L16.6 18ZM6.5 11C7.75 11 8.8125 10.5625 9.6875 9.6875C10.5625 8.8125 11 7.75 11 6.5C11 5.25 10.5625 4.1875 9.6875 3.3125C8.8125 2.4375 7.75 2 6.5 2C5.25 2 4.1875 2.4375 3.3125 3.3125C2.4375 4.1875 2 5.25 2 6.5C2 7.75 2.4375 8.8125 3.3125 9.6875C4.1875 10.5625 5.25 11 6.5 11ZM4 7.5V5.5H9V7.5H4Z"
+      fill="currentColor"
     />
   </svg>
 );
@@ -386,9 +422,32 @@ const OutrosApontamentosSelect: React.FC<OutrosApontamentosSelectProps> = ({
   );
 };
 
-const VideoTile: React.FC<{ label: string; placeholder: string }> = ({ label, placeholder }) => (
-  <div className="central-validacao-video-tile" aria-label={label}>
+interface VideoTileProps {
+  label: string;
+  placeholder: string;
+  expanded: boolean;
+  onToggleExpand: () => void;
+}
+
+const VideoTile: React.FC<VideoTileProps> = ({ label, placeholder, expanded, onToggleExpand }) => (
+  <div
+    className={`central-validacao-video-tile${expanded ? ' is-expanded' : ''}`}
+    aria-label={label}
+  >
     <span className="central-validacao-video-tile__label">{label}</span>
+    <button
+      type="button"
+      className="central-validacao-video-tile__expand"
+      aria-label={expanded ? 'Restaurar vídeo' : 'Expandir vídeo'}
+      title={expanded ? 'Restaurar' : 'Expandir'}
+      aria-pressed={expanded}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggleExpand();
+      }}
+    >
+      {expanded ? <IconCollapseVideo /> : <IconExpandVideo />}
+    </button>
     <div className="central-validacao-video-tile__placeholder" aria-hidden>
       {placeholder}
     </div>
@@ -403,6 +462,15 @@ const MapPanel: React.FC = () => (
         <circle cx="17" cy="17" r="11" fill="#169EFF" />
         <path d="M17 11L21 17L17 23L13 17L17 11Z" fill="#fff" />
       </svg>
+    </div>
+    <div className="central-validacao-map__zoom" role="group" aria-label="Zoom do mapa">
+      <button type="button" className="central-validacao-map__zoom-btn" aria-label="Aproximar">
+        <IconZoomIn />
+      </button>
+      <span className="central-validacao-map__zoom-divider" aria-hidden />
+      <button type="button" className="central-validacao-map__zoom-btn" aria-label="Afastar">
+        <IconZoomOut />
+      </button>
     </div>
   </div>
 );
@@ -594,6 +662,8 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   });
   const [otherAnnotations, setOtherAnnotations] = useState<Record<string, string[]>>({});
   const [selectedDriver, setSelectedDriver] = useState<string>('');
+  /** Vídeo expandido (ocupa toda a área dos vídeos). null = nenhum. */
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -618,12 +688,6 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   const isLastEvent = activeIndex === totalEvents - 1;
   const isCurrentConfirmed = activeEvent ? confirmedIds.has(activeEvent.id) : false;
 
-  /** Devolver só aparece se o analista ainda não confirmou nada nesta sessão */
-  const isFirstSession = useMemo(
-    () => events.every((event, idx) => idx === activeIndex || !confirmedIds.has(event.id)),
-    [events, confirmedIds, activeIndex],
-  );
-
   const setActiveAlertType = (value: CentralAlertType) => {
     if (!activeEvent) return;
     setAlertTypes((prev) => ({ ...prev, [activeEvent.id]: value }));
@@ -639,6 +703,17 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
     setConfirmedIds((prev) => {
       const next = new Set(prev);
       next.add(activeEvent.id);
+      return next;
+    });
+  };
+
+  /** Quando o analista altera tipo/apontamentos depois de confirmar, exigimos nova confirmação */
+  const resetActiveConfirmed = () => {
+    if (!activeEvent) return;
+    setConfirmedIds((prev) => {
+      if (!prev.has(activeEvent.id)) return prev;
+      const next = new Set(prev);
+      next.delete(activeEvent.id);
       return next;
     });
   };
@@ -739,11 +814,29 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
         {activeTab === 'detalhes' ? (
           <>
             <div className="central-validacao-body">
-              <div className="central-validacao-videos" role="group" aria-label="Câmeras">
-                <VideoTile label="Condutor" placeholder="Visão do condutor" />
-                <VideoTile label="Frontal" placeholder="Visão frontal" />
-                <VideoTile label="Cabine" placeholder="Visão cabine" />
-                <VideoTile label="Lateral esquerda" placeholder="Visão lateral" />
+              <div
+                className={`central-validacao-videos${expandedVideo ? ' has-expanded' : ''}`}
+                role="group"
+                aria-label="Câmeras"
+              >
+                {(
+                  [
+                    { id: 'condutor', label: 'Condutor', placeholder: 'Visão do condutor' },
+                    { id: 'frontal', label: 'Frontal', placeholder: 'Visão frontal' },
+                    { id: 'cabine', label: 'Cabine', placeholder: 'Visão cabine' },
+                    { id: 'lateral', label: 'Lateral esquerda', placeholder: 'Visão lateral' },
+                  ] as const
+                ).map((cam) => (
+                  <VideoTile
+                    key={cam.id}
+                    label={cam.label}
+                    placeholder={cam.placeholder}
+                    expanded={expandedVideo === cam.id}
+                    onToggleExpand={() =>
+                      setExpandedVideo((prev) => (prev === cam.id ? null : cam.id))
+                    }
+                  />
+                ))}
               </div>
 
               <MapPanel />
@@ -757,26 +850,31 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               <AlertTypeSelect
                 id={`alert-type-${activeEvent.id}`}
                 value={alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert}
-                onChange={setActiveAlertType}
+                onChange={(value) => {
+                  setActiveAlertType(value);
+                  resetActiveConfirmed();
+                }}
                 showAiBadge={activeEvent.fromAi}
-                disabled={isCurrentConfirmed}
               />
 
               <OutrosApontamentosSelect
                 id={`other-annotation-${activeEvent.id}`}
                 values={otherAnnotations[activeEvent.id] ?? []}
-                onChange={setActiveOtherAnnotations}
+                onChange={(values) => {
+                  setActiveOtherAnnotations(values);
+                  resetActiveConfirmed();
+                }}
                 placeholder="Outros apontamentos"
-                disabled={isCurrentConfirmed}
               />
 
               <button
                 type="button"
-                className="central-validacao-confirm"
+                className={`central-validacao-confirm${isCurrentConfirmed ? ' central-validacao-confirm--confirmed' : ''}`}
                 onClick={handleConfirm}
                 disabled={isCurrentConfirmed}
+                aria-disabled={isCurrentConfirmed}
               >
-                Confirmar
+                {isCurrentConfirmed ? 'Confirmado' : 'Confirmar'}
               </button>
             </div>
 
@@ -804,15 +902,15 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
         )}
 
         <footer className="central-validacao-footer">
-          {isFirstSession && (
-            <button
-              type="button"
-              className="central-validacao-btn central-validacao-btn--ghost"
-              onClick={onReturn}
-            >
-              Devolver
-            </button>
-          )}
+          <button
+            type="button"
+            className="central-validacao-btn central-validacao-btn--secondary"
+            onClick={onReturn}
+            disabled={isCurrentConfirmed}
+            aria-disabled={isCurrentConfirmed}
+          >
+            Devolver
+          </button>
           {isCurrentConfirmed ? (
             <button
               type="button"

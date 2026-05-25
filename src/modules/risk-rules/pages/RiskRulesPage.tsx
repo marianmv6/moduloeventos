@@ -1,19 +1,21 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import type { ContactsPanelHandle } from '../components/treatments/ContactsPanel';
 import type { VoiceMessagesPanelHandle } from '../components/treatments/VoiceMessagesPanel';
-import type { RiskTabId } from '../types/risk.types';
+import type { EmailTemplatesPanelHandle } from '../components/treatments/EmailTemplatesPanel';
+import type { PolicyListHandle } from '../components/policy/PolicyList';
+import type { TrailListHandle } from '../components/treatments/TrailList';
 import { mockPolicies, mockScoreRules, mockTreatments, mockTrails, mockContacts, mockVoiceMessages, mockHistory, mockUsers, mockEmailTemplates } from '../mocks/risk.mock';
 import { TYPE_FILTER_OPTIONS, type TypeFilterValue } from '../constants/eventTypes';
-import { RiskTabs } from '../components/tabs/RiskTabs';
 import { PolicyList } from '../components/policy/PolicyList';
 import { PolicyForm } from '../components/policy/PolicyForm';
+import { PolicyDetailTabs } from '../components/policy/PolicyDetailTabs';
 import { ScoreList } from '../components/scores/ScoreList';
 import { TreatmentList } from '../components/treatments/TreatmentList';
 import { TreatmentForm } from '../components/treatments/TreatmentForm';
 import { TrailList } from '../components/treatments/TrailList';
 import { TrailForm } from '../components/treatments/TrailForm';
+import { AdvancedFilterToggle } from '../components/shared/AdvancedFilter';
 import { EmptyState } from '../components/shared/EmptyState';
-import { HistoryList } from '../components/history/HistoryList';
 import { ConfirmModal } from '../components/shared/ConfirmModal';
 import { UnsavedConfirmModal } from '../components/shared/UnsavedConfirmModal';
 import { AppliedConfirmModal } from '../components/shared/AppliedConfirmModal';
@@ -34,7 +36,7 @@ const ROUTE_TITLES: Record<AppRoute, string> = {
   contatos: 'Contatos',
   'email-automatico': 'E-mail automático',
   'mensagem-voz': 'Mensagem voz',
-  'central-operacoes': 'Central de controle',
+  'central-operacoes': 'Central de tratativas',
   'operacoes-eventos': 'Eventos',
 };
 
@@ -49,7 +51,6 @@ interface RiskRulesPageProps {
  */
 export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras-tratativa' }) => {
   const isCadastroPage = CADASTRO_ROUTES.includes(appRoute);
-  const [activeTab, setActiveTab] = useState<RiskTabId>('policy');
   const [typeFilter, setTypeFilter] = useState<TypeFilterValue>('todos');
   const [policies, setPolicies] = useState(mockPolicies);
   const policiesRef = useRef(policies);
@@ -78,6 +79,41 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
   const [emailTemplateEditing, setEmailTemplateEditing] = useState<EmailTemplate | null>(null);
   const contactsPanelRef = useRef<ContactsPanelHandle>(null);
   const voiceMessagesPanelRef = useRef<VoiceMessagesPanelHandle>(null);
+  const emailTemplatesPanelRef = useRef<EmailTemplatesPanelHandle>(null);
+  const policyListRef = useRef<PolicyListHandle>(null);
+  const trailListRef = useRef<TrailListHandle>(null);
+
+  /**
+   * Estado replicado da toolbar para cada listagem com filtro avançado.
+   * Necessário para destacar o botão e exibir o badge de contagem,
+   * já que o painel propriamente dito vive dentro do componente filho.
+   */
+  const [contactsFilter, setContactsFilter] = useState({ open: false, appliedCount: 0 });
+  const [voiceFilter, setVoiceFilter] = useState({ open: false, appliedCount: 0 });
+  const [emailFilter, setEmailFilter] = useState({ open: false, appliedCount: 0 });
+  const [policyFilter, setPolicyFilter] = useState({ open: false, appliedCount: 0 });
+  const [trailFilter, setTrailFilter] = useState({ open: false, appliedCount: 0 });
+
+  const handleContactsFilterChange = useCallback(
+    (s: { open: boolean; appliedCount: number }) => setContactsFilter(s),
+    [],
+  );
+  const handleVoiceFilterChange = useCallback(
+    (s: { open: boolean; appliedCount: number }) => setVoiceFilter(s),
+    [],
+  );
+  const handleEmailFilterChange = useCallback(
+    (s: { open: boolean; appliedCount: number }) => setEmailFilter(s),
+    [],
+  );
+  const handlePolicyFilterChange = useCallback(
+    (s: { open: boolean; appliedCount: number }) => setPolicyFilter(s),
+    [],
+  );
+  const handleTrailFilterChange = useCallback(
+    (s: { open: boolean; appliedCount: number }) => setTrailFilter(s),
+    [],
+  );
 
   const addHistoryEntry = (entry: Omit<HistoryEntry, 'id' | 'timestamp'>) => {
     setHistory((prev) => [
@@ -648,27 +684,48 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
           </div>
           <div className="content-toolbar-right">
             {appRoute === 'contatos' && (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => contactsPanelRef.current?.openNew()}
-              >
-                Novo contato
-              </button>
+              <>
+                <AdvancedFilterToggle
+                  open={contactsFilter.open}
+                  appliedCount={contactsFilter.appliedCount}
+                  onToggle={() => contactsPanelRef.current?.toggleFilter()}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => contactsPanelRef.current?.openNew()}
+                >
+                  Novo contato
+                </button>
+              </>
             )}
             {appRoute === 'email-automatico' && (
-              <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null)}>
-                Novo E-mail
-              </button>
+              <>
+                <AdvancedFilterToggle
+                  open={emailFilter.open}
+                  appliedCount={emailFilter.appliedCount}
+                  onToggle={() => emailTemplatesPanelRef.current?.toggleFilter()}
+                />
+                <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null)}>
+                  Novo E-mail
+                </button>
+              </>
             )}
             {appRoute === 'mensagem-voz' && (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => voiceMessagesPanelRef.current?.openNew()}
-              >
-                Nova mensagem de voz
-              </button>
+              <>
+                <AdvancedFilterToggle
+                  open={voiceFilter.open}
+                  appliedCount={voiceFilter.appliedCount}
+                  onToggle={() => voiceMessagesPanelRef.current?.toggleFilter()}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => voiceMessagesPanelRef.current?.openNew()}
+                >
+                  Nova mensagem de voz
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -681,15 +738,18 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
               onSave={handleContactSave}
               onDelete={handleContactDelete}
               onValidationError={(msg) => showToast(msg, 'warning')}
+              onFilterStateChange={handleContactsFilterChange}
             />
           )}
           {appRoute === 'email-automatico' && (
             <EmailTemplatesPanel
+              ref={emailTemplatesPanelRef}
               hideToolbar
               templates={emailTemplates}
               onNew={() => openEmailTemplateForm(null)}
               onEdit={openEmailTemplateForm}
               onDelete={handleEmailTemplateDelete}
+              onFilterStateChange={handleEmailFilterChange}
             />
           )}
           {appRoute === 'mensagem-voz' && (
@@ -699,6 +759,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
               voiceMessages={voiceMessages}
               onSave={handleVoiceMessageSave}
               onDelete={handleVoiceMessageDelete}
+              onFilterStateChange={handleVoiceFilterChange}
             />
           )}
         </div>
@@ -810,6 +871,13 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
             <h1 className="body-page-title">{ROUTE_TITLES.tratativas}</h1>
           </div>
           <div className="content-toolbar-right">
+            {!trailFormOpen && trails.length > 0 && (
+              <AdvancedFilterToggle
+                open={trailFilter.open}
+                appliedCount={trailFilter.appliedCount}
+                onToggle={() => trailListRef.current?.toggleFilter()}
+              />
+            )}
             <button type="button" className="btn btn-primary" onClick={() => openTrailForm()}>
               Nova tratativa
             </button>
@@ -849,7 +917,13 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
               onAction={() => openTrailForm()}
             />
           ) : !trailFormOpen ? (
-            <TrailList trails={trails} onEdit={(t) => openTrailForm(t)} onDelete={handleTrailDelete} />
+            <TrailList
+              ref={trailListRef}
+              trails={trails}
+              onEdit={(t) => openTrailForm(t)}
+              onDelete={handleTrailDelete}
+              onFilterStateChange={handleTrailFilterChange}
+            />
           ) : null}
         </div>
         <ConfirmModal
@@ -895,35 +969,40 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
           <h1 className="body-page-title">{ROUTE_TITLES['regras-tratativa']}</h1>
         </div>
         <div className="content-toolbar-right">
-          {activeTab === 'policy' && (
-            <button type="button" className="btn btn-primary" onClick={() => openPolicyForm()}>
-              Nova política
-            </button>
+          {!policyFormOpen && (
+            <AdvancedFilterToggle
+              open={policyFilter.open}
+              appliedCount={policyFilter.appliedCount}
+              onToggle={() => policyListRef.current?.toggleFilter()}
+            />
           )}
+          <button type="button" className="btn btn-primary" onClick={() => openPolicyForm()}>
+            Nova política
+          </button>
         </div>
       </div>
 
-      <RiskTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
       <div className="page-content risk-rules-content">
-        {activeTab === 'policy' && (
-          <>
-            {policyCoverageWarning && (
-              <div className="policy-coverage-warning" role="alert">
-                {policyCoverageWarning}
-              </div>
-            )}
-            {policyFormOpen ? (
-              <CrModal
-                open
-                title={policyEditing ? 'Editar política' : 'Nova política'}
-                onClose={requestClosePolicyForm}
-                onCancel={closePolicyForm}
-                formId="policy-form"
-                primaryLabel="Salvar"
-                cancelLabel="Cancelar"
-                fullScreen
-              >
+        {policyCoverageWarning && (
+          <div className="policy-coverage-warning" role="alert">
+            {policyCoverageWarning}
+          </div>
+        )}
+        {policyFormOpen ? (
+          <CrModal
+            open
+            title={policyEditing ? 'Editar política' : 'Nova política'}
+            onClose={requestClosePolicyForm}
+            onCancel={closePolicyForm}
+            formId="policy-form"
+            primaryLabel="Salvar"
+            cancelLabel="Cancelar"
+            fullScreen
+          >
+            <PolicyDetailTabs
+              policy={policyEditing}
+              history={history}
+              renderForm={() => (
                 <PolicyForm
                   id="policy-form"
                   initialData={policyEditing ?? undefined}
@@ -935,19 +1014,19 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                   hideActions
                   onDirtyChange={setPolicyFormDirty}
                 />
-              </CrModal>
-            ) : (
-              <PolicyList
-                policies={policies}
-                scores={scores}
-                onEdit={(p) => openPolicyForm(p)}
-                onDelete={handlePolicyDelete}
-              />
-            )}
-          </>
+              )}
+            />
+          </CrModal>
+        ) : (
+          <PolicyList
+            ref={policyListRef}
+            policies={policies}
+            scores={scores}
+            onEdit={(p) => openPolicyForm(p)}
+            onDelete={handlePolicyDelete}
+            onFilterStateChange={handlePolicyFilterChange}
+          />
         )}
-
-        {activeTab === 'history' && <HistoryList entries={history} />}
       </div>
 
       <ConfirmModal

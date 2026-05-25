@@ -3,6 +3,8 @@ import type { Trail, TrailStep, TrailStepTrigger, StepActionType, Contact } from
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
+import { COMPANY_OPTIONS } from '../../constants/companies';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const TURNOS_LABELS: Record<string, string> = {
   manha: 'Manhã',
@@ -86,6 +88,11 @@ export const TrailForm: React.FC<TrailFormProps> = ({
   onValidationError,
   onDirtyChange,
 }) => {
+  const currentUser = useCurrentUser();
+  const isClient = currentUser.kind === 'client';
+  const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
+
+  const [companyId, setCompanyId] = useState(initialData?.companyId ?? defaultCompanyId);
   const [name, setName] = useState(initialData?.name ?? '');
   const [active, setActive] = useState(initialData?.active ?? true);
   const [steps, setSteps] = useState<TrailStep[]>(() => {
@@ -188,6 +195,7 @@ export const TrailForm: React.FC<TrailFormProps> = ({
     }
     onSubmit({
       name: nameTrimmed,
+      companyId,
       trackingType: initialData?.trackingType ?? 'motorista',
       mode: initialData?.mode ?? 'points',
       steps: steps.map((s) => ({ ...s, trigger: s.trigger ?? DEFAULT_TRIGGER })),
@@ -199,6 +207,20 @@ export const TrailForm: React.FC<TrailFormProps> = ({
 
   return (
     <form id={id} className="trail-form form-card" onSubmit={handleSubmit}>
+      <div className="form-group">
+        <div className="form-group__label-row">
+          <label htmlFor="trail-company">Empresa</label>
+        </div>
+        <ModalSelect
+          id="trail-company"
+          options={currentUser.availableCompanies}
+          value={companyId}
+          onChange={(v) => setCompanyId(v)}
+          placeholder="Selecione a empresa"
+          disabled={isClient}
+          className="modal-select--no-pill"
+        />
+      </div>
       <div className={`form-group ${fieldErrors.name ? 'has-error' : ''}`}>
         <div className="form-group__label-row">
           <label htmlFor="trail-name">Nome da tratativa</label>

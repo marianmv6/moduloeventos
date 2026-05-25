@@ -13,6 +13,8 @@ export interface OperacoesEventMapPosition {
 
 export interface OperacoesEventRow {
   id: string;
+  /** Empresa proprietária do evento */
+  companyId?: string;
   placa: string;
   eventType: string;
   category: OperacoesEventCategory;

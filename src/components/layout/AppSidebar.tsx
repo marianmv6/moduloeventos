@@ -32,14 +32,6 @@ interface AppSidebarProps {
   onRouteChange: (route: AppRoute) => void;
 }
 
-function NavChevron() {
-  return (
-    <span className="nav-item-chevron" aria-hidden>
-      &#8250;
-    </span>
-  );
-}
-
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   menuLevel,
   activeRoute,
@@ -78,7 +70,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           {icon}
         </span>
         <span className="nav-item-text">{label}</span>
-        {!isActive && <NavChevron />}
       </button>
     );
   };
@@ -166,7 +157,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 <IconOperacoes />
               </span>
               <span className="nav-item-text">Operações</span>
-              <NavChevron />
             </button>
             <button
               type="button"
@@ -180,7 +170,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 <IconCadastros />
               </span>
               <span className="nav-item-text">Cadastros</span>
-              <NavChevron />
             </button>
             <button
               type="button"
@@ -194,7 +183,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 <IconConfiguracoes />
               </span>
               <span className="nav-item-text">Configurações</span>
-              <NavChevron />
             </button>
           </>
         )}
@@ -203,7 +191,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <>
             {parentItem(<IconOperacoes />, 'Operações', goRoot)}
             {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
-            {childItem('central-operacoes', 'Central de controle', <IconCentralOperacoes />)}
+            {childItem('central-operacoes', 'Central de tratativas', <IconCentralOperacoes />)}
           </>
         )}
 
@@ -212,7 +200,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {parentItem(<IconConfiguracoes />, 'Configurações', goRoot)}
             {childItem('regras-tratativa', 'Políticas de tratativa', <IconRegrasTratativa />)}
             {childItem('tratativas', 'Regras de tratativa', <IconTratativas />)}
-            {childItem('tipos-evento', 'Tipos de evento', <IconEventos />)}
           </>
         )}
 

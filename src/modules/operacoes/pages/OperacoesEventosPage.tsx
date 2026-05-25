@@ -15,6 +15,7 @@ import { TruncatedTextTooltip } from '../../risk-rules/components/shared/Truncat
 import { getIconCategoryForEventType } from '../constants/eventTypeIcons';
 import { mockOperacoesEvents } from '../mocks/operacoes.mock';
 import type { OperacoesEventRow } from '../types/operacoes.types';
+import { getCompanyName } from '../../risk-rules/constants/companies';
 
 const EVENT_FILTER_OPTIONS = [
   { value: 'all', label: 'Todos os eventos' },
@@ -23,16 +24,9 @@ const EVENT_FILTER_OPTIONS = [
   { value: 'cerca', label: 'Cerca' },
 ] as const;
 
-const PERIOD_FILTER_OPTIONS = [
-  { value: 'today', label: 'Hoje' },
-  { value: 'week', label: 'Últimos 7 dias' },
-  { value: 'month', label: 'Últimos 30 dias' },
-] as const;
-
 const ICON_BLUE = '#169EFF';
 
 type EventFilterValue = (typeof EVENT_FILTER_OPTIONS)[number]['value'];
-type PeriodFilterValue = (typeof PERIOD_FILTER_OPTIONS)[number]['value'];
 
 function IconListView() {
   return (
@@ -68,6 +62,7 @@ function applyAdvancedFilters(
   filters: OperacoesAdvancedFilters,
 ) {
   return rows.filter((row) => {
+    if (filters.empresa && row.companyId !== filters.empresa) return false;
     if (filters.placa && row.placa !== filters.placa) return false;
     if (filters.motorista && row.driverName !== filters.motorista) return false;
     if (filters.tipoEvento && row.eventType !== filters.tipoEvento) return false;
@@ -77,9 +72,7 @@ function applyAdvancedFilters(
 
 export const OperacoesEventosPage: React.FC = () => {
   const [eventFilter, setEventFilter] = useState<EventFilterValue>('all');
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilterValue>('today');
   const [eventFilterOpen, setEventFilterOpen] = useState(false);
-  const [periodFilterOpen, setPeriodFilterOpen] = useState(false);
   const [showList, setShowList] = useState(true);
   const [showMap, setShowMap] = useState(true);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
@@ -91,7 +84,6 @@ export const OperacoesEventosPage: React.FC = () => {
   );
   const [selectedEvent, setSelectedEvent] = useState<OperacoesEventRow | null>(null);
   const eventFilterRef = useRef<HTMLDivElement>(null);
-  const periodFilterRef = useRef<HTMLDivElement>(null);
 
   const filteredRows = useMemo(() => {
     let rows = mockOperacoesEvents;
@@ -109,8 +101,6 @@ export const OperacoesEventosPage: React.FC = () => {
 
   const eventFilterLabel =
     EVENT_FILTER_OPTIONS.find((o) => o.value === eventFilter)?.label ?? 'Todos os eventos';
-  const periodFilterLabel =
-    PERIOD_FILTER_OPTIONS.find((o) => o.value === periodFilter)?.label ?? 'Hoje';
 
   const toggleList = () => {
     setShowList((prev) => {
@@ -134,7 +124,6 @@ export const OperacoesEventosPage: React.FC = () => {
       if (next) {
         setDraftFilters(appliedFilters);
         setEventFilterOpen(false);
-        setPeriodFilterOpen(false);
       }
       return next;
     });
@@ -181,10 +170,7 @@ export const OperacoesEventosPage: React.FC = () => {
             <button
               type="button"
               className="type-filter-trigger"
-              onClick={() => {
-                setEventFilterOpen((v) => !v);
-                setPeriodFilterOpen(false);
-              }}
+              onClick={() => setEventFilterOpen((v) => !v)}
               aria-expanded={eventFilterOpen}
               aria-haspopup="listbox"
             >
@@ -212,49 +198,6 @@ export const OperacoesEventosPage: React.FC = () => {
                     onClick={() => {
                       setEventFilter(opt.value);
                       setEventFilterOpen(false);
-                    }}
-                  >
-                    {opt.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="type-filter-wrap" ref={periodFilterRef}>
-            <button
-              type="button"
-              className="type-filter-trigger"
-              onClick={() => {
-                setPeriodFilterOpen((v) => !v);
-                setEventFilterOpen(false);
-              }}
-              aria-expanded={periodFilterOpen}
-              aria-haspopup="listbox"
-            >
-              <span className="type-filter-label">{periodFilterLabel}</span>
-              <span className="type-filter-chevron" aria-hidden>
-                <svg width="8" height="6" viewBox="0 0 10 6" fill="none">
-                  <path
-                    d="M0 0 L5 6 L10 0"
-                    stroke="#2F2F2F"
-                    strokeWidth="1.5"
-                    strokeLinecap="square"
-                    fill="none"
-                  />
-                </svg>
-              </span>
-            </button>
-            {periodFilterOpen && (
-              <div className="type-filter-dropdown" role="listbox">
-                {PERIOD_FILTER_OPTIONS.map((opt) => (
-                  <div
-                    key={opt.value}
-                    role="option"
-                    aria-selected={periodFilter === opt.value}
-                    className="type-filter-option"
-                    onClick={() => {
-                      setPeriodFilter(opt.value);
-                      setPeriodFilterOpen(false);
                     }}
                   >
                     {opt.label}
@@ -342,6 +285,7 @@ export const OperacoesEventosPage: React.FC = () => {
             <div className="operacoes-eventos-table-wrap">
               <table className={`list-table operacoes-eventos-table${tableLayoutClass}`}>
                 <colgroup>
+                  <col className="operacoes-col-empresa" />
                   <col className="operacoes-col-evento" />
                   <col className="operacoes-col-placa" />
                   <col className="operacoes-col-motorista" />
@@ -350,6 +294,7 @@ export const OperacoesEventosPage: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
+                    <th className="operacoes-col-data">Empresa</th>
                     <th className="operacoes-col-evento-header">Tipo de evento</th>
                     <th className="operacoes-col-data">Placa/ prefixo</th>
                     <th className="operacoes-col-data">Motorista</th>
@@ -360,6 +305,9 @@ export const OperacoesEventosPage: React.FC = () => {
                 <tbody>
                   {filteredRows.map((row) => (
                     <tr key={row.id}>
+                      <td className="operacoes-col-data">
+                        <TruncatedTextTooltip text={getCompanyName(row.companyId)} />
+                      </td>
                       <td className="operacoes-col-evento-cell">
                         <span className="operacoes-event-type-cell">
                           <EventTypeIcon

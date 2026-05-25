@@ -1,6 +1,8 @@
 import type { OperacoesAdvancedFilters } from '../constants/operacoesFilterOptions';
+import { getCompanyName } from '../../risk-rules/constants/companies';
 
-const FILTER_PARAM_LABELS: Record<keyof OperacoesAdvancedFilters, string> = {
+const FILTER_PARAM_LABELS: Partial<Record<keyof OperacoesAdvancedFilters, string>> = {
+  empresa: 'empresa',
   placa: 'placa ou prefixo',
   motorista: 'motorista',
   tipoEvento: 'tipo de evento',
@@ -12,16 +14,40 @@ export interface AppliedFilterEntry {
   value: string;
 }
 
+function formatDisplayDate(iso: string): string {
+  if (!iso) return '';
+  const [year, month, day] = iso.split('-');
+  return `${day}/${month}/${year.slice(-2)}`;
+}
+
+function formatPeriod(filters: OperacoesAdvancedFilters): string {
+  const start = formatDisplayDate(filters.periodoInicio);
+  const end = formatDisplayDate(filters.periodoFim);
+  if (!start && !end) return '';
+  if (start && end) return `${start} - ${end}`;
+  return start || end;
+}
+
 export function getAppliedFilterEntries(
   filters: OperacoesAdvancedFilters,
 ): AppliedFilterEntry[] {
-  return (Object.keys(FILTER_PARAM_LABELS) as (keyof OperacoesAdvancedFilters)[])
-    .filter((key) => filters[key].trim() !== '')
-    .map((key) => ({
+  const entries: AppliedFilterEntry[] = [];
+  (Object.keys(FILTER_PARAM_LABELS) as (keyof OperacoesAdvancedFilters)[]).forEach((key) => {
+    const value = filters[key];
+    if (typeof value !== 'string' || value.trim() === '') return;
+    entries.push({
       key,
-      paramLabel: FILTER_PARAM_LABELS[key],
-      value: filters[key],
-    }));
+      paramLabel: FILTER_PARAM_LABELS[key]!,
+      value: key === 'empresa' ? getCompanyName(value) : value,
+    });
+  });
+
+  const periodLabel = formatPeriod(filters);
+  if (periodLabel) {
+    entries.push({ key: 'periodoInicio', paramLabel: 'período', value: periodLabel });
+  }
+
+  return entries;
 }
 
 export function countAppliedFilters(filters: OperacoesAdvancedFilters): number {

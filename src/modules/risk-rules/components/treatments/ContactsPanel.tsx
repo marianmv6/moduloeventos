@@ -1,10 +1,13 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import type { Contact, ContactShift } from '../../types/risk.types';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { TimePicker } from '../shared/TimePicker';
+import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
+import { COMPANY_OPTIONS, getCompanyName } from '../../constants/companies';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const TURNOS_OPTIONS: ModalSelectOption[] = [
   { value: 'manha', label: 'Manhã' },
@@ -27,6 +30,12 @@ function phoneToRaw(formatted: string): string {
 
 export interface ContactsPanelHandle {
   openNew: () => void;
+  /** Alterna o painel de filtro avançado (botão fica na toolbar do parent). */
+  toggleFilter: () => void;
+  /** Quantidade de filtros aplicados (para o badge no botão da toolbar). */
+  getAppliedFilterCount: () => number;
+  /** Indica se o painel está aberto (para destacar o botão na toolbar). */
+  isFilterOpen: () => boolean;
 }
 
 interface ContactsPanelProps {
@@ -37,14 +46,21 @@ interface ContactsPanelProps {
   onValidationError?: (message: string) => void;
   /** Oculta o CTA interno (usado quando o botão fica no cabeçalho da página) */
   hideToolbar?: boolean;
+  /** Notifica o parent sobre mudanças no filtro (estado/contagem) para sincronizar a toolbar. */
+  onFilterStateChange?: (state: { open: boolean; appliedCount: number }) => void;
 }
 
 export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>(function ContactsPanel(
-  { contacts, onSave, onDelete, onValidationError, hideToolbar = false },
+  { contacts, onSave, onDelete, onValidationError, hideToolbar = false, onFilterStateChange },
   ref
 ) {
+  const currentUser = useCurrentUser();
+  const isClient = currentUser.kind === 'client';
+  const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
+  const [companyId, setCompanyId] = useState(defaultCompanyId);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -52,10 +68,44 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
   const [turnosValue, setTurnosValue] = useState(''); // comma-separated for ModalSelect
   const [timeStart, setTimeStart] = useState('');
   const [timeEnd, setTimeEnd] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; phone?: boolean; email?: boolean }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; phone?: boolean; email?: boolean; companyId?: boolean }>({});
+
+  const EMPTY_FILTERS = { empresa: '', nome: '' };
+  const [filters, setFilters] = useState<{ empresa: string; nome: string }>(EMPTY_FILTERS);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  const filterFields: AdvancedFilterField<{ empresa: string; nome: string }>[] = [
+    { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+    {
+      key: 'nome',
+      label: 'Nome',
+      options: [...new Set(contacts.map((c) => c.name).filter(Boolean) as string[])]
+        .sort()
+        .map((n) => ({ value: n, label: n })),
+    },
+  ];
+
+  const appliedCount = useMemo(
+    () => Object.values(filters).filter((v) => v.trim() !== '').length,
+    [filters],
+  );
+
+  React.useEffect(() => {
+    onFilterStateChange?.({ open: filterOpen, appliedCount });
+  }, [filterOpen, appliedCount, onFilterStateChange]);
+
+  const filteredContacts = useMemo(() => {
+    const baseList = isClient ? contacts.filter((c) => c.companyId === currentUser.companyId) : contacts;
+    return baseList.filter((c) => {
+      if (filters.empresa && c.companyId !== filters.empresa) return false;
+      if (filters.nome && c.name !== filters.nome) return false;
+      return true;
+    });
+  }, [contacts, filters, isClient, currentUser.companyId]);
 
   const openNew = () => {
     setEditing(null);
+    setCompanyId(defaultCompanyId);
     setName('');
     setPhone('');
     setEmail('');
@@ -67,10 +117,20 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     setModalOpen(true);
   };
 
-  useImperativeHandle(ref, () => ({ openNew }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      openNew,
+      toggleFilter: () => setFilterOpen((v) => !v),
+      getAppliedFilterCount: () => appliedCount,
+      isFilterOpen: () => filterOpen,
+    }),
+    [appliedCount, filterOpen],
+  );
 
   const openEdit = (c: Contact) => {
     setEditing(c);
+    setCompanyId(c.companyId ?? defaultCompanyId);
     setName(c.name ?? '');
     setPhone(c.phone ? formatPhone(c.phone) : '');
     setEmail(c.email ?? '');
@@ -100,9 +160,10 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     const nameInvalid = !nameTrimmed;
     const phoneInvalid = phoneRaw.length < 10;
     const emailInvalid = !emailTrimmed || !emailTrimmed.includes('@');
-    const errors = { name: nameInvalid, phone: phoneInvalid, email: emailInvalid };
+    const companyInvalid = !companyId;
+    const errors = { name: nameInvalid, phone: phoneInvalid, email: emailInvalid, companyId: companyInvalid };
     setFieldErrors(errors);
-    if (nameInvalid || phoneInvalid || emailInvalid) return;
+    if (nameInvalid || phoneInvalid || emailInvalid || companyInvalid) return;
 
     const startFilled = timeStart.trim() !== '';
     const endFilled = timeEnd.trim() !== '';
@@ -116,6 +177,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
       : undefined;
     onSave({
       ...(editing?.id && { id: editing.id }),
+      companyId,
       name: nameTrimmed,
       phone: formatPhone(phoneRaw),
       email: emailTrimmed,
@@ -136,10 +198,21 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
           </button>
         </div>
       )}
+      <AdvancedFilter
+        fields={filterFields}
+        values={filters}
+        onApply={setFilters}
+        onClear={() => setFilters(EMPTY_FILTERS)}
+        emptyValues={EMPTY_FILTERS}
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        ariaLabel="Filtros de contatos"
+      />
       <div className="contacts-table-wrap drawer-contacts-table">
         <table className="list-table">
           <thead>
             <tr>
+              <th>Empresa</th>
               <th>Nome</th>
               <th>Telefone</th>
               <th>Email</th>
@@ -149,15 +222,16 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
             </tr>
           </thead>
           <tbody>
-            {contacts.length === 0 ? (
+            {filteredContacts.length === 0 ? (
               <tr>
-                <td colSpan={6} className="list-empty">
+                <td colSpan={7} className="list-empty">
                   Nenhum contato cadastrado.
                 </td>
               </tr>
             ) : (
-              contacts.map((c) => (
+              filteredContacts.map((c) => (
                 <tr key={c.id}>
+                  <td>{getCompanyName(c.companyId)}</td>
                   <td>{c.name ?? '—'}</td>
                   <td>{c.phone ?? '—'}</td>
                   <td>{c.email ?? '—'}</td>
@@ -217,6 +291,18 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
         cancelLabel="Cancelar"
       >
         <form id="contact-form" onSubmit={handleSubmit} className="form-card contact-form">
+          <div className="form-group">
+            <ModalSelect
+              id="contact-company"
+              label="Empresa"
+              value={companyId}
+              onChange={(v) => setCompanyId(v)}
+              options={currentUser.availableCompanies}
+              placeholder="Selecione a empresa"
+              disabled={isClient}
+              className="modal-select--no-pill"
+            />
+          </div>
           <div className="form-row">
             <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
               <label htmlFor="contact-name">Nome</label>

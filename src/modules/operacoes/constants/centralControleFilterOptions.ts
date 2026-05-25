@@ -1,6 +1,7 @@
 import type { ModalSelectOption } from '../../risk-rules/components/shared/ModalSelect';
 import type { CentralOccurrenceSeverity } from '../types/operacoesCentral.types';
 import { mockCentralOccurrenceList } from '../mocks/operacoesCentral.mock';
+import { COMPANY_OPTIONS } from '../../risk-rules/constants/companies';
 
 const toOptions = (values: string[]): ModalSelectOption[] =>
   values.map((v) => ({ value: v, label: v }));
@@ -14,6 +15,7 @@ const SEVERITY_LABELS: Record<CentralOccurrenceSeverity, string> = {
 
 export interface CentralControleFilters {
   tipoEvento: string;
+  empresa: string;
   placaPrefixo: string;
   motorista: string;
   gravidade: string;
@@ -26,6 +28,7 @@ export interface CentralControleFilters {
 
 export const EMPTY_CENTRAL_CONTROLE_FILTERS: CentralControleFilters = {
   tipoEvento: '',
+  empresa: '',
   placaPrefixo: '',
   motorista: '',
   gravidade: '',
@@ -35,6 +38,10 @@ export const EMPTY_CENTRAL_CONTROLE_FILTERS: CentralControleFilters = {
   periodoHoraInicio: '00:00',
   periodoHoraFim: '23:59',
 };
+
+export function getCentralEmpresaOptions(): ModalSelectOption[] {
+  return COMPANY_OPTIONS;
+}
 
 export function getCentralTipoEventoOptions(): ModalSelectOption[] {
   const values = new Set<string>();
