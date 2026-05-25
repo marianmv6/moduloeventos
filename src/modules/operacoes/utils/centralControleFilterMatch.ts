@@ -67,6 +67,9 @@ export function matchesCentralControleFilters(
   if (filters.tipoEvento && getEntryEventType(entry) !== filters.tipoEvento) return false;
   if (filters.placaPrefixo && getEntryPlacaPrefixo(entry) !== filters.placaPrefixo) return false;
   if (filters.motorista && getEntryMotorista(entry) !== filters.motorista) return false;
+  // O mock atual da Central não possui empresa por linha; o filtro existe na UI
+  // mas não restringe linhas até que o backend exponha esse vínculo.
+  void filters.empresa;
 
   if (filters.gravidade) {
     const severity = severityFromGravidadeLabel(filters.gravidade);

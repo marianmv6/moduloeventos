@@ -4,12 +4,24 @@ interface UnsavedConfirmModalProps {
   open: boolean;
   onSave: () => void;
   onDiscard: () => void;
+  /** Título exibido no modal. Default: "Confirme". */
+  title?: string;
+  /** Mensagem do corpo. Default: pergunta se deseja salvar antes de sair. */
+  message?: string;
+  /** Rótulo do botão de continuar/salvar. Default: "Salvar". */
+  saveLabel?: string;
+  /** Rótulo do botão de descartar e sair. Default: "Sair sem salvar". */
+  discardLabel?: string;
 }
 
 export const UnsavedConfirmModal: React.FC<UnsavedConfirmModalProps> = ({
   open,
   onSave,
   onDiscard,
+  title = 'Confirme',
+  message = 'Você possui alterações não salvas. Gostaria de salvar antes de sair?',
+  saveLabel = 'Salvar',
+  discardLabel = 'Sair sem salvar',
 }) => {
   if (!open) return null;
 
@@ -22,16 +34,14 @@ export const UnsavedConfirmModal: React.FC<UnsavedConfirmModalProps> = ({
             <text x="26" y="34" textAnchor="middle" fill="#E29C2C" fontSize="28" fontWeight="bold" fontFamily="sans-serif">?</text>
           </svg>
         </div>
-        <h3 className="unsaved-confirm-modal__title">Confirme</h3>
-        <p className="unsaved-confirm-modal__message">
-          Você possui alterações não salvas. Gostaria de salvar antes de sair?
-        </p>
+        <h3 className="unsaved-confirm-modal__title">{title}</h3>
+        <p className="unsaved-confirm-modal__message">{message}</p>
         <div className="unsaved-confirm-modal__actions">
           <button type="button" className="btn unsaved-confirm-btn--outline" onClick={onDiscard}>
-            Sair sem salvar
+            {discardLabel}
           </button>
           <button type="button" className="btn unsaved-confirm-btn--primary" onClick={onSave}>
-            Salvar
+            {saveLabel}
           </button>
         </div>
       </div>

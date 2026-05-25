@@ -4,12 +4,14 @@ import { CentralControleFilterBanner } from '../components/CentralControleFilter
 import { CentralControleFilterPanel } from '../components/CentralControleFilterPanel';
 import { CentralControleToolbarSearch } from '../components/CentralControleToolbarSearch';
 import { CentralValidacaoAlertasModal } from '../components/CentralValidacaoAlertasModal';
+import { TratativaOcorrenciaModal } from '../components/TratativaOcorrenciaModal';
 import {
   IconAnalystHeadset,
-  IconMonitorBot,
   IconOnlineStatus,
   IconOpenOccurrence,
   IconRowChevron,
+  IconStatusValidated,
+  IconStatusWaitingValidation,
 } from '../components/CentralControleIcons';
 import { IconFilterBars } from '../components/IconFilterBars';
 import {
@@ -19,10 +21,12 @@ import {
 import {
   buildCentralOccurrenceList,
   computeCentralStatusSummary,
+  computeCentralTreatedSummary,
   mockCentralOccurrenceExpanded,
   mockCentralValidationEvents,
   mockValidationDriverName,
 } from '../mocks/operacoesCentral.mock';
+import { mockTratativaOcorrencia } from '../mocks/tratativaOcorrencia.mock';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
 import { countCentralAppliedFilters } from '../utils/centralControleFilterSummary';
 import type {
@@ -93,18 +97,51 @@ function CentralStatusBar({
   return (
     <div className="central-controle-status-bar" role="group" aria-label="Resumo por criticidade">
       {GRAVITY_SEGMENTS.map(({ key, label, modifier }) => (
-        <button
+        <LevelTooltip
           key={key}
-          type="button"
-          className={`central-controle-status-segment central-controle-status-segment--${modifier}`}
+          text="Selecione para filtrar"
+          topLayer
+          nowrap
+          className="central-controle-status-segment-wrap"
           style={{ flex: `${summary[key]} 1 0%` }}
-          onClick={() => onSelectFilter(modifier)}
-          aria-label={`${label}: ${summary[key]}`}
         >
-          <span className="central-controle-status-segment__value">{summary[key]}</span>
-          <span className="central-controle-status-segment__label">{label}</span>
-        </button>
+          <button
+            type="button"
+            className={`central-controle-status-segment central-controle-status-segment--${modifier}`}
+            onClick={() => onSelectFilter(modifier)}
+            aria-label={`${label}: ${summary[key]}`}
+          >
+            <span className="central-controle-status-segment__value">{summary[key]}</span>
+            <span className="central-controle-status-segment__label">{label}</span>
+          </button>
+        </LevelTooltip>
       ))}
+    </div>
+  );
+}
+
+/** Barra de "Eventos tratados": mostra a proporção tratada vs. pendente, sem clique. */
+function CentralTreatedBar({ treated, pending }: { treated: number; pending: number }) {
+  const total = treated + pending;
+  const treatedFlex = Math.max(treated, total > 0 ? 0.0001 : 0);
+  const pendingFlex = Math.max(pending, total > 0 ? 0.0001 : 0);
+
+  return (
+    <div className="central-controle-treated-bar" role="group" aria-label="Eventos tratados">
+      <div
+        className="central-controle-treated-bar__segment central-controle-treated-bar__segment--treated"
+        style={{ flex: `${treatedFlex} 1 0%` }}
+        aria-label={`Tratados: ${treated}`}
+      >
+        <span className="central-controle-treated-bar__value">{treated}</span>
+      </div>
+      <div
+        className="central-controle-treated-bar__segment central-controle-treated-bar__segment--pending"
+        style={{ flex: `${pendingFlex} 1 0%` }}
+        aria-label={`Pendentes: ${pending}`}
+      >
+        <span className="central-controle-treated-bar__value">{pending}</span>
+      </div>
     </div>
   );
 }
@@ -168,8 +205,8 @@ function EventRowActions({
         </LevelTooltip>
       ) : showMonitorAi ? (
         <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-controle-monitor-icon" aria-label="Validado pela IA">
-            <IconMonitorBot />
+          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+            IA
           </span>
         </LevelTooltip>
       ) : null}
@@ -208,7 +245,7 @@ function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
             <IconAnalystHeadset />
           </span>
         </LevelTooltip>
-      ) : row.actions.monitorType === 'human' ? (
+      ) : row.actions.kind === 'with-monitor' && row.actions.monitorType === 'human' ? (
         <LevelTooltip text={`Aberto por ${row.actions.analystName}`} topLayer nowrap>
           <span
             className="central-controle-analyst-icon"
@@ -217,13 +254,13 @@ function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
             <IconAnalystHeadset />
           </span>
         </LevelTooltip>
-      ) : (
+      ) : row.actions.kind === 'with-monitor' && row.actions.monitorType === 'ai' ? (
         <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-controle-monitor-icon" aria-label="Validado pela IA">
-            <IconMonitorBot />
+          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+            IA
           </span>
         </LevelTooltip>
-      )}
+      ) : null}
       <LevelTooltip text="Iniciar tratativa" topLayer nowrap>
         <button type="button" className="central-controle-open-btn" aria-label="Iniciar tratativa">
           <IconOpenOccurrence severity={row.severity} />
@@ -338,11 +375,36 @@ function EventOccurrenceRow({
             onPlay={onPlay}
           />
         ) : event.validationStatus ? (
-          <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
-            <span className={`central-controle-status central-controle-status--${event.validationStatus}`}>
-              {STATUS_LABEL[event.validationStatus]}
-            </span>
-          </div>
+          (() => {
+            const tooltipText =
+              event.validationStatus === 'validado' && event.validatedBy
+                ? `Validado por ${event.validatedBy}`
+                : STATUS_LABEL[event.validationStatus];
+            return (
+              <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
+                {event.validatedByAi && (
+                  <LevelTooltip text="Validado pela IA" topLayer nowrap>
+                    <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+                      IA
+                    </span>
+                  </LevelTooltip>
+                )}
+                <LevelTooltip text={tooltipText} topLayer nowrap>
+                  <span
+                    className={`central-controle-status-icon central-controle-status-icon--${event.validationStatus}`}
+                    aria-label={tooltipText}
+                  >
+                    {event.validationStatus === 'aguardando' ? (
+                      <IconStatusWaitingValidation />
+                    ) : (
+                      <IconStatusValidated />
+                    )}
+                  </span>
+                </LevelTooltip>
+                <span className="central-controle-row__expand-spacer" aria-hidden />
+              </div>
+            );
+          })()
         ) : null}
       </td>
     </tr>
@@ -380,9 +442,18 @@ export const OperacoesCentralPage: React.FC = () => {
     EMPTY_CENTRAL_CONTROLE_FILTERS,
   );
   const [validationModalOpen, setValidationModalOpen] = useState(false);
+  const [tratativaModalOpen, setTratativaModalOpen] = useState(false);
 
   const openValidationModal = () => setValidationModalOpen(true);
   const closeValidationModal = () => setValidationModalOpen(false);
+
+  /** Substitui o modal de validação pelo modal de tratativa quando o
+   *  analista finaliza a validação clicando em "Enviar e tratar". */
+  const handleStartTratativa = () => {
+    setValidationModalOpen(false);
+    setTratativaModalOpen(true);
+  };
+  const closeTratativaModal = () => setTratativaModalOpen(false);
 
   const allOccurrences = useMemo(() => buildCentralOccurrenceList(), []);
   const appliedFilterCount = useMemo(
@@ -403,6 +474,14 @@ export const OperacoesCentralPage: React.FC = () => {
         return matchesCentralControleFilters(entry, appliedFilters);
       }),
     [allOccurrences, severityFilter, appliedFilters],
+  );
+
+  /** Eventos tratados x pendentes baseados nas ocorrências filtradas:
+   *  ao alterar o filtro de gravidade (ou os filtros avançados), a
+   *  barra reflete a proporção apenas das ocorrências em questão. */
+  const treatedSummary = useMemo(
+    () => computeCentralTreatedSummary(filteredOccurrences),
+    [filteredOccurrences],
   );
 
   const toggleExpanded = (id: string) => {
@@ -434,7 +513,7 @@ export const OperacoesCentralPage: React.FC = () => {
     <div className="operacoes-central-page page-layout content-body">
       <div className="content-toolbar top-bar central-controle-toolbar">
         <div className="content-toolbar-left central-controle-toolbar__title-wrap">
-          <h1 className="body-page-title">Central de controle</h1>
+          <h1 className="body-page-title">Central de tratativas</h1>
         </div>
         <div className="content-toolbar-right central-controle-toolbar__actions">
           <CentralControleToolbarSearch />
@@ -467,12 +546,34 @@ export const OperacoesCentralPage: React.FC = () => {
           <CentralControleFilterBanner appliedFilters={appliedFilters} onClear={handleClearFilters} />
         )}
 
-        <CentralStatusBar
-          summary={statusSummary}
-          selectedFilter={severityFilter}
-          onSelectFilter={setSeverityFilter}
-          onClearFilter={() => setSeverityFilter(null)}
-        />
+        <div className="central-controle-status-frame">
+          <div className="central-controle-status-block">
+            <div className="central-controle-status-block__head">
+              <h2 className="central-controle-status-block__title">Ocorrências pendentes</h2>
+            </div>
+            <CentralStatusBar
+              summary={statusSummary}
+              selectedFilter={severityFilter}
+              onSelectFilter={setSeverityFilter}
+              onClearFilter={() => setSeverityFilter(null)}
+            />
+          </div>
+
+          <div className="central-controle-status-block">
+            <div className="central-controle-status-block__head">
+              <h2 className="central-controle-status-block__title">Eventos tratados</h2>
+              <span className="central-controle-status-block__percent">
+                {(() => {
+                  const total = treatedSummary.treated + treatedSummary.pending;
+                  return total > 0
+                    ? `${Math.round((treatedSummary.treated / total) * 100)}% concluído`
+                    : '0% concluído';
+                })()}
+              </span>
+            </div>
+            <CentralTreatedBar treated={treatedSummary.treated} pending={treatedSummary.pending} />
+          </div>
+        </div>
 
         <section className="central-controle-ocorrencias" aria-label="Ocorrências">
           <div className="central-controle-ocorrencias__head">
@@ -529,7 +630,15 @@ export const OperacoesCentralPage: React.FC = () => {
         onReturn={closeValidationModal}
         onConfirmClose={closeValidationModal}
         onConfirmNext={() => undefined}
-        onConfirmTreat={closeValidationModal}
+        onConfirmTreat={handleStartTratativa}
+      />
+
+      <TratativaOcorrenciaModal
+        open={tratativaModalOpen}
+        data={mockTratativaOcorrencia}
+        onClose={closeTratativaModal}
+        onReturn={closeTratativaModal}
+        onConclude={closeTratativaModal}
       />
     </div>
   );

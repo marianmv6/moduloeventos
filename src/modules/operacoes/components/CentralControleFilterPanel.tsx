@@ -2,6 +2,7 @@ import React from 'react';
 import { ModalSelect } from '../../risk-rules/components/shared/ModalSelect';
 import type { CentralControleFilters } from '../constants/centralControleFilterOptions';
 import {
+  getCentralEmpresaOptions,
   getCentralGravidadeOptions,
   getCentralMotoristaOptions,
   getCentralPlacaPrefixoOptions,
@@ -42,6 +43,16 @@ export const CentralControleFilterPanel: React.FC<CentralControleFilterPanelProp
             value={filters.tipoEvento}
             onChange={(tipoEvento) => patch({ tipoEvento })}
             options={getCentralTipoEventoOptions()}
+            placeholder="(Preencha ou selecione)"
+          />
+          <ModalSelect
+            id="central-filtro-empresa"
+            className="modal-select--no-pill"
+            mutedPlaceholder
+            label="Empresa"
+            value={filters.empresa}
+            onChange={(empresa) => patch({ empresa })}
+            options={getCentralEmpresaOptions()}
             placeholder="(Preencha ou selecione)"
           />
           <ModalSelect

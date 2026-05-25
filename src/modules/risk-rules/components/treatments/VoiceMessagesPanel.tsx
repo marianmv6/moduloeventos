@@ -1,9 +1,12 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import type { VoiceMessage, VoiceMessageLanguage, VoiceMessageDevice } from '../../types/risk.types';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { IconEdit, IconTrash } from '../shared/Icons';
+import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
+import { COMPANY_OPTIONS, getCompanyName } from '../../constants/companies';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const STATUS_OPTIONS: ModalSelectOption[] = [
   { value: 'ativo', label: 'Ativo' },
@@ -26,6 +29,9 @@ const MESSAGE_MAX_LENGTH_DEFAULT = 70;
 
 export interface VoiceMessagesPanelHandle {
   openNew: () => void;
+  toggleFilter: () => void;
+  getAppliedFilterCount: () => number;
+  isFilterOpen: () => boolean;
 }
 
 interface VoiceMessagesPanelProps {
@@ -33,18 +39,60 @@ interface VoiceMessagesPanelProps {
   onSave: (msg: Omit<VoiceMessage, 'id'> & { id?: string }) => void;
   onDelete: (msg: VoiceMessage) => void;
   hideToolbar?: boolean;
+  onFilterStateChange?: (state: { open: boolean; appliedCount: number }) => void;
 }
 
 export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMessagesPanelProps>(
-  function VoiceMessagesPanel({ voiceMessages, onSave, onDelete, hideToolbar = false }, ref) {
+  function VoiceMessagesPanel({ voiceMessages, onSave, onDelete, hideToolbar = false, onFilterStateChange }, ref) {
+  const currentUser = useCurrentUser();
+  const isClient = currentUser.kind === 'client';
+  const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<VoiceMessage | null>(null);
+  const [companyId, setCompanyId] = useState(defaultCompanyId);
   const [identification, setIdentification] = useState('');
   const [language, setLanguage] = useState<VoiceMessageLanguage>('pt');
   const [device, setDevice] = useState<VoiceMessageDevice>('K1 Plus');
   const [message, setMessage] = useState('');
   const [active, setActive] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<{ identification?: boolean; message?: boolean }>({});
+
+  const EMPTY_FILTERS = { empresa: '', dispositivo: '', status: '' };
+  const [filters, setFilters] = useState<{ empresa: string; dispositivo: string; status: string }>(
+    EMPTY_FILTERS,
+  );
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  const appliedCount = useMemo(
+    () => Object.values(filters).filter((v) => v.trim() !== '').length,
+    [filters],
+  );
+
+  React.useEffect(() => {
+    onFilterStateChange?.({ open: filterOpen, appliedCount });
+  }, [filterOpen, appliedCount, onFilterStateChange]);
+
+  const filterFields: AdvancedFilterField<{ empresa: string; dispositivo: string; status: string }>[] = [
+    { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+    { key: 'dispositivo', label: 'Dispositivo', options: DEVICE_OPTIONS },
+    { key: 'status', label: 'Status', options: STATUS_OPTIONS },
+  ];
+
+  const filteredMessages = useMemo(() => {
+    const baseList = isClient
+      ? voiceMessages.filter((m) => m.companyId === currentUser.companyId)
+      : voiceMessages;
+    return baseList.filter((m) => {
+      if (filters.empresa && m.companyId !== filters.empresa) return false;
+      if (filters.dispositivo && m.device !== filters.dispositivo) return false;
+      if (filters.status) {
+        const want = filters.status === 'ativo';
+        if (m.active !== want) return false;
+      }
+      return true;
+    });
+  }, [voiceMessages, filters, isClient, currentUser.companyId]);
 
   const messageMaxLength = device === 'K1 Plus' || device === 'G5 Plus' ? MESSAGE_MAX_LENGTH_DEVICE : MESSAGE_MAX_LENGTH_DEFAULT;
   const formatFromDevice: 'WAV' | 'MP3' = device === 'G5 Plus' ? 'MP3' : 'WAV';
@@ -56,6 +104,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
 
   const openNew = () => {
     setEditing(null);
+    setCompanyId(defaultCompanyId);
     setIdentification('');
     setLanguage('pt');
     setDevice('K1 Plus');
@@ -65,10 +114,20 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     setModalOpen(true);
   };
 
-  useImperativeHandle(ref, () => ({ openNew }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      openNew,
+      toggleFilter: () => setFilterOpen((v) => !v),
+      getAppliedFilterCount: () => appliedCount,
+      isFilterOpen: () => filterOpen,
+    }),
+    [appliedCount, filterOpen],
+  );
 
   const openEdit = (m: VoiceMessage) => {
     setEditing(m);
+    setCompanyId(m.companyId ?? defaultCompanyId);
     setIdentification(m.identification);
     setLanguage((m.language ?? 'pt') as VoiceMessageLanguage);
     setDevice((m.device ?? 'K1 Plus') as VoiceMessageDevice);
@@ -97,6 +156,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     if (errors.identification || errors.message) return;
     onSave({
       ...(editing?.id && { id: editing.id }),
+      companyId,
       identification: idTrimmed,
       language,
       message: msgTrimmed,
@@ -116,10 +176,21 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
           </button>
         </div>
       )}
+      <AdvancedFilter
+        fields={filterFields}
+        values={filters}
+        onApply={setFilters}
+        onClear={() => setFilters(EMPTY_FILTERS)}
+        emptyValues={EMPTY_FILTERS}
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        ariaLabel="Filtros de mensagens de voz"
+      />
       <div className="policy-list voice-messages-table-wrap drawer-voice-messages-table">
         <table className="list-table">
           <thead>
             <tr>
+              <th>Empresa</th>
               <th>Identificação</th>
               <th>Mensagem</th>
               <th>Dispositivo</th>
@@ -128,15 +199,16 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
             </tr>
           </thead>
           <tbody>
-            {voiceMessages.length === 0 ? (
+            {filteredMessages.length === 0 ? (
               <tr>
-                <td colSpan={5} className="list-empty">
+                <td colSpan={6} className="list-empty">
                   Nenhuma mensagem de voz cadastrada.
                 </td>
               </tr>
             ) : (
-              voiceMessages.map((m) => (
+              filteredMessages.map((m) => (
                 <tr key={m.id}>
+                  <td>{getCompanyName(m.companyId)}</td>
                   <td>{m.identification}</td>
                   <td className="cell-message">{m.message}</td>
                   <td>{m.device ?? '-'}</td>
@@ -181,6 +253,18 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
         cancelLabel="Cancelar"
       >
         <form id="voice-message-form" className="form-card voice-message-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <ModalSelect
+              id="voice-company"
+              label="Empresa"
+              value={companyId}
+              onChange={(v) => setCompanyId(v)}
+              options={currentUser.availableCompanies}
+              placeholder="Selecione a empresa"
+              disabled={isClient}
+              className="modal-select--no-pill"
+            />
+          </div>
           <div className={`form-group ${fieldErrors.identification ? 'has-error' : ''}`}>
             <div className="form-group__label-row">
               <label htmlFor="voice-ident">Identificação</label>

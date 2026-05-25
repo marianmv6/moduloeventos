@@ -1,15 +1,15 @@
-import type { OperacoesAdvancedFilters } from '../constants/operacoesFilterOptions';
+import type { AuditoriaAdvancedFilters } from '../constants/operacoesAuditoriaFilterOptions';
 import { getCompanyName } from '../../risk-rules/constants/companies';
 
-const FILTER_PARAM_LABELS: Partial<Record<keyof OperacoesAdvancedFilters, string>> = {
+const FILTER_PARAM_LABELS: Partial<Record<keyof AuditoriaAdvancedFilters, string>> = {
   empresa: 'empresa',
+  tratadoPor: 'tratado por',
   placa: 'placa ou prefixo',
   motorista: 'motorista',
-  tipoEvento: 'tipo de evento',
 };
 
-export interface AppliedFilterEntry {
-  key: keyof OperacoesAdvancedFilters;
+export interface AppliedAuditoriaFilterEntry {
+  key: keyof AuditoriaAdvancedFilters;
   paramLabel: string;
   value: string;
 }
@@ -20,7 +20,7 @@ function formatDisplayDate(iso: string): string {
   return `${day}/${month}/${year.slice(-2)}`;
 }
 
-function formatPeriod(filters: OperacoesAdvancedFilters): string {
+function formatPeriod(filters: AuditoriaAdvancedFilters): string {
   const start = formatDisplayDate(filters.periodoInicio);
   const end = formatDisplayDate(filters.periodoFim);
   if (!start && !end) return '';
@@ -28,11 +28,13 @@ function formatPeriod(filters: OperacoesAdvancedFilters): string {
   return start || end;
 }
 
-export function getAppliedFilterEntries(
-  filters: OperacoesAdvancedFilters,
-): AppliedFilterEntry[] {
-  const entries: AppliedFilterEntry[] = [];
-  (Object.keys(FILTER_PARAM_LABELS) as (keyof OperacoesAdvancedFilters)[]).forEach((key) => {
+export function getAppliedAuditoriaFilterEntries(
+  filters: AuditoriaAdvancedFilters,
+): AppliedAuditoriaFilterEntry[] {
+  const entries: AppliedAuditoriaFilterEntry[] = [];
+  (
+    Object.keys(FILTER_PARAM_LABELS) as (keyof AuditoriaAdvancedFilters)[]
+  ).forEach((key) => {
     const value = filters[key];
     if (typeof value !== 'string' || value.trim() === '') return;
     entries.push({
@@ -50,6 +52,6 @@ export function getAppliedFilterEntries(
   return entries;
 }
 
-export function countAppliedFilters(filters: OperacoesAdvancedFilters): number {
-  return getAppliedFilterEntries(filters).length;
+export function countAppliedAuditoriaFilters(filters: AuditoriaAdvancedFilters): number {
+  return getAppliedAuditoriaFilterEntries(filters).length;
 }

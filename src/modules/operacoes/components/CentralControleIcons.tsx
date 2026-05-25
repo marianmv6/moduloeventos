@@ -96,6 +96,27 @@ export const IconRowChevron: React.FC<{ expanded?: boolean } & React.SVGProps<SV
   </svg>
 );
 
+/** Status: aguardando validação (ampulheta) */
+export const IconStatusWaitingValidation: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
+    <path
+      d="M8 20H16V17C16 15.9 15.6083 14.9583 14.825 14.175C14.0417 13.3917 13.1 13 12 13C10.9 13 9.95833 13.3917 9.175 14.175C8.39167 14.9583 8 15.9 8 17V20ZM4 22V20H6V17C6 15.9833 6.2375 15.0292 6.7125 14.1375C7.1875 13.2458 7.85 12.5333 8.7 12C7.85 11.4667 7.1875 10.7542 6.7125 9.8625C6.2375 8.97083 6 8.01667 6 7V4H4V2H20V4H18V7C18 8.01667 17.7625 8.97083 17.2875 9.8625C16.8125 10.7542 16.15 11.4667 15.3 12C16.15 12.5333 16.8125 13.2458 17.2875 14.1375C17.7625 15.0292 18 15.9833 18 17V20H20V22H4Z"
+      fill="#E29C2C"
+    />
+  </svg>
+);
+
+/** Status: validado (check duplo cinza) */
+export const IconStatusValidated: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg width="18" height="14" viewBox="0 0 17 13" fill="none" aria-hidden {...props}>
+    <path
+      d="M5.7 12.025L0 6.325L1.425 4.9L5.7 9.175L14.875 0L16.3 1.425L5.7 12.025Z"
+      fill="#2F2F2F"
+      fillOpacity="0.4"
+    />
+  </svg>
+);
+
 /** Indicador de atualização em tempo real */
 export const IconOnlineStatus: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg width="74" height="33" viewBox="0 0 74 33" fill="none" aria-hidden {...props}>

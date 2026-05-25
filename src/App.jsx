@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { RiskRulesPage } from './modules/risk-rules';
-import { OperacoesEventosPage, OperacoesCentralPage } from './modules/operacoes';
+import {
+  OperacoesEventosPage,
+  OperacoesCentralPage,
+  OperacoesAuditoriaPage,
+} from './modules/operacoes';
 import { AppSidebar } from './components/layout/AppSidebar';
 import './App.css';
 
@@ -18,7 +22,11 @@ function App() {
       route === 'tratativas'
     ) {
       setMenuLevel('configuracoes');
-    } else if (route === 'central-operacoes' || route === 'operacoes-eventos') {
+    } else if (
+      route === 'central-operacoes' ||
+      route === 'operacoes-eventos' ||
+      route === 'operacoes-auditoria'
+    ) {
       setMenuLevel('operacoes');
     }
   };
@@ -29,6 +37,9 @@ function App() {
     }
     if (activeRoute === 'central-operacoes') {
       return <OperacoesCentralPage />;
+    }
+    if (activeRoute === 'operacoes-auditoria') {
+      return <OperacoesAuditoriaPage />;
     }
     return <RiskRulesPage appRoute={activeRoute} />;
   };

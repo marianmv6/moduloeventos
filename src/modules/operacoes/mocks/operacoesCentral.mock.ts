@@ -43,6 +43,7 @@ export const mockCentralOccurrenceExpanded: CentralOccurrence = {
       eventType: 'Sonolência N1',
       eventPoints: 20,
       validationStatus: 'validado',
+      validatedBy: 'Pedro',
     },
   ],
 };
@@ -71,7 +72,8 @@ export const mockCentralOccurrenceSonolenciaN1: CentralOccurrence = {
       datetime: '23/05, 09:45',
       eventType: 'Sonolência N2',
       eventPoints: 40,
-      validationStatus: 'validado',
+      validationStatus: 'aguardando',
+      validatedByAi: true,
     },
   ],
 };
@@ -129,7 +131,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'QWE4R55',
     prefixo: 'FRT089',
     driverName: 'Fernanda Costa Lima',
-    actions: { kind: 'with-monitor', monitorType: 'ai' },
+    actions: { kind: 'none' },
   },
   {
     id: 'occ-7',
@@ -174,6 +176,38 @@ export function computeCentralStatusSummary(
     },
     { critical: 0, high: 0, medium: 0, low: 0 },
   );
+}
+
+/**
+ * Soma de eventos tratados x pendentes considerando o conjunto de
+ * ocorrências passadas (já filtradas).
+ *
+ * - Ocorrências do tipo "group" (com lista expandida) contribuem com
+ *   um evento por item, classificando como "tratado" os de
+ *   `validationStatus === 'validado'` e como "pendente" os demais
+ *   (`aguardando`, `isCurrent` ou sem status).
+ * - Ocorrências do tipo "summary" (linha única) contribuem com um
+ *   evento pendente — ainda estão na fila da Central de Tratativas.
+ *
+ * Exemplo: filtrando as 3 ocorrências críticas (occ-1, occ-2, occ-3)
+ * o total é 6 eventos, sendo 1 tratado.
+ */
+export function computeCentralTreatedSummary(
+  entries: CentralOccurrenceListEntry[],
+): { treated: number; pending: number } {
+  let treated = 0;
+  let pending = 0;
+  entries.forEach((entry) => {
+    if (entry.kind === 'group') {
+      entry.occurrence.events.forEach((event) => {
+        if (event.validationStatus === 'validado') treated += 1;
+        else pending += 1;
+      });
+    } else {
+      pending += 1;
+    }
+  });
+  return { treated, pending };
 }
 
 export const mockCentralOccurrenceList = buildCentralOccurrenceList();

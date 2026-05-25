@@ -40,6 +40,10 @@ export interface CentralOccurrenceEvent {
   /** Evento atual (primeiro da lista expandida) — exibe placa, motorista e ações */
   isCurrent?: boolean;
   validationStatus?: CentralEventValidationStatus;
+  /** Nome do analista que validou — exibido no tooltip do ícone de "Validado" */
+  validatedBy?: string;
+  /** Indica que o evento foi validado pela IA — exibe o badge "IA" ao lado do status */
+  validatedByAi?: boolean;
 }
 
 export interface CentralOccurrence {
@@ -66,7 +70,8 @@ export interface CentralStatusSummary {
 export type CentralOccurrenceActions =
   | { kind: 'opened-by-analyst'; analystName: string }
   | { kind: 'with-monitor'; monitorType: 'ai' }
-  | { kind: 'with-monitor'; monitorType: 'human'; analystName: string };
+  | { kind: 'with-monitor'; monitorType: 'human'; analystName: string }
+  | { kind: 'none' };
 export interface CentralOccurrenceSummaryRow {
   id: string;
   severity: CentralOccurrenceSeverity;

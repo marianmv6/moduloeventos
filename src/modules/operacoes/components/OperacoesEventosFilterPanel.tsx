@@ -2,10 +2,12 @@ import React from 'react';
 import { ModalSelect } from '../../risk-rules/components/shared/ModalSelect';
 import type { OperacoesAdvancedFilters } from '../constants/operacoesFilterOptions';
 import {
+  getEmpresaFilterOptions,
   getMotoristaFilterOptions,
   getPlacaFilterOptions,
   getTipoEventoFilterOptions,
 } from '../constants/operacoesFilterOptions';
+import { CentralControlePeriodPicker } from './CentralControlePeriodPicker';
 
 interface OperacoesEventosFilterPanelProps {
   filters: OperacoesAdvancedFilters;
@@ -23,6 +25,7 @@ export const OperacoesEventosFilterPanel: React.FC<OperacoesEventosFilterPanelPr
   const placaOptions = getPlacaFilterOptions();
   const motoristaOptions = getMotoristaFilterOptions();
   const tipoEventoOptions = getTipoEventoFilterOptions();
+  const empresaOptions = getEmpresaFilterOptions();
 
   const patch = (partial: Partial<OperacoesAdvancedFilters>) => {
     onChange({ ...filters, ...partial });
@@ -31,6 +34,16 @@ export const OperacoesEventosFilterPanel: React.FC<OperacoesEventosFilterPanelPr
   return (
     <section className="operacoes-eventos-filter-panel" aria-label="Filtros de eventos">
       <div className="operacoes-eventos-filter-panel__fields">
+        <ModalSelect
+          id="filtro-empresa"
+          className="modal-select--no-pill"
+          mutedPlaceholder
+          label="Empresa"
+          value={filters.empresa}
+          onChange={(empresa) => patch({ empresa })}
+          options={empresaOptions}
+          placeholder="(Preencha ou selecione)"
+        />
         <ModalSelect
           id="filtro-placa"
           className="modal-select--no-pill"
@@ -60,6 +73,17 @@ export const OperacoesEventosFilterPanel: React.FC<OperacoesEventosFilterPanelPr
           onChange={(tipoEvento) => patch({ tipoEvento })}
           options={tipoEventoOptions}
           placeholder="(Preencha ou selecione)"
+        />
+        <CentralControlePeriodPicker
+          id="filtro-periodo"
+          label="Período"
+          value={{
+            periodoInicio: filters.periodoInicio,
+            periodoFim: filters.periodoFim,
+            periodoHoraInicio: filters.periodoHoraInicio,
+            periodoHoraFim: filters.periodoHoraFim,
+          }}
+          onChange={(period) => patch(period)}
         />
       </div>
       <div className="operacoes-eventos-filter-panel__actions">

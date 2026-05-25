@@ -2,6 +2,12 @@
  * Tipos do módulo Regras de Tratativa - Creare Sistemas
  */
 
+/** Empresa associada a entidades de cadastro/configuração. Quando o usuário é Creare, ele escolhe; quando é cliente, fica fixa. */
+export interface Company {
+  id: string;
+  name: string;
+}
+
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
 /** Tipo do evento para a aba Pontuações e filtro */
@@ -34,6 +40,8 @@ export interface PolicyTrigger {
 export interface Policy {
   id: string;
   name: string;
+  /** Empresa proprietária da política */
+  companyId?: string;
   description?: string;
   /** Tipo de acompanhamento: Por motorista / Por veículo */
   tipoAcompanhamento: PolicyTrackingType;
@@ -108,6 +116,8 @@ export interface TrailStepConfig {
 /** Template de e-mail automático: título, descrição, status e variáveis ativas */
 export interface EmailTemplate {
   id: string;
+  /** Empresa proprietária do template */
+  companyId?: string;
   /** Título que o destinatário vê na caixa de entrada */
   title: string;
   /** Descrição interna (apenas para o usuário) */
@@ -132,6 +142,8 @@ export interface TrailStep {
 export interface Trail {
   id: string;
   name: string;
+  /** Empresa proprietária da regra de tratativa */
+  companyId?: string;
   trackingType: TrailTrackingType;
   mode: TrailMode;
   steps: TrailStep[];
@@ -145,6 +157,8 @@ export type ContactShift = 'manha' | 'tarde' | 'noite' | 'madrugada';
 
 export interface Contact {
   id: string;
+  /** Empresa do contato */
+  companyId?: string;
   name?: string;
   phone?: string;
   email?: string;
@@ -166,6 +180,8 @@ export type VoiceMessageDevice = 'K1 Plus' | 'G5 Plus';
 
 export interface VoiceMessage {
   id: string;
+  /** Empresa da mensagem de voz */
+  companyId?: string;
   identification: string;
   /** Idioma da leitura: pt (padrão), en, es */
   language?: VoiceMessageLanguage;

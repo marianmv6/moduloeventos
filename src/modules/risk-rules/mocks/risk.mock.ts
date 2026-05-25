@@ -28,6 +28,7 @@ export const mockPolicies: Policy[] = [
   {
     id: 'pol-1',
     name: 'Política padrão',
+    companyId: 'creare',
     description: 'Regras gerais de risco para operação',
     active: true,
     tipoAcompanhamento: 'motorista',
@@ -47,6 +48,7 @@ export const mockPolicies: Policy[] = [
   {
     id: 'pol-2',
     name: 'Política alta criticidade',
+    companyId: 'bracell',
     active: true,
     tipoAcompanhamento: 'veiculo',
     configEventos: {
@@ -127,6 +129,7 @@ export const mockTrails: Trail[] = [
   {
     id: 'trail-1',
     name: 'Trilha por pontos',
+    companyId: 'creare',
     trackingType: 'motorista',
     mode: 'points',
     steps: [
@@ -141,14 +144,14 @@ export const mockTrails: Trail[] = [
 
 /** Contatos (cadastro auxiliar para trilhas) */
 export const mockContacts: Contact[] = [
-  { id: 'cont-1', name: 'Gestor Operação', phone: '+5511999990001', email: 'gestor@empresa.com', description: 'Contato principal' },
-  { id: 'cont-2', name: 'Suporte', phone: '+5511888880002', email: 'suporte@empresa.com' },
+  { id: 'cont-1', companyId: 'creare', name: 'Gestor Operação', phone: '+5511999990001', email: 'gestor@empresa.com', description: 'Contato principal' },
+  { id: 'cont-2', companyId: 'bracell', name: 'Suporte', phone: '+5511888880002', email: 'suporte@empresa.com' },
 ];
 
 /** Mensagens de voz (cadastro auxiliar) */
 export const mockVoiceMessages: VoiceMessage[] = [
-  { id: 'vox-1', identification: 'Alerta nível alto', language: 'pt', message: 'Sua pontuação atingiu nível de atenção. Entre em contato com o gestor.', device: 'G5 Plus', format: 'MP3', active: true },
-  { id: 'vox-2', identification: 'Bloqueio', language: 'pt', message: 'Acesso bloqueado por segurança.', device: 'K1 Plus', format: 'WAV', active: false },
+  { id: 'vox-1', companyId: 'creare', identification: 'Alerta nível alto', language: 'pt', message: 'Sua pontuação atingiu nível de atenção. Entre em contato com o gestor.', device: 'G5 Plus', format: 'MP3', active: true },
+  { id: 'vox-2', companyId: 'bracell', identification: 'Bloqueio', language: 'pt', message: 'Acesso bloqueado por segurança.', device: 'K1 Plus', format: 'WAV', active: false },
 ];
 
 export const mockHistory: HistoryEntry[] = [];
@@ -167,6 +170,7 @@ const allEmailVariablesTrue = (): Record<string, boolean> => {
 export const mockEmailTemplates: EmailTemplate[] = [
   {
     id: 'tpl-default-creare',
+    companyId: 'creare',
     title: 'Padrão Creare',
     description: 'Template padrão do sistema para notificações por e-mail.',
     active: true,
