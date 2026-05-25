@@ -7386,3 +7386,479 @@ body.cr-fullscreen-modal-open .app-content {
     width: 180px;
   }
 }
+
+/* ============================================================== */
+/* TratativaOcorrenciaModal — modal cheia exibida ao final do      */
+/* fluxo de validacao, com sidebar do card unico, abas, acoes,     */
+/* contatos e cronometro de tempo em tratativa.                    */
+/* ============================================================== */
+
+.tratativa-ocorrencia-modal {
+  /* Reaproveita .central-validacao-modal mas trocamos a cor da
+     sidebar para o cinza usado no Figma. */
+}
+
+.tratativa-sidebar {
+  background: #f2f4f4;
+  padding: 1rem 0.75rem;
+}
+
+.tratativa-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  font-family: var(--font-noto-sans);
+}
+
+.tratativa-card__title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #101828;
+}
+
+.tratativa-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #667085;
+}
+
+.tratativa-card__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.tratativa-card__dot--critical {
+  background: #d92d20;
+}
+
+.tratativa-card__dot--high {
+  background: #f04438;
+}
+
+.tratativa-card__dot--medium {
+  background: #f79009;
+}
+
+.tratativa-card__dot--low {
+  background: #169eff;
+}
+
+.tratativa-content {
+  padding: 0.75rem 1.5rem 1rem;
+}
+
+.tratativa-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+  padding-top: 0.75rem;
+}
+
+/* Linha superior de campos do formulario. CSS Grid 6 colunas para acomodar
+   politica/tipo (linha 1) e tipo de evento/gravidade/tratativa/tempo (linha 2). */
+.tratativa-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+.tratativa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+  grid-column: span 1;
+}
+
+.tratativa-field--col-1-3 { grid-column: 1 / span 3; }
+.tratativa-field--col-3-5 { grid-column: 4 / span 3; }
+.tratativa-field--col-3-4 { grid-column: 4 / span 1; }
+.tratativa-field--col-4-6 { grid-column: 5 / span 1; }
+.tratativa-field--col-6-7 { grid-column: 6 / span 1; }
+.tratativa-field--col-2-4 { grid-column: 2 / span 2; }
+
+.tratativa-field__label {
+  font-family: var(--font-noto-sans);
+  font-size: 0.75rem;
+  color: #667085;
+}
+
+.tratativa-field__value {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.5625rem 0.75rem;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  color: #101828;
+  background: #ffffff;
+  min-height: 2.625rem;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.tratativa-field__value--readonly {
+  background: #f2f4f7;
+  color: #344054;
+}
+
+.tratativa-field__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.4375rem 0.625rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  min-height: 2.625rem;
+  background: #ffffff;
+  align-items: center;
+}
+
+.tratativa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: #f2f4f7;
+  color: #344054;
+  font-family: var(--font-noto-sans);
+  font-size: 0.8125rem;
+}
+
+.tratativa-chip--highlight {
+  background: #ecfdf3;
+  color: #027a48;
+  border: 1px solid #a6f4c5;
+}
+
+.tratativa-chip__close {
+  color: #98a2b3;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.tratativa-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.tratativa-pane__title {
+  margin: 0 0 0.875rem;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+  border-bottom: 1px solid rgba(32, 172, 172, 0.5);
+  padding-bottom: 0.5rem;
+}
+
+.tratativa-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.tratativa-action {
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  background: #f6fbfb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  font-family: var(--font-noto-sans);
+}
+
+.tratativa-action--pending {
+  background: transparent;
+  color: #98a2b3;
+  border-style: dashed;
+}
+
+.tratativa-action--done {
+  opacity: 0.7;
+}
+
+.tratativa-action__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tratativa-action__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+}
+
+.tratativa-action--pending .tratativa-action__title {
+  color: #98a2b3;
+  font-weight: 500;
+}
+
+.tratativa-action__hourglass {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tratativa-action__textarea {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.5rem 0.625rem;
+  font-family: var(--font-noto-sans);
+  font-size: 0.8125rem;
+  color: #344054;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.tratativa-action__textarea:focus {
+  outline: none;
+  border-color: #169eff;
+  box-shadow: 0 0 0 3px rgba(22, 158, 255, 0.15);
+}
+
+.tratativa-action__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #344054;
+  cursor: pointer;
+}
+
+.tratativa-action__check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #169eff;
+}
+
+.tratativa-action__check input[type="checkbox"]:disabled {
+  cursor: default;
+}
+
+.tratativa-contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.tratativa-contact {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem 0.25rem;
+  font-family: var(--font-noto-sans);
+}
+
+.tratativa-contact__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #101828;
+}
+
+.tratativa-contact__shift {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8125rem;
+  color: #344054;
+}
+
+.tratativa-contact__shift-range {
+  font-size: 0.75rem;
+  color: #667085;
+}
+
+.tratativa-contact__phone {
+  font-size: 0.875rem;
+  color: #344054;
+}
+
+.tratativa-contact__call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.tratativa-empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #667085;
+}
+
+.tratativa-info {
+  gap: 1.25rem;
+}
+
+.tratativa-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.tratativa-info-section__header {
+  border-bottom: 1px solid rgba(32, 172, 172, 0.5);
+  padding-bottom: 0.5rem;
+}
+
+.tratativa-info-section__title {
+  margin: 0;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+}
+
+.tratativa-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.875rem 1.5rem;
+}
+
+.tratativa-info-grid--1 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tratativa-info-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tratativa-info-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.tratativa-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.875rem 0 0;
+  border-top: 1px solid #f2f4f7;
+}
+
+.tratativa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  min-width: 8rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tratativa-btn--outline {
+  background: #ffffff;
+  border-color: #169eff;
+  color: #169eff;
+}
+
+.tratativa-btn--outline:hover {
+  background: rgba(22, 158, 255, 0.08);
+}
+
+.tratativa-btn--primary {
+  background: #169eff;
+  color: #ffffff;
+}
+
+.tratativa-btn--primary:hover {
+  background: #0f7fce;
+}
+
+.tratativa-btn--primary:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+/* ---- Select da Tratativa ---- */
+.tratativa-select {
+  position: relative;
+  width: 100%;
+}
+
+.tratativa-select__trigger {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0.5625rem 0.75rem;
+  background: #ffffff;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  color: #101828;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  min-height: 2.625rem;
+}
+
+.tratativa-select__trigger:hover {
+  border-color: #98a2b3;
+}
+
+.tratativa-select--open .tratativa-select__trigger {
+  border-color: #169eff;
+  box-shadow: 0 0 0 3px rgba(22, 158, 255, 0.15);
+}
+
+.tratativa-select__chevron {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.tratativa-select__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  max-height: 14rem;
+  overflow-y: auto;
+  z-index: 4;
+  padding: 0.25rem 0;
+}
+
+.tratativa-select__option {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: #344054;
+}
+
+.tratativa-select__option:hover {
+  background: #f2f4f7;
+}
+
+.tratativa-select__option--selected {
+  background: rgba(22, 158, 255, 0.08);
+  color: #0f6cb6;
+  font-weight: 600;
+}

@@ -4,6 +4,7 @@ import { CentralControleFilterBanner } from '../components/CentralControleFilter
 import { CentralControleFilterPanel } from '../components/CentralControleFilterPanel';
 import { CentralControleToolbarSearch } from '../components/CentralControleToolbarSearch';
 import { CentralValidacaoAlertasModal } from '../components/CentralValidacaoAlertasModal';
+import { TratativaOcorrenciaModal } from '../components/TratativaOcorrenciaModal';
 import {
   IconAnalystHeadset,
   IconOnlineStatus,
@@ -24,6 +25,7 @@ import {
   mockCentralValidationEvents,
   mockValidationDriverName,
 } from '../mocks/operacoesCentral.mock';
+import { mockTratativaOcorrencia } from '../mocks/tratativaOcorrencia.mock';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
 import { countCentralAppliedFilters } from '../utils/centralControleFilterSummary';
 import type {
@@ -398,6 +400,7 @@ function EventOccurrenceRow({
                     )}
                   </span>
                 </LevelTooltip>
+                <span className="central-controle-row__expand-spacer" aria-hidden />
               </div>
             );
           })()
@@ -438,9 +441,18 @@ export const OperacoesCentralPage: React.FC = () => {
     EMPTY_CENTRAL_CONTROLE_FILTERS,
   );
   const [validationModalOpen, setValidationModalOpen] = useState(false);
+  const [tratativaModalOpen, setTratativaModalOpen] = useState(false);
 
   const openValidationModal = () => setValidationModalOpen(true);
   const closeValidationModal = () => setValidationModalOpen(false);
+
+  /** Substitui o modal de validação pelo modal de tratativa quando o
+   *  analista finaliza a validação clicando em "Enviar e tratar". */
+  const handleStartTratativa = () => {
+    setValidationModalOpen(false);
+    setTratativaModalOpen(true);
+  };
+  const closeTratativaModal = () => setTratativaModalOpen(false);
 
   const allOccurrences = useMemo(() => buildCentralOccurrenceList(), []);
   const appliedFilterCount = useMemo(
@@ -612,7 +624,15 @@ export const OperacoesCentralPage: React.FC = () => {
         onReturn={closeValidationModal}
         onConfirmClose={closeValidationModal}
         onConfirmNext={() => undefined}
-        onConfirmTreat={closeValidationModal}
+        onConfirmTreat={handleStartTratativa}
+      />
+
+      <TratativaOcorrenciaModal
+        open={tratativaModalOpen}
+        data={mockTratativaOcorrencia}
+        onClose={closeTratativaModal}
+        onReturn={closeTratativaModal}
+        onConclude={closeTratativaModal}
       />
     </div>
   );
