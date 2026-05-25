@@ -3,6 +3,7 @@ import type {
   CentralOccurrenceSummaryRow,
   CentralOccurrenceSeverity,
   CentralStatusSummary,
+  CentralValidationEvent,
 } from '../types/operacoesCentral.types';
 
 export type CentralOccurrenceListEntry =
@@ -178,3 +179,39 @@ export function computeCentralStatusSummary(
 export const mockCentralOccurrenceList = buildCentralOccurrenceList();
 
 export const mockCentralStatusSummary = computeCentralStatusSummary(mockCentralOccurrenceList);
+
+/** Eventos pendentes de validação ao clicar no play da ocorrência expandida */
+export const mockCentralValidationEvents: CentralValidationEvent[] = [
+  {
+    id: 'val-1',
+    time: '08:13:25',
+    plate: 'ANB1K52',
+    suggestedAlert: 'sonolencia-n1',
+    fromAi: true,
+    validated: true,
+  },
+  {
+    id: 'val-2',
+    time: '08:13:53',
+    plate: 'ANB1K52',
+    suggestedAlert: 'sonolencia-n1',
+    fromAi: true,
+  },
+  {
+    id: 'val-3',
+    time: '08:14:27',
+    plate: 'ANB1K52',
+    suggestedAlert: 'sonolencia-n1',
+    fromAi: true,
+  },
+  {
+    id: 'val-4',
+    time: '08:14:44',
+    plate: 'ANB1K52',
+    suggestedAlert: 'sonolencia-n1',
+    fromAi: true,
+  },
+];
+
+/** Nome do condutor exibido no cabeçalho do modal de validação */
+export const mockValidationDriverName = 'Pedro Ramos de Paula';

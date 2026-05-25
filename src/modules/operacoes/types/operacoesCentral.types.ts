@@ -2,6 +2,34 @@ export type CentralOccurrenceSeverity = 'critical' | 'high' | 'medium' | 'low';
 
 export type CentralEventValidationStatus = 'aguardando' | 'validado';
 
+/** Tipos de alerta usados na validação dentro do modal play */
+export type CentralAlertType =
+  | 'bocejo'
+  | 'celular'
+  | 'sonolencia-n1'
+  | 'sonolencia-n2'
+  | 'ausencia'
+  | 'atencao-alimentacao'
+  | 'camera-coberta'
+  | 'cigarro'
+  | 'camera-deslocada'
+  | 'desatencao'
+  | 'nao-e-alerta';
+
+export interface CentralValidationEvent {
+  id: string;
+  /** Hora do evento, formato HH:MM:SS — exibido na lateral esquerda */
+  time: string;
+  /** Placa/identificador exibido sob a hora */
+  plate: string;
+  /** Tipo de alerta sugerido (geralmente pela IA) */
+  suggestedAlert: CentralAlertType;
+  /** Indica que a sugestão veio da IA (badge "IA") */
+  fromAi?: boolean;
+  /** Já validado pelo analista nesta sessão */
+  validated?: boolean;
+}
+
 export interface CentralOccurrenceEvent {
   id: string;
   /** Soma acumulada de pontos na ocorrência até este evento */

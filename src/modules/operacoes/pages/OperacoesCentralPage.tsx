@@ -3,6 +3,7 @@ import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import { CentralControleFilterBanner } from '../components/CentralControleFilterBanner';
 import { CentralControleFilterPanel } from '../components/CentralControleFilterPanel';
 import { CentralControleToolbarSearch } from '../components/CentralControleToolbarSearch';
+import { CentralValidacaoAlertasModal } from '../components/CentralValidacaoAlertasModal';
 import {
   IconAnalystHeadset,
   IconMonitorBot,
@@ -19,6 +20,8 @@ import {
   buildCentralOccurrenceList,
   computeCentralStatusSummary,
   mockCentralOccurrenceExpanded,
+  mockCentralValidationEvents,
+  mockValidationDriverName,
 } from '../mocks/operacoesCentral.mock';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
 import { countCentralAppliedFilters } from '../utils/centralControleFilterSummary';
@@ -142,6 +145,7 @@ function EventRowActions({
   showAnalyst,
   showMonitorAi,
   severity,
+  onPlay,
 }: {
   expanded: boolean;
   onToggle: () => void;
@@ -149,6 +153,7 @@ function EventRowActions({
   showAnalyst: boolean;
   showMonitorAi?: boolean;
   severity: CentralOccurrenceSeverity;
+  onPlay?: () => void;
 }) {
   return (
     <div className="central-controle-row__actions-inner">
@@ -169,7 +174,12 @@ function EventRowActions({
         </LevelTooltip>
       ) : null}
       <LevelTooltip text="Iniciar tratativa" topLayer nowrap>
-        <button type="button" className="central-controle-open-btn" aria-label="Iniciar tratativa">
+        <button
+          type="button"
+          className="central-controle-open-btn"
+          aria-label="Iniciar tratativa"
+          onClick={onPlay}
+        >
           <IconOpenOccurrence severity={severity} />
         </button>
       </LevelTooltip>
@@ -228,10 +238,12 @@ function ExpandedOccurrenceGroup({
   occurrence,
   expanded,
   onToggle,
+  onPlay,
 }: {
   occurrence: CentralOccurrence;
   expanded: boolean;
   onToggle: () => void;
+  onPlay: () => void;
 }) {
   if (!expanded) {
     const current = occurrence.events[0];
@@ -255,6 +267,7 @@ function ExpandedOccurrenceGroup({
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
             showMonitorAi={occurrence.validatedByAi}
             severity={occurrence.severity}
+            onPlay={onPlay}
           />
         </td>
       </tr>
@@ -271,6 +284,7 @@ function ExpandedOccurrenceGroup({
           index={index}
           totalEvents={occurrence.events.length}
           onToggle={onToggle}
+          onPlay={onPlay}
         />
       ))}
     </>
@@ -283,12 +297,14 @@ function EventOccurrenceRow({
   index,
   totalEvents,
   onToggle,
+  onPlay,
 }: {
   event: CentralOccurrenceEvent;
   occurrence: CentralOccurrence;
   index: number;
   totalEvents: number;
   onToggle: () => void;
+  onPlay: () => void;
 }) {
   const isCurrent = Boolean(event.isCurrent);
 
@@ -319,6 +335,7 @@ function EventOccurrenceRow({
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
             showMonitorAi={occurrence.validatedByAi}
             severity={occurrence.severity}
+            onPlay={onPlay}
           />
         ) : event.validationStatus ? (
           <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
@@ -362,6 +379,10 @@ export const OperacoesCentralPage: React.FC = () => {
   const [appliedFilters, setAppliedFilters] = useState<CentralControleFilters>(
     EMPTY_CENTRAL_CONTROLE_FILTERS,
   );
+  const [validationModalOpen, setValidationModalOpen] = useState(false);
+
+  const openValidationModal = () => setValidationModalOpen(true);
+  const closeValidationModal = () => setValidationModalOpen(false);
 
   const allOccurrences = useMemo(() => buildCentralOccurrenceList(), []);
   const appliedFilterCount = useMemo(
@@ -488,6 +509,7 @@ export const OperacoesCentralPage: React.FC = () => {
                       occurrence={entry.occurrence}
                       expanded={expandedId === entry.occurrence.id}
                       onToggle={() => toggleExpanded(entry.occurrence.id)}
+                      onPlay={openValidationModal}
                     />
                   ) : (
                     <CollapsedSummaryRow key={entry.row.id} row={entry.row} />
@@ -498,6 +520,17 @@ export const OperacoesCentralPage: React.FC = () => {
           </div>
         </section>
       </div>
+
+      <CentralValidacaoAlertasModal
+        open={validationModalOpen}
+        events={mockCentralValidationEvents}
+        driverName={mockValidationDriverName}
+        onClose={closeValidationModal}
+        onReturn={closeValidationModal}
+        onConfirmClose={closeValidationModal}
+        onConfirmNext={() => undefined}
+        onConfirmTreat={closeValidationModal}
+      />
     </div>
   );
 };
