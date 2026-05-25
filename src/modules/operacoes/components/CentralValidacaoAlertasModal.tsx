@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
+import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
 import type {
   CentralAlertType,
   CentralValidationEvent,
@@ -645,7 +646,20 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   onConfirmTreat,
 }) => {
   const [activeTab, setActiveTab] = useState<'detalhes' | 'informacoes'>('detalhes');
-  const [activeIndex, setActiveIndex] = useState(0);
+  /** Índice inicial = primeiro evento ainda não validado, mantendo a regra
+   *  "abrir já no próximo evento pendente" quando há validações prévias. */
+  const initialIndex = (() => {
+    const idx = events.findIndex((e) => !e.validated);
+    return idx === -1 ? Math.max(events.length - 1, 0) : idx;
+  })();
+  const [activeIndex, setActiveIndex] = useState(initialIndex);
+  /**
+   * Limite (frontier) até onde o analista já avançou. Só evolui quando o
+   * analista clica em "Enviar e ver o próximo" — nunca recua. Permite
+   * revisitar livremente qualquer evento já confirmado e o evento atual,
+   * sem reabrir os pendentes posteriores.
+   */
+  const [frontierIndex, setFrontierIndex] = useState(initialIndex);
   const [confirmedIds, setConfirmedIds] = useState<Set<string>>(() => {
     const ids = new Set<string>();
     events.forEach((event) => {
@@ -664,6 +678,23 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   const [selectedDriver, setSelectedDriver] = useState<string>('');
   /** Vídeo expandido (ocupa toda a área dos vídeos). null = nenhum. */
   const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
+  /** Modal de confirmação de "alterações não salvas" ao tentar fechar. */
+  const [unsavedConfirmOpen, setUnsavedConfirmOpen] = useState(false);
+
+  /**
+   * Snapshot do estado original ao abrir o modal — usado para calcular se
+   * houve alterações não salvas (analogamente ao formulário de Política).
+   */
+  const initialSnapshot = useMemo(() => {
+    const validatedIds = new Set<string>();
+    const initialAlertTypes: Record<string, CentralAlertType> = {};
+    events.forEach((event) => {
+      if (event.validated) validatedIds.add(event.id);
+      initialAlertTypes[event.id] = event.suggestedAlert;
+    });
+    return { validatedIds, initialAlertTypes };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -720,7 +751,11 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
 
   const handleSendAndNext = () => {
     if (!isCurrentConfirmed) return;
-    setActiveIndex((current) => Math.min(current + 1, totalEvents - 1));
+    setActiveIndex((current) => {
+      const next = Math.min(current + 1, totalEvents - 1);
+      setFrontierIndex((frontier) => Math.max(frontier, next));
+      return next;
+    });
     onConfirmNext();
   };
 
@@ -732,6 +767,41 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   const handleSendAndTreat = () => {
     if (!isCurrentConfirmed) return;
     onConfirmTreat();
+  };
+
+  /** Há alterações não salvas? Considera mudanças em confirmações,
+   *  tipo do alerta sugerido, outros apontamentos e seleção de condutor. */
+  const isDirty = useMemo(() => {
+    for (const event of events) {
+      const wasValidated = initialSnapshot.validatedIds.has(event.id);
+      const nowConfirmed = confirmedIds.has(event.id);
+      if (wasValidated !== nowConfirmed) return true;
+      const initialType = initialSnapshot.initialAlertTypes[event.id];
+      const currentType = alertTypes[event.id];
+      if (initialType !== currentType) return true;
+      const annotations = otherAnnotations[event.id];
+      if (annotations && annotations.length > 0) return true;
+    }
+    if (selectedDriver) return true;
+    return false;
+  }, [events, confirmedIds, alertTypes, otherAnnotations, selectedDriver, initialSnapshot]);
+
+  /** Fecha o modal pedindo confirmação caso haja alterações não salvas. */
+  const requestClose = () => {
+    if (isDirty) {
+      setUnsavedConfirmOpen(true);
+      return;
+    }
+    onClose();
+  };
+
+  const handleDiscardAndClose = () => {
+    setUnsavedConfirmOpen(false);
+    onClose();
+  };
+
+  const handleKeepEditing = () => {
+    setUnsavedConfirmOpen(false);
   };
 
   if (!open || !activeEvent) return null;
@@ -748,7 +818,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
           {events.map((event, index) => {
             const isActive = index === activeIndex;
             const isConfirmed = confirmedIds.has(event.id);
-            const canNavigate = index <= activeIndex;
+            const canNavigate = index <= frontierIndex;
             return (
               <li
                 key={event.id}
@@ -797,7 +867,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
           <button
             type="button"
             className="central-validacao-header__close"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Fechar validação"
           >
             <IconCloseLarge />
@@ -984,6 +1054,12 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
           )}
         </footer>
       </section>
+
+      <UnsavedConfirmModal
+        open={unsavedConfirmOpen}
+        onSave={handleKeepEditing}
+        onDiscard={handleDiscardAndClose}
+      />
     </div>
   );
 };

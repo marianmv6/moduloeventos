@@ -102,6 +102,7 @@ function CentralStatusBar({
           style={{ flex: `${summary[key]} 1 0%` }}
           onClick={() => onSelectFilter(modifier)}
           aria-label={`${label}: ${summary[key]}`}
+          title="Selecione para filtrar"
         >
           <span className="central-controle-status-segment__value">{summary[key]}</span>
           <span className="central-controle-status-segment__label">{label}</span>
