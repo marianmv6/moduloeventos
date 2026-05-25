@@ -464,22 +464,6 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     }));
   const selectedEvent = data.validatedEvents.find((e) => e.id === selectedEventId);
 
-  /** Veículo associado ao evento selecionado — usado para preencher o
-   *  campo "Placa / prefixo" da aba Eventos automaticamente. */
-  const eventVehicle = selectedEvent?.vehicleId
-    ? data.vehicleOptions.find((v) => v.id === selectedEvent.vehicleId)
-    : null;
-  const eventVehicleLabel = eventVehicle
-    ? `${eventVehicle.placa} / ${eventVehicle.prefixo}`
-    : 'Não identificado';
-
-  /** Motorista associado ao evento selecionado. */
-  const eventDriver =
-    selectedEvent?.driverId != null
-      ? data.driverOptions.find((d) => d.id === selectedEvent.driverId) ?? null
-      : null;
-  const eventDriverLabel = eventDriver?.name ?? 'Não identificado';
-
   return (
     <div
       className="central-validacao-modal tratativa-ocorrencia-modal"
@@ -772,39 +756,26 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 label="Validado como"
                 value={selectedEvent?.validatedAs ?? '—'}
               />
-              {isAuditoria ? (
-                /* Auditoria: campos seguem o evento selecionado e ficam
-                   somente leitura. */
-                <>
-                  <ReadOnlyField label="Placa / prefixo" value={eventVehicleLabel} />
-                  <ReadOnlyField label="Motorista" value={eventDriverLabel} />
-                </>
-              ) : (
-                /* Tratativa: o analista pode alterar a Placa/prefixo
-                   e a Motorista decorre da seleção feita na aba
-                   "Informações" (read-only nesta aba). */
-                <>
-                  <div className="tratativa-field">
-                    <span className="tratativa-field__label">Placa / prefixo</span>
-                    {selectedVehicleId ? (
-                      <SelectField
-                        value={selectedVehicleId}
-                        options={vehicleSelectOptions}
-                        onChange={(id) => setSelectedVehicleId(id)}
-                        ariaLabel="Selecionar veículo"
-                      />
-                    ) : (
-                      <div className="tratativa-field__value tratativa-field__value--readonly">
-                        Não identificado
-                      </div>
-                    )}
-                  </div>
-                  <ReadOnlyField
-                    label="Motorista"
-                    value={selectedDriver?.name ?? 'Não identificado'}
+              <div className="tratativa-field">
+                <span className="tratativa-field__label">Placa / prefixo</span>
+                {selectedVehicleId ? (
+                  <SelectField
+                    value={selectedVehicleId}
+                    options={vehicleSelectOptions}
+                    onChange={(id) => setSelectedVehicleId(id)}
+                    ariaLabel="Selecionar veículo"
+                    disabled={isAuditoria}
                   />
-                </>
-              )}
+                ) : (
+                  <div className="tratativa-field__value tratativa-field__value--readonly">
+                    Não identificado
+                  </div>
+                )}
+              </div>
+              <ReadOnlyField
+                label="Motorista"
+                value={selectedDriver?.name ?? 'Não identificado'}
+              />
             </div>
 
             <div className="tratativa-eventos-player">

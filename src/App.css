@@ -7905,19 +7905,18 @@ body.cr-fullscreen-modal-open .app-content {
   grid-template-columns: minmax(0, 2.5fr) minmax(220px, 1fr);
   gap: 1rem;
   align-items: stretch;
-  /* Container compacto: o player de eventos da auditoria/tratativa NÃO
-     deve crescer para a altura toda da modal como a área principal da
-     modal de validação faz. Limitamos altura e o min-height dos tiles
-     para que cada vídeo se acomode em um terço da altura. */
-  max-height: 340px;
+  /* Altura fixa: garante que vídeos e mapa renderizem com tamanho
+     definido (proporcional ao Figma) e não fiquem colapsados quando
+     os tiles internos não têm conteúdo intrínseco. */
+  height: 340px;
 }
 
-.tratativa-eventos-player .central-validacao-video-tile {
-  min-height: 0;
+.tratativa-eventos-player .central-validacao-videos {
+  height: 100%;
 }
 
 .tratativa-eventos-player .central-validacao-map {
-  min-height: 0;
+  height: 100%;
 }
 
 .tratativa-eventos-timeline {
