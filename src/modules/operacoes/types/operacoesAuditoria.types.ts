@@ -6,8 +6,12 @@ import type {
 /** Linha exibida na listagem de auditoria. */
 export interface AuditoriaRow {
   id: string;
-  companyName: string;
-  /** Data/hora da tratativa (ex.: "23/05/2026 11:20"). */
+  /** Empresa associada (mesma chave usada em COMPANY_OPTIONS). */
+  companyId: string;
+  /** Data/hora da tratativa em ISO local ("YYYY-MM-DD HH:mm"), usada para
+   *  filtragem por período. */
+  treatedAtIso: string;
+  /** Data/hora formatada para exibição na lista (ex.: "23/05/2026 11:20"). */
   treatedAt: string;
   /** Nome de quem realizou a tratativa. */
   treatedBy: string;

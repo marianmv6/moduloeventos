@@ -1,13 +1,14 @@
 import type { AuditoriaRow } from '../types/operacoesAuditoria.types';
 import { mockTratativaOcorrencia } from './tratativaOcorrencia.mock';
 
-/** Listagem mock da tela de Auditoria — três tratativas concluídas para
+/** Listagem mock da tela de Auditoria — algumas tratativas concluídas para
  *  exemplo. Reaproveita o snapshot existente de Tratativa, ajustando os
- *  metadados de cabeçalho (placa, motorista). */
+ *  metadados de cabeçalho (empresa, placa, motorista). */
 export const mockAuditoriaRows: AuditoriaRow[] = [
   {
     id: 'aud-1',
-    companyName: 'Bracell',
+    companyId: 'bracell',
+    treatedAtIso: '2026-05-23 11:20',
     treatedAt: '23/05/2026 11:20',
     treatedBy: 'Júlia Luz Campos',
     vehicleId: 'ABW5F22 / MBB122',
@@ -34,7 +35,8 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
   },
   {
     id: 'aud-2',
-    companyName: 'Bracell',
+    companyId: 'expresso-nepomuceno',
+    treatedAtIso: '2026-05-23 10:42',
     treatedAt: '23/05/2026 10:42',
     treatedBy: 'Marco Romero da Costa',
     vehicleId: 'SLE3P56 / MBB121',
@@ -63,7 +65,8 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
   },
   {
     id: 'aud-3',
-    companyName: 'Bracell',
+    companyId: 'transpetro',
+    treatedAtIso: '2026-05-22 17:08',
     treatedAt: '22/05/2026 17:08',
     treatedBy: 'Ana Cristina dos Santos',
     vehicleId: 'ANB1K52 / VOL204',
