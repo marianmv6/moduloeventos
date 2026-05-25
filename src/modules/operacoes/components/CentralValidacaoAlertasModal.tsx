@@ -748,16 +748,21 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
           {events.map((event, index) => {
             const isActive = index === activeIndex;
             const isConfirmed = confirmedIds.has(event.id);
+            const canNavigate = index <= activeIndex;
             return (
               <li
                 key={event.id}
-                className={`central-validacao-event${isActive ? ' central-validacao-event--active' : ''}${isConfirmed ? ' central-validacao-event--validated' : ''}`}
+                className={`central-validacao-event${isActive ? ' central-validacao-event--active' : ''}${isConfirmed ? ' central-validacao-event--validated' : ''}${!canNavigate ? ' central-validacao-event--locked' : ''}`}
                 aria-current={isActive ? 'step' : undefined}
               >
                 <button
                   type="button"
                   className="central-validacao-event__btn"
-                  onClick={() => setActiveIndex(index)}
+                  onClick={() => {
+                    if (canNavigate) setActiveIndex(index);
+                  }}
+                  disabled={!canNavigate}
+                  aria-disabled={!canNavigate}
                   aria-pressed={isActive}
                 >
                   <div className="central-validacao-event__main">
@@ -779,9 +784,6 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
             );
           })}
         </ul>
-        <p className="central-validacao-sidebar__note">
-          É possível revisitar os alertas anteriormente validados para alteração até que sejam tratados. Após iniciar a tratativa, não será possível retornar a esta tela.
-        </p>
         <div className="central-validacao-sidebar__logo" aria-hidden>
           <IconCreareLogo />
         </div>
