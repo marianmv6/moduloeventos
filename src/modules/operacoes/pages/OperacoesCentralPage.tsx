@@ -21,6 +21,7 @@ import {
 import {
   buildCentralOccurrenceList,
   computeCentralStatusSummary,
+  computeCentralTreatedSummary,
   mockCentralOccurrenceExpanded,
   mockCentralValidationEvents,
   mockValidationDriverName,
@@ -464,9 +465,6 @@ export const OperacoesCentralPage: React.FC = () => {
     [allOccurrences],
   );
 
-  /** Mock fixo (45 tratados / 10 pendentes = 81%) — bate com o design de referência. */
-  const treatedSummary = useMemo(() => ({ treated: 45, pending: 10 }), []);
-
   const filteredOccurrences = useMemo(
     () =>
       allOccurrences.filter((entry) => {
@@ -476,6 +474,14 @@ export const OperacoesCentralPage: React.FC = () => {
         return matchesCentralControleFilters(entry, appliedFilters);
       }),
     [allOccurrences, severityFilter, appliedFilters],
+  );
+
+  /** Eventos tratados x pendentes baseados nas ocorrências filtradas:
+   *  ao alterar o filtro de gravidade (ou os filtros avançados), a
+   *  barra reflete a proporção apenas das ocorrências em questão. */
+  const treatedSummary = useMemo(
+    () => computeCentralTreatedSummary(filteredOccurrences),
+    [filteredOccurrences],
   );
 
   const toggleExpanded = (id: string) => {
