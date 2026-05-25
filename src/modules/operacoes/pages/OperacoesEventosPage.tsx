@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { OperacoesEventDetailModal } from '../components/OperacoesEventDetailModal';
-import { EventTypeIcon } from '../components/EventTypeIcon';
 import { IconFilterBars } from '../components/IconFilterBars';
 import { OperacoesEventosFilterBanner } from '../components/OperacoesEventosFilterBanner';
 import { OperacoesEventosFilterPanel } from '../components/OperacoesEventosFilterPanel';
@@ -12,7 +11,6 @@ import {
 } from '../constants/operacoesFilterOptions';
 import { IconView } from '../../risk-rules/components/shared/Icons';
 import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
-import { getIconCategoryForEventType } from '../constants/eventTypeIcons';
 import { mockOperacoesEvents } from '../mocks/operacoes.mock';
 import type { OperacoesEventRow } from '../types/operacoes.types';
 import { getCompanyName } from '../../risk-rules/constants/companies';
@@ -309,15 +307,10 @@ export const OperacoesEventosPage: React.FC = () => {
                         <TruncatedTextTooltip text={getCompanyName(row.companyId)} />
                       </td>
                       <td className="operacoes-col-evento-cell">
-                        <span className="operacoes-event-type-cell">
-                          <EventTypeIcon
-                            category={getIconCategoryForEventType(row.eventType, row.category)}
-                          />
-                          <TruncatedTextTooltip
-                            text={row.eventType}
-                            className="operacoes-event-type-label"
-                          />
-                        </span>
+                        <TruncatedTextTooltip
+                          text={row.eventType}
+                          className="operacoes-event-type-label"
+                        />
                       </td>
                       <td className="operacoes-col-data operacoes-placa">
                         <TruncatedTextTooltip text={row.placa} />

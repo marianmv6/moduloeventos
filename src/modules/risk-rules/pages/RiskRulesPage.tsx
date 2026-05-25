@@ -38,6 +38,7 @@ const ROUTE_TITLES: Record<AppRoute, string> = {
   'mensagem-voz': 'Mensagem voz',
   'central-operacoes': 'Central de tratativas',
   'operacoes-eventos': 'Eventos',
+  'operacoes-auditoria': 'Auditoria',
 };
 
 const CADASTRO_ROUTES: AppRoute[] = ['contatos', 'email-automatico', 'mensagem-voz'];

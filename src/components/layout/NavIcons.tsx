@@ -250,6 +250,26 @@ export const IconOperacoesEventos: React.FC<React.SVGProps<SVGSVGElement>> = (pr
   </svg>
 );
 
+/** Auditoria: clipboard com check de validação. */
+export const IconAuditoria: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    {...props}
+  >
+    <path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z" />
+    <path d="M5 6h14v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6z" />
+    <path d="M9 13l2 2 4-4" />
+  </svg>
+);
+
 /** Mensagem voz: microfone */
 export const IconMensagemVoz: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg

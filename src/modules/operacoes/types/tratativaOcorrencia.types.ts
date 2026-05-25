@@ -52,6 +52,16 @@ export interface TratativaValidatedEvent {
   validatedAs: string;
 }
 
+/** Entrada do histórico de auditoria — exibida na aba "Histórico"
+ *  do AuditoriaOcorrenciaModal. */
+export interface TratativaHistoryEntry {
+  id: string;
+  /** Texto formatado da data/hora ("Hoje, 11:20"). */
+  when: string;
+  author: string;
+  description: string;
+}
+
 /** Dados gerais utilizados pelas abas Tratativa, Informações e Eventos. */
 export interface TratativaOcorrenciaData {
   /** Identificador da ocorrência sendo tratada. */

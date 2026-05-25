@@ -3,6 +3,7 @@ import type {
   TratativaOcorrenciaData,
   TratativaContact,
   TratativaAction,
+  TratativaHistoryEntry,
 } from '../types/tratativaOcorrencia.types';
 import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
 
@@ -12,9 +13,14 @@ interface TratativaOcorrenciaModalProps {
   onClose: () => void;
   onReturn?: () => void;
   onConclude?: () => void;
+  /** "tratativa" (padrão) = fluxo ativo; "auditoria" = visualização
+   *  somente-leitura, com aba adicional "Histórico" e sem footer. */
+  mode?: 'tratativa' | 'auditoria';
+  /** Histórico exibido na aba "Histórico" quando mode === "auditoria". */
+  history?: TratativaHistoryEntry[];
 }
 
-type ActiveTab = 'tratativa' | 'informacoes' | 'eventos';
+type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'historico';
 
 const SEVERITY_DOT_CLASS: Record<string, string> = {
   critical: 'tratativa-card__dot--critical',
@@ -101,6 +107,8 @@ interface SelectFieldProps<T> {
   options: { id: T; label: string }[];
   onChange: (value: T) => void;
   ariaLabel?: string;
+  /** Quando true, o select fica desabilitado (modo auditoria). */
+  disabled?: boolean;
 }
 
 function SelectField<T extends string>({
@@ -108,6 +116,7 @@ function SelectField<T extends string>({
   options,
   onChange,
   ariaLabel,
+  disabled = false,
 }: SelectFieldProps<T>) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -122,21 +131,25 @@ function SelectField<T extends string>({
   }, [open]);
 
   return (
-    <div ref={ref} className={`tratativa-select${open ? ' tratativa-select--open' : ''}`}>
+    <div
+      ref={ref}
+      className={`tratativa-select${open ? ' tratativa-select--open' : ''}${disabled ? ' tratativa-select--disabled' : ''}`}
+    >
       <button
         type="button"
         className="tratativa-select__trigger"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => !disabled && setOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
+        disabled={disabled}
       >
         <span className="tratativa-select__value">{selected?.label ?? 'Selecionar'}</span>
         <span className="tratativa-select__chevron" aria-hidden>
           <IconCaretDown />
         </span>
       </button>
-      {open && (
+      {open && !disabled && (
         <div className="tratativa-select__dropdown" role="listbox">
           {options.map((opt) => (
             <button
@@ -166,6 +179,9 @@ interface ActionCardProps {
   onChangeObservation: (value: string) => void;
   onToggleDone: () => void;
   done: boolean;
+  /** Modo auditoria: bloqueia textarea e checkbox; mostra cards expandidos
+   *  para todas as ações concluídas, com o "Feito" marcado e desabilitado. */
+  readOnly?: boolean;
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({
@@ -175,8 +191,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
   onChangeObservation,
   onToggleDone,
   done,
+  readOnly = false,
 }) => {
-  if (status === 'pending') {
+  if (status === 'pending' && !readOnly) {
     return (
       <div className="tratativa-action tratativa-action--pending" aria-disabled="true">
         <div className="tratativa-action__heading">
@@ -195,7 +212,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
     <div
       className={`tratativa-action${
         status === 'active' ? ' tratativa-action--active' : ' tratativa-action--done'
-      }`}
+      }${readOnly ? ' tratativa-action--readonly' : ''}`}
     >
       <div className="tratativa-action__heading">
         <span className="tratativa-action__title">
@@ -208,12 +225,15 @@ const ActionCard: React.FC<ActionCardProps> = ({
         value={observation}
         onChange={(event) => onChangeObservation(event.target.value)}
         rows={3}
+        readOnly={readOnly}
+        disabled={readOnly}
       />
       <label className="tratativa-action__check">
         <input
           type="checkbox"
-          checked={done}
-          onChange={onToggleDone}
+          checked={readOnly ? true : done}
+          onChange={readOnly ? undefined : onToggleDone}
+          disabled={readOnly}
         />
         <span>Feito</span>
       </label>
@@ -270,7 +290,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   onClose,
   onReturn,
   onConclude,
+  mode = 'tratativa',
+  history = [],
 }) => {
+  const isAuditoria = mode === 'auditoria';
   const [activeTab, setActiveTab] = useState<ActiveTab>('tratativa');
   const [observations, setObservations] = useState<Record<string, string>>({});
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
@@ -403,13 +426,13 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
       <section className="central-validacao-content tratativa-content">
         <header className="central-validacao-header">
           <h2 id="tratativa-ocorrencia-title" className="central-validacao-header__title">
-            Tratativa da ocorrência
+            {isAuditoria ? 'Auditoria da ocorrência' : 'Tratativa da ocorrência'}
           </h2>
           <button
             type="button"
             className="central-validacao-header__close"
             onClick={onClose}
-            aria-label="Fechar tratativa"
+            aria-label={isAuditoria ? 'Fechar auditoria' : 'Fechar tratativa'}
           >
             <IconCloseLarge />
           </button>
@@ -443,6 +466,17 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           >
             Eventos
           </button>
+          {isAuditoria && (
+            <button
+              type="button"
+              className={`central-validacao-tab${
+                activeTab === 'historico' ? ' central-validacao-tab--active' : ''
+              }`}
+              onClick={() => setActiveTab('historico')}
+            >
+              Histórico
+            </button>
+          )}
         </nav>
 
         {activeTab === 'tratativa' && (
@@ -502,6 +536,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                         }
                         onToggleDone={() => handleToggleDone(action.id)}
                         done={isDone}
+                        readOnly={isAuditoria}
                       />
                     );
                   })}
@@ -548,6 +583,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                       options={driverSelectOptions}
                       onChange={(id) => setSelectedDriverId(id)}
                       ariaLabel="Selecionar motorista"
+                      disabled={isAuditoria}
                     />
                   ) : (
                     <div className="tratativa-field__value tratativa-field__value--readonly">
@@ -589,6 +625,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                       options={vehicleSelectOptions}
                       onChange={(id) => setSelectedVehicleId(id)}
                       ariaLabel="Selecionar veículo"
+                      disabled={isAuditoria}
                     />
                   ) : (
                     <div className="tratativa-field__value tratativa-field__value--readonly">
@@ -636,6 +673,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                   options={eventSelectOptions}
                   onChange={(id) => setSelectedEventId(id)}
                   ariaLabel="Selecionar evento"
+                  disabled={isAuditoria}
                 />
               </div>
               <ReadOnlyField
@@ -650,6 +688,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                     options={vehicleSelectOptions}
                     onChange={(id) => setSelectedVehicleId(id)}
                     ariaLabel="Selecionar veículo"
+                    disabled={isAuditoria}
                   />
                 ) : (
                   <div className="tratativa-field__value tratativa-field__value--readonly">
@@ -706,24 +745,46 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           </div>
         )}
 
-        <footer className="tratativa-footer">
-          <button
-            type="button"
-            className="tratativa-btn tratativa-btn--outline"
-            onClick={onReturn ?? onClose}
-          >
-            Devolver
-          </button>
-          <button
-            type="button"
-            className="tratativa-btn tratativa-btn--primary"
-            onClick={handleConclude}
-            disabled={!allActionsDone}
-            aria-disabled={!allActionsDone}
-          >
-            Concluir tratativa
-          </button>
-        </footer>
+        {activeTab === 'historico' && isAuditoria && (
+          <div className="tratativa-body tratativa-historico">
+            {history.length === 0 ? (
+              <p className="tratativa-empty">Sem registros de histórico.</p>
+            ) : (
+              <ul className="tratativa-historico-list">
+                {history.map((entry) => (
+                  <li key={entry.id} className="tratativa-historico-row">
+                    <span className="tratativa-historico-row__when">{entry.when}</span>
+                    <span className="tratativa-historico-row__author">{entry.author}</span>
+                    <span className="tratativa-historico-row__description">
+                      {entry.description}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {!isAuditoria && (
+          <footer className="tratativa-footer">
+            <button
+              type="button"
+              className="tratativa-btn tratativa-btn--outline"
+              onClick={onReturn ?? onClose}
+            >
+              Devolver
+            </button>
+            <button
+              type="button"
+              className="tratativa-btn tratativa-btn--primary"
+              onClick={handleConclude}
+              disabled={!allActionsDone}
+              aria-disabled={!allActionsDone}
+            >
+              Concluir tratativa
+            </button>
+          </footer>
+        )}
       </section>
     </div>
   );

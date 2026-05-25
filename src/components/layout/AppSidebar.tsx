@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  IconAuditoria,
   IconCadastros,
   IconCentralOperacoes,
   IconConfiguracoes,
@@ -23,6 +24,7 @@ export type AppRoute =
   | 'email-automatico'
   | 'mensagem-voz'
   | 'central-operacoes'
+  | 'operacoes-auditoria'
   | 'operacoes-eventos';
 
 interface AppSidebarProps {
@@ -192,6 +194,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {parentItem(<IconOperacoes />, 'Operações', goRoot)}
             {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
             {childItem('central-operacoes', 'Central de tratativas', <IconCentralOperacoes />)}
+            {childItem('operacoes-auditoria', 'Auditoria', <IconAuditoria />)}
           </>
         )}
 

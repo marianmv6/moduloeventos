@@ -7943,3 +7943,60 @@ body.cr-fullscreen-modal-open .app-content {
 .tratativa-eventos-play:hover {
   background: #f8fbfd;
 }
+
+/* ---- Aba Histórico (modo auditoria do TratativaOcorrenciaModal) ---- */
+.tratativa-historico-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tratativa-historico-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 1.4fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 0.25rem;
+  border-bottom: 1px solid #f2f4f7;
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  color: #344054;
+}
+
+.tratativa-historico-row:last-child {
+  border-bottom: none;
+}
+
+.tratativa-historico-row__when {
+  font-weight: 700;
+  color: #101828;
+}
+
+.tratativa-historico-row__author {
+  font-weight: 600;
+  color: #101828;
+}
+
+.tratativa-historico-row__description {
+  color: #344054;
+}
+
+/* Selects desabilitados na auditoria — visual readonly. */
+.tratativa-select--disabled .tratativa-select__trigger {
+  background: #f2f4f7;
+  color: #344054;
+  cursor: not-allowed;
+}
+
+.tratativa-select--disabled .tratativa-select__chevron {
+  opacity: 0.5;
+}
+
+/* Ações em modo readonly: textarea cinza, sem foco interativo. */
+.tratativa-action--readonly .tratativa-action__textarea {
+  background: #f2f4f7;
+  color: #344054;
+  cursor: not-allowed;
+}
