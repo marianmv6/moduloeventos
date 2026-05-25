@@ -3,15 +3,6 @@ import type { CentralOccurrenceSeverity } from './operacoesCentral.types';
 /** Tipo da política aplicada (afeta o título do card lateral). */
 export type TratativaPolicyKind = 'veiculo' | 'motorista';
 
-/** Cada ação prevista na trilha selecionada. */
-export interface TratativaAction {
-  id: string;
-  /** Numeração visível ("1.", "2.", ...) — deriva da ordem na lista, mas mantemos
-   *  explicitamente para permitir saltos de numeração futuramente. */
-  sequence: number;
-  title: string;
-}
-
 /** Contato a ser exibido no painel direito da aba "Tratativa". */
 export interface TratativaContact {
   id: string;
@@ -19,6 +10,19 @@ export interface TratativaContact {
   shiftLabel: string;
   shiftRange: string;
   phone: string;
+}
+
+/** Cada ação prevista na trilha selecionada. */
+export interface TratativaAction {
+  id: string;
+  /** Numeração visível ("1.", "2.", ...) — deriva da ordem na lista, mas mantemos
+   *  explicitamente para permitir saltos de numeração futuramente. */
+  sequence: number;
+  title: string;
+  /** Contatos exibidos no painel "Detalhes" quando esta ação está
+   *  selecionada. Se ausente, faz fallback para a lista global em
+   *  `TratativaOcorrenciaData.contacts`. */
+  contacts?: TratativaContact[];
 }
 
 /** Motoristas disponíveis para selecionar na aba "Informações". */
@@ -50,6 +54,15 @@ export interface TratativaValidatedEvent {
   time: string;
   /** Tipo de alerta confirmado pelo analista (ex.: "Sonolência N1"). */
   validatedAs: string;
+  /** Veículo associado a este evento. Quando informado, alimenta o campo
+   *  "Placa / prefixo" da aba "Eventos" automaticamente. */
+  vehicleId?: string;
+  /** Motorista associado a este evento. Quando informado, alimenta o campo
+   *  "Motorista" da aba "Eventos". null = "Não identificado". */
+  driverId?: string | null;
+  /** Data/hora completa do evento, usada no histórico de auditoria
+   *  (ex.: "25/05/06 11:12:03"). */
+  occurredAt?: string;
 }
 
 /** Entrada do histórico de auditoria — exibida na aba "Histórico"

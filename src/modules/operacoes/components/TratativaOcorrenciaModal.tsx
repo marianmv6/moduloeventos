@@ -182,6 +182,11 @@ interface ActionCardProps {
   /** Modo auditoria: bloqueia textarea e checkbox; mostra cards expandidos
    *  para todas as ações concluídas, com o "Feito" marcado e desabilitado. */
   readOnly?: boolean;
+  /** Card atualmente selecionado — destaca visualmente e indica que o
+   *  painel "Detalhes" mostra os contatos desta ação. */
+  selected?: boolean;
+  /** Callback disparado ao clicar em qualquer ponto do card. */
+  onSelect?: () => void;
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({
@@ -192,10 +197,20 @@ const ActionCard: React.FC<ActionCardProps> = ({
   onToggleDone,
   done,
   readOnly = false,
+  selected = false,
+  onSelect,
 }) => {
   if (status === 'pending' && !readOnly) {
     return (
-      <div className="tratativa-action tratativa-action--pending" aria-disabled="true">
+      <div
+        className={`tratativa-action tratativa-action--pending${
+          selected ? ' tratativa-action--selected' : ''
+        }`}
+        aria-disabled="true"
+        role={onSelect ? 'button' : undefined}
+        tabIndex={onSelect ? 0 : undefined}
+        onClick={onSelect}
+      >
         <div className="tratativa-action__heading">
           <span className="tratativa-action__title">
             {action.sequence}. {action.title}
@@ -212,7 +227,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
     <div
       className={`tratativa-action${
         status === 'active' ? ' tratativa-action--active' : ' tratativa-action--done'
-      }${readOnly ? ' tratativa-action--readonly' : ''}`}
+      }${readOnly ? ' tratativa-action--readonly' : ''}${
+        selected ? ' tratativa-action--selected' : ''
+      }`}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onClick={onSelect}
     >
       <div className="tratativa-action__heading">
         <span className="tratativa-action__title">
@@ -227,8 +247,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
         rows={3}
         readOnly={readOnly}
         disabled={readOnly}
+        onClick={(event) => event.stopPropagation()}
       />
-      <label className="tratativa-action__check">
+      <label
+        className="tratativa-action__check"
+        onClick={(event) => event.stopPropagation()}
+      >
         <input
           type="checkbox"
           checked={readOnly ? true : done}
@@ -306,6 +330,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   const [selectedEventId, setSelectedEventId] = useState<string>(
     data.validatedEvents[0]?.id ?? '',
   );
+  /** Ação atualmente selecionada — controla o conteúdo do painel "Detalhes". */
+  const [selectedActionId, setSelectedActionId] = useState<string>(
+    data.actions[0]?.id ?? '',
+  );
   /** Vídeo expandido na aba Eventos (mesma mecânica do modal de validação). */
   const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
 
@@ -348,6 +376,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     setSelectedDriverId(data.selectedDriverId);
     setSelectedVehicleId(data.selectedVehicleId);
     setSelectedEventId(data.validatedEvents[0]?.id ?? '');
+    setSelectedActionId(data.actions[0]?.id ?? '');
     setExpandedVideo(null);
   }, [open, data]);
 
@@ -386,6 +415,16 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   const selectedDriver = data.driverOptions.find((d) => d.id === selectedDriverId);
   const selectedVehicle = data.vehicleOptions.find((v) => v.id === selectedVehicleId);
 
+  /** Ação atualmente selecionada (referência completa). */
+  const selectedAction = useMemo(
+    () => data.actions.find((a) => a.id === selectedActionId) ?? null,
+    [data.actions, selectedActionId],
+  );
+
+  /** Contatos exibidos no painel "Detalhes": preferimos os da ação
+   *  selecionada e fazemos fallback para a lista global. */
+  const detailContacts = selectedAction?.contacts ?? data.contacts;
+
   if (!open) return null;
 
   const dotClass = SEVERITY_DOT_CLASS[data.severity] ?? '';
@@ -395,11 +434,30 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     id: v.id,
     label: `${v.placa} / ${v.prefixo}`,
   }));
-  const eventSelectOptions = data.validatedEvents.map((e) => ({
-    id: e.id,
-    label: `${String(e.sequence).padStart(2, '0')} — ${e.time}`,
-  }));
+  const eventSelectOptions = data.validatedEvents
+    .slice()
+    .sort((a, b) => a.sequence - b.sequence)
+    .map((e) => ({
+      id: e.id,
+      label: `${String(e.sequence).padStart(2, '0')} — ${e.time}`,
+    }));
   const selectedEvent = data.validatedEvents.find((e) => e.id === selectedEventId);
+
+  /** Veículo associado ao evento selecionado — usado para preencher o
+   *  campo "Placa / prefixo" da aba Eventos automaticamente. */
+  const eventVehicle = selectedEvent?.vehicleId
+    ? data.vehicleOptions.find((v) => v.id === selectedEvent.vehicleId)
+    : null;
+  const eventVehicleLabel = eventVehicle
+    ? `${eventVehicle.placa} / ${eventVehicle.prefixo}`
+    : 'Não identificado';
+
+  /** Motorista associado ao evento selecionado. */
+  const eventDriver =
+    selectedEvent?.driverId != null
+      ? data.driverOptions.find((d) => d.id === selectedEvent.driverId) ?? null
+      : null;
+  const eventDriverLabel = eventDriver?.name ?? 'Não identificado';
 
   return (
     <div
@@ -520,11 +578,21 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 <div className="tratativa-actions-list">
                   {data.actions.map((action, index) => {
                     const isDone = doneIds.has(action.id);
-                    const status: ActionCardProps['status'] = isDone
+                    /** Em auditoria, todas as ações são consideradas
+                     *  concluídas (esmaecidas). Em tratativa segue o
+                     *  fluxo sequencial: done > active > pending. */
+                    const status: ActionCardProps['status'] = isAuditoria
                       ? 'done'
-                      : index === currentActionIndex
-                        ? 'active'
-                        : 'pending';
+                      : isDone
+                        ? 'done'
+                        : index === currentActionIndex
+                          ? 'active'
+                          : 'pending';
+                    /** Cards selecionáveis: na auditoria todas as ações;
+                     *  em tratativa apenas as que não estão pendentes
+                     *  (i.e., done ou active), permitindo trocar a
+                     *  visualização do painel "Detalhes". */
+                    const canSelect = isAuditoria || status !== 'pending';
                     return (
                       <ActionCard
                         key={action.id}
@@ -537,6 +605,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                         onToggleDone={() => handleToggleDone(action.id)}
                         done={isDone}
                         readOnly={isAuditoria}
+                        selected={selectedActionId === action.id}
+                        onSelect={
+                          canSelect ? () => setSelectedActionId(action.id) : undefined
+                        }
                       />
                     );
                   })}
@@ -546,10 +618,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               <section className="tratativa-pane">
                 <h3 className="tratativa-pane__title">Detalhes</h3>
                 <div className="tratativa-contacts-list">
-                  {data.contacts.length === 0 ? (
+                  {detailContacts.length === 0 ? (
                     <p className="tratativa-empty">Nenhum contato configurado.</p>
                   ) : (
-                    data.contacts.map((contact) => (
+                    detailContacts.map((contact) => (
                       <ContactRow key={contact.id} contact={contact} />
                     ))
                   )}
@@ -673,32 +745,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                   options={eventSelectOptions}
                   onChange={(id) => setSelectedEventId(id)}
                   ariaLabel="Selecionar evento"
-                  disabled={isAuditoria}
                 />
               </div>
               <ReadOnlyField
                 label="Validado como"
                 value={selectedEvent?.validatedAs ?? '—'}
               />
-              <div className="tratativa-field">
-                <span className="tratativa-field__label">Placa / prefixo</span>
-                {selectedVehicleId ? (
-                  <SelectField
-                    value={selectedVehicleId}
-                    options={vehicleSelectOptions}
-                    onChange={(id) => setSelectedVehicleId(id)}
-                    ariaLabel="Selecionar veículo"
-                    disabled={isAuditoria}
-                  />
-                ) : (
-                  <div className="tratativa-field__value tratativa-field__value--readonly">
-                    Não identificado
-                  </div>
-                )}
-              </div>
+              <ReadOnlyField
+                label="Placa / prefixo"
+                value={eventVehicleLabel}
+              />
               <ReadOnlyField
                 label="Motorista"
-                value={selectedDriver?.name ?? 'Não identificado'}
+                value={eventDriverLabel}
               />
             </div>
 

@@ -26,9 +26,55 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
 
   trailLabel: 'Trilha por pontos',
   actions: [
-    { id: 'a1', sequence: 1, title: 'Contato gestor imediato' },
-    { id: 'a2', sequence: 2, title: 'Ligar para gestor' },
-    { id: 'a3', sequence: 3, title: 'Ligar para supervisores' },
+    {
+      id: 'a1',
+      sequence: 1,
+      title: 'Contato gestor imediato',
+      contacts: [
+        {
+          id: 'c1',
+          name: 'Marco Antônio da Silva',
+          shiftLabel: 'Turno manhã, tarde',
+          shiftRange: '6:00 - 12:00',
+          phone: '(11) 98887-0333',
+        },
+      ],
+    },
+    {
+      id: 'a2',
+      sequence: 2,
+      title: 'Ligar para gestor',
+      contacts: [
+        {
+          id: 'c2',
+          name: 'Renata Lopes Souza',
+          shiftLabel: 'Turno tarde, noite',
+          shiftRange: '12:00 - 22:00',
+          phone: '(11) 98887-0445',
+        },
+      ],
+    },
+    {
+      id: 'a3',
+      sequence: 3,
+      title: 'Ligar para supervisores',
+      contacts: [
+        {
+          id: 'c3',
+          name: 'Eduardo Tavares de Lima',
+          shiftLabel: 'Turno manhã',
+          shiftRange: '6:00 - 14:00',
+          phone: '(11) 98887-0511',
+        },
+        {
+          id: 'c4',
+          name: 'Patrícia Mendonça',
+          shiftLabel: 'Turno noite',
+          shiftRange: '22:00 - 6:00',
+          phone: '(11) 98887-0612',
+        },
+      ],
+    },
   ],
   contacts: [
     {
@@ -104,9 +150,41 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
   selectedVehicleId: 'v1',
 
   validatedEvents: [
-    { id: 'val-1', sequence: 1, time: '08:13:25', validatedAs: 'Sonolência N1' },
-    { id: 'val-2', sequence: 2, time: '08:13:53', validatedAs: 'Sonolência N1' },
-    { id: 'val-3', sequence: 3, time: '08:14:27', validatedAs: 'Sonolência N1' },
-    { id: 'val-4', sequence: 4, time: '08:14:44', validatedAs: 'Sonolência N1' },
+    {
+      id: 'val-1',
+      sequence: 1,
+      time: '08:13:25',
+      validatedAs: 'Sonolência N1',
+      vehicleId: 'v1',
+      driverId: 'd1',
+      occurredAt: '25/05/06 08:13:25',
+    },
+    {
+      id: 'val-2',
+      sequence: 2,
+      time: '08:13:53',
+      validatedAs: 'Sonolência N1',
+      vehicleId: 'v1',
+      driverId: 'd1',
+      occurredAt: '25/05/06 08:13:53',
+    },
+    {
+      id: 'val-3',
+      sequence: 3,
+      time: '08:14:27',
+      validatedAs: 'Sonolência N1',
+      vehicleId: 'v2',
+      driverId: 'd2',
+      occurredAt: '25/05/06 08:14:27',
+    },
+    {
+      id: 'val-4',
+      sequence: 4,
+      time: '08:14:44',
+      validatedAs: 'Sonolência N1',
+      vehicleId: 'v2',
+      driverId: 'd2',
+      occurredAt: '25/05/06 08:14:44',
+    },
   ],
 };
