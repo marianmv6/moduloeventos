@@ -7902,9 +7902,22 @@ body.cr-fullscreen-modal-open .app-content {
 
 .tratativa-eventos-player {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(240px, 1fr);
+  grid-template-columns: minmax(0, 2.5fr) minmax(220px, 1fr);
   gap: 1rem;
   align-items: stretch;
+  /* Container compacto: o player de eventos da auditoria/tratativa NÃO
+     deve crescer para a altura toda da modal como a área principal da
+     modal de validação faz. Limitamos altura e o min-height dos tiles
+     para que cada vídeo se acomode em um terço da altura. */
+  max-height: 340px;
+}
+
+.tratativa-eventos-player .central-validacao-video-tile {
+  min-height: 0;
+}
+
+.tratativa-eventos-player .central-validacao-map {
+  min-height: 0;
 }
 
 .tratativa-eventos-timeline {
