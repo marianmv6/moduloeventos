@@ -72,8 +72,8 @@ export const mockCentralOccurrenceSonolenciaN1: CentralOccurrence = {
       datetime: '23/05, 09:45',
       eventType: 'Sonolência N2',
       eventPoints: 40,
-      validationStatus: 'validado',
-      validatedBy: 'Pedro',
+      validationStatus: 'aguardando',
+      validatedByAi: true,
     },
   ],
 };
@@ -131,7 +131,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'QWE4R55',
     prefixo: 'FRT089',
     driverName: 'Fernanda Costa Lima',
-    actions: { kind: 'with-monitor', monitorType: 'ai' },
+    actions: { kind: 'none' },
   },
   {
     id: 'occ-7',

@@ -5651,6 +5651,21 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0;
 }
 
+/** Wrapper do LevelTooltip ao redor de cada segmento — recebe o flex
+ *  proporcional vindo do estado (1, 4, 5, etc.), garantindo que o tooltip
+ *  do componente compartilhado nao quebre o layout flex da barra. */
+.central-controle-status-segment-wrap {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  height: 100%;
+}
+
+.central-controle-status-segment-wrap > .central-controle-status-segment {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
 .central-controle-status-segment {
   flex: 1 1 0;
   display: flex;
@@ -5716,11 +5731,13 @@ body.cr-fullscreen-modal-open .app-content {
   background: rgba(47, 47, 47, 0.06);
 }
 
-.central-controle-status-segment:first-child {
+.central-controle-status-segment:first-child,
+.central-controle-status-bar > .central-controle-status-segment-wrap:first-child .central-controle-status-segment {
   border-radius: 15px 0 0 15px;
 }
 
-.central-controle-status-segment:last-child {
+.central-controle-status-segment:last-child,
+.central-controle-status-bar > .central-controle-status-segment-wrap:last-child .central-controle-status-segment {
   border-radius: 0 15px 15px 0;
 }
 

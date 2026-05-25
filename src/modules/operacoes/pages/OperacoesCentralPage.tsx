@@ -94,18 +94,24 @@ function CentralStatusBar({
   return (
     <div className="central-controle-status-bar" role="group" aria-label="Resumo por criticidade">
       {GRAVITY_SEGMENTS.map(({ key, label, modifier }) => (
-        <button
+        <LevelTooltip
           key={key}
-          type="button"
-          className={`central-controle-status-segment central-controle-status-segment--${modifier}`}
+          text="Selecione para filtrar"
+          topLayer
+          nowrap
+          className="central-controle-status-segment-wrap"
           style={{ flex: `${summary[key]} 1 0%` }}
-          onClick={() => onSelectFilter(modifier)}
-          aria-label={`${label}: ${summary[key]}`}
-          title="Selecione para filtrar"
         >
-          <span className="central-controle-status-segment__value">{summary[key]}</span>
-          <span className="central-controle-status-segment__label">{label}</span>
-        </button>
+          <button
+            type="button"
+            className={`central-controle-status-segment central-controle-status-segment--${modifier}`}
+            onClick={() => onSelectFilter(modifier)}
+            aria-label={`${label}: ${summary[key]}`}
+          >
+            <span className="central-controle-status-segment__value">{summary[key]}</span>
+            <span className="central-controle-status-segment__label">{label}</span>
+          </button>
+        </LevelTooltip>
       ))}
     </div>
   );
@@ -236,7 +242,7 @@ function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
             <IconAnalystHeadset />
           </span>
         </LevelTooltip>
-      ) : row.actions.monitorType === 'human' ? (
+      ) : row.actions.kind === 'with-monitor' && row.actions.monitorType === 'human' ? (
         <LevelTooltip text={`Aberto por ${row.actions.analystName}`} topLayer nowrap>
           <span
             className="central-controle-analyst-icon"
@@ -245,13 +251,13 @@ function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
             <IconAnalystHeadset />
           </span>
         </LevelTooltip>
-      ) : (
+      ) : row.actions.kind === 'with-monitor' && row.actions.monitorType === 'ai' ? (
         <LevelTooltip text="Validado pela IA" topLayer nowrap>
           <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
             IA
           </span>
         </LevelTooltip>
-      )}
+      ) : null}
       <LevelTooltip text="Iniciar tratativa" topLayer nowrap>
         <button type="button" className="central-controle-open-btn" aria-label="Iniciar tratativa">
           <IconOpenOccurrence severity={row.severity} />
@@ -373,6 +379,13 @@ function EventOccurrenceRow({
                 : STATUS_LABEL[event.validationStatus];
             return (
               <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
+                {event.validatedByAi && (
+                  <LevelTooltip text="Validado pela IA" topLayer nowrap>
+                    <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+                      IA
+                    </span>
+                  </LevelTooltip>
+                )}
                 <LevelTooltip text={tooltipText} topLayer nowrap>
                   <span
                     className={`central-controle-status-icon central-controle-status-icon--${event.validationStatus}`}

@@ -18,6 +18,9 @@ interface LevelTooltipProps {
   topLayerAlign?: 'center' | 'end';
   /** Ref do elemento âncora (ex.: checkbox). Quando topLayer e anchorRef, a tooltip é centralizada em cima deste elemento, como em Pontos. */
   anchorRef?: React.RefObject<HTMLElement | null>;
+  /** Estilo aplicado ao wrapper. Útil quando o conteúdo precisa participar de
+   *  um layout flex/grid externo e o wrapper inline-block atrapalharia. */
+  style?: React.CSSProperties;
 }
 
 const TOOLTIP_OFFSET_Y = -8;
@@ -31,6 +34,7 @@ export const LevelTooltip: React.FC<LevelTooltipProps> = ({
   topLayer = false,
   topLayerAlign = 'center',
   anchorRef,
+  style,
 }) => {
   const [visible, setVisible] = useState(false);
   const tooltipRef = useRef<HTMLSpanElement>(null);
@@ -147,6 +151,7 @@ export const LevelTooltip: React.FC<LevelTooltipProps> = ({
     <span
       ref={wrapRef}
       className={`level-tooltip-wrap ${className}`.trim()}
+      style={style}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setVisible(false)}
     >
