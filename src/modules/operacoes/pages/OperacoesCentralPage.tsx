@@ -223,6 +223,57 @@ function pointsClass(severity: CentralOccurrenceSeverity, isCurrent: boolean): s
   return `central-controle-points--${severity}`;
 }
 
+/**
+ * Célula "Tipo de evento" com o ícone de status (validado/aguardando) à
+ * esquerda do nome. Centraliza a lógica de tooltip e ícone usada em
+ * todas as variações de linha da tabela (current, past, ocorrência
+ * colapsada e linhas-resumo).
+ */
+function EventTypeCell({
+  status,
+  eventType,
+  eventPoints,
+  validatedBy,
+  validatedByAi,
+}: {
+  status: CentralEventValidationStatus;
+  eventType: string;
+  eventPoints: number;
+  validatedBy?: string;
+  validatedByAi?: boolean;
+}) {
+  const tooltipText =
+    status === 'validado' && validatedBy
+      ? `Validado por ${validatedBy}`
+      : STATUS_LABEL[status];
+
+  return (
+    <td className="central-controle-row__event">
+      <LevelTooltip text={tooltipText} topLayer nowrap>
+        <span
+          className={`central-controle-status-icon central-controle-status-icon--inline central-controle-status-icon--${status}`}
+          aria-label={tooltipText}
+        >
+          {status === 'aguardando' ? (
+            <IconStatusWaitingValidation />
+          ) : (
+            <IconStatusValidated />
+          )}
+        </span>
+      </LevelTooltip>
+      {validatedByAi && (
+        <LevelTooltip text="Validado pela IA" topLayer nowrap>
+          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
+            IA
+          </span>
+        </LevelTooltip>
+      )}
+      <span className="central-controle-row__event-type">{eventType}</span>
+      <span className="central-controle-row__event-points">, {eventPoints} pts</span>
+    </td>
+  );
+}
+
 function PointsCell({
   points,
   severity,
@@ -360,10 +411,11 @@ function ExpandedOccurrenceGroup({
       <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${occurrence.severity}`}>
         <PointsCell points={current.pointsSum} severity={occurrence.severity} isCurrent />
         <DateTimeCell value={current.datetime} seed={current.id} />
-        <td className="central-controle-row__event">
-          <span className="central-controle-row__event-type">{current.eventType}</span>
-          <span className="central-controle-row__event-points">, {current.eventPoints} pts</span>
-        </td>
+        <EventTypeCell
+          status={current.validationStatus ?? 'aguardando'}
+          eventType={current.eventType}
+          eventPoints={current.eventPoints}
+        />
         <td className="central-controle-row__vehicle">
           {occurrence.placa} / {occurrence.prefixo}
         </td>
@@ -416,6 +468,11 @@ function EventOccurrenceRow({
   onPlay: () => void;
 }) {
   const isCurrent = Boolean(event.isCurrent);
+  /** Status exibido como ícone na coluna "Tipo de evento". Eventos sem
+   *  `validationStatus` explícito (caso do evento atual) são tratados
+   *  como "aguardando", conforme padrão do Figma. */
+  const status: CentralEventValidationStatus =
+    event.validationStatus ?? 'aguardando';
 
   return (
     <tr
@@ -423,20 +480,21 @@ function EventOccurrenceRow({
     >
       <PointsCell points={event.pointsSum} severity={occurrence.severity} isCurrent={isCurrent} />
       <DateTimeCell value={event.datetime} seed={event.id} />
-      <td className="central-controle-row__event">
-        <span className="central-controle-row__event-type">{event.eventType}</span>
-        <span className="central-controle-row__event-points">, {event.eventPoints} pts</span>
-      </td>
+      <EventTypeCell
+        status={status}
+        eventType={event.eventType}
+        eventPoints={event.eventPoints}
+        validatedBy={event.validatedBy}
+        validatedByAi={event.validatedByAi}
+      />
       <td className="central-controle-row__vehicle">
         {isCurrent ? `${occurrence.placa} / ${occurrence.prefixo}` : ''}
       </td>
       <td className="central-controle-row__driver">
         {isCurrent ? occurrence.driverName : ''}
       </td>
-      <td
-        className={`central-controle-row__actions${!isCurrent && event.validationStatus ? ' central-controle-row__actions--status-only' : ''}`}
-      >
-        {isCurrent ? (
+      <td className="central-controle-row__actions">
+        {isCurrent && (
           <EventRowActions
             expanded
             onToggle={onToggle}
@@ -446,52 +504,25 @@ function EventOccurrenceRow({
             severity={occurrence.severity}
             onPlay={onPlay}
           />
-        ) : event.validationStatus ? (
-          (() => {
-            const tooltipText =
-              event.validationStatus === 'validado' && event.validatedBy
-                ? `Validado por ${event.validatedBy}`
-                : STATUS_LABEL[event.validationStatus];
-            return (
-              <div className="central-controle-row__actions-inner central-controle-row__actions-inner--status">
-                {event.validatedByAi && (
-                  <LevelTooltip text="Validado pela IA" topLayer nowrap>
-                    <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
-                      IA
-                    </span>
-                  </LevelTooltip>
-                )}
-                <LevelTooltip text={tooltipText} topLayer nowrap>
-                  <span
-                    className={`central-controle-status-icon central-controle-status-icon--${event.validationStatus}`}
-                    aria-label={tooltipText}
-                  >
-                    {event.validationStatus === 'aguardando' ? (
-                      <IconStatusWaitingValidation />
-                    ) : (
-                      <IconStatusValidated />
-                    )}
-                  </span>
-                </LevelTooltip>
-                <span className="central-controle-row__expand-spacer" aria-hidden />
-              </div>
-            );
-          })()
-        ) : null}
+        )}
       </td>
     </tr>
   );
 }
 
 function CollapsedSummaryRow({ row }: { row: CentralOccurrenceSummaryRow }) {
+  /** Linhas-resumo representam ocorrências com todos os eventos já
+   *  tratados (entraram na lista pelo histórico), portanto sempre
+   *  exibimos o ícone de "validado". */
   return (
     <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${row.severity}`}>
       <PointsCell points={row.totalPoints} severity={row.severity} />
       <DateTimeCell value={row.datetime} seed={row.id} />
-      <td className="central-controle-row__event">
-        <span className="central-controle-row__event-type">{row.eventType}</span>
-        <span className="central-controle-row__event-points">, {row.eventPoints} pts</span>
-      </td>
+      <EventTypeCell
+        status="validado"
+        eventType={row.eventType}
+        eventPoints={row.eventPoints}
+      />
       <td className="central-controle-row__vehicle">
         {row.placa} / {row.prefixo}
       </td>
@@ -674,6 +705,16 @@ export const OperacoesCentralPage: React.FC = () => {
                 <col className="central-controle-col-driver" />
                 <col className="central-controle-col-actions" />
               </colgroup>
+              <thead>
+                <tr className="central-controle-table__head-row">
+                  <th scope="col">Pontuação</th>
+                  <th scope="col">Horário</th>
+                  <th scope="col">Tipo de evento</th>
+                  <th scope="col">Placa / prefixo</th>
+                  <th scope="col">Motorista</th>
+                  <th scope="col" aria-label="Ações" />
+                </tr>
+              </thead>
               <tbody>
                 {filteredOccurrences.map((entry) =>
                   entry.kind === 'group' ? (
