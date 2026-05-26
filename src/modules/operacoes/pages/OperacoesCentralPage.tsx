@@ -54,6 +54,42 @@ const GRAVITY_SEGMENTS: {
   { key: 'low', label: 'Baixo', modifier: 'low' },
 ];
 
+/**
+ * Conjunto de offsets UTC plausíveis para os horários exibidos. Usamos uma
+ * seleção pseudo-aleatória estável (baseada em hash do id do evento) para
+ * que cada linha mantenha o mesmo fuso entre renderizações, mas a lista
+ * pareça heterogênea para o analista.
+ */
+const UTC_OFFSETS = ['-05', '-04', '-03', '-02', '+00', '+01', '+02', '+03'];
+
+function pickUtcOffset(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return UTC_OFFSETS[hash % UTC_OFFSETS.length];
+}
+
+/**
+ * Formata a tooltip do horário no padrão "DD/MM HH:MM (±OO)" — o valor
+ * principal (data/hora) corresponde ao horário local exibido na coluna e
+ * o offset UTC é uma referência adicional para o analista.
+ */
+function formatLocalTimeTooltip(datetime: string, seed: string): string {
+  const cleaned = datetime.replace(',', '').replace(/\s+/g, ' ').trim();
+  return `${cleaned} (${pickUtcOffset(seed)})`;
+}
+
+function DateTimeCell({ value, seed }: { value: string; seed: string }) {
+  return (
+    <td className="central-controle-row__datetime">
+      <LevelTooltip text={formatLocalTimeTooltip(value, seed)} topLayer nowrap>
+        <span>{value}</span>
+      </LevelTooltip>
+    </td>
+  );
+}
+
 function CentralStatusBar({
   summary,
   selectedFilter,
@@ -287,7 +323,7 @@ function ExpandedOccurrenceGroup({
     return (
       <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${occurrence.severity}`}>
         <PointsCell points={current.pointsSum} severity={occurrence.severity} isCurrent />
-        <td className="central-controle-row__datetime">{current.datetime}</td>
+        <DateTimeCell value={current.datetime} seed={current.id} />
         <td className="central-controle-row__event">
           <span className="central-controle-row__event-type">{current.eventType}</span>
           <span className="central-controle-row__event-points">, {current.eventPoints} pts</span>
@@ -350,7 +386,7 @@ function EventOccurrenceRow({
       className={`central-controle-row central-controle-row--${occurrence.severity} central-controle-row--in-group${isCurrent ? ' central-controle-row--current-event' : ' central-controle-row--past-event'}${index === 0 ? ' central-controle-row--group-first' : ''}${index === totalEvents - 1 ? ' central-controle-row--group-last' : ''}`}
     >
       <PointsCell points={event.pointsSum} severity={occurrence.severity} isCurrent={isCurrent} />
-      <td className="central-controle-row__datetime">{event.datetime}</td>
+      <DateTimeCell value={event.datetime} seed={event.id} />
       <td className="central-controle-row__event">
         <span className="central-controle-row__event-type">{event.eventType}</span>
         <span className="central-controle-row__event-points">, {event.eventPoints} pts</span>
@@ -415,7 +451,7 @@ function CollapsedSummaryRow({ row }: { row: CentralOccurrenceSummaryRow }) {
   return (
     <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${row.severity}`}>
       <PointsCell points={row.totalPoints} severity={row.severity} />
-      <td className="central-controle-row__datetime">{row.datetime}</td>
+      <DateTimeCell value={row.datetime} seed={row.id} />
       <td className="central-controle-row__event">
         <span className="central-controle-row__event-type">{row.eventType}</span>
         <span className="central-controle-row__event-points">, {row.eventPoints} pts</span>

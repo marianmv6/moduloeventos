@@ -6642,11 +6642,34 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0.25rem 0;
 }
 
+/* Cabeçalho com barra cinza (padrão usado nas demais modais fullscreen
+ * do sistema). Aplicado na Tratativa/Auditoria da ocorrência para
+ * manter consistência visual com as modais de Contatos, E-mail,
+ * Política, etc. */
+.central-validacao-header--card {
+  background: #F2F4F7;
+  border-radius: 12px;
+  padding: 0 1rem;
+  min-height: 3rem;
+  height: 3rem;
+  border-bottom: 0.063rem solid #E9EEEE80;
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+}
+
 .central-validacao-header__title {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
   color: #101828;
+}
+
+.central-validacao-header--card .central-validacao-header__title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+  font-family: var(--font-montserrat);
 }
 
 .central-validacao-header__close {
