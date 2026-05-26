@@ -60,24 +60,60 @@ const GRAVITY_SEGMENTS: {
  * que cada linha mantenha o mesmo fuso entre renderizações, mas a lista
  * pareça heterogênea para o analista.
  */
-const UTC_OFFSETS = ['-05', '-04', '-03', '-02', '+00', '+01', '+02', '+03'];
+const UTC_OFFSETS_HOURS = [-5, -4, -3, -2, 0, 1, 2, 3] as const;
 
-function pickUtcOffset(seed: string): string {
+/** Fuso da matriz (Creare/BR) — referência usada nas colunas da listagem. */
+const MATRIX_UTC_OFFSET_HOURS = -3;
+
+function pickUtcOffsetHours(seed: string): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
   }
-  return UTC_OFFSETS[hash % UTC_OFFSETS.length];
+  return UTC_OFFSETS_HOURS[hash % UTC_OFFSETS_HOURS.length];
+}
+
+function formatOffsetLabel(hours: number): string {
+  const sign = hours >= 0 ? '+' : '-';
+  return `${sign}${String(Math.abs(hours)).padStart(2, '0')}`;
 }
 
 /**
- * Formata a tooltip do horário no padrão "DD/MM HH:MM (±OO)" — o valor
- * principal (data/hora) corresponde ao horário local exibido na coluna e
- * o offset UTC é uma referência adicional para o analista.
+ * Converte um datetime no formato "DD/MM, HH:MM" (referencial da matriz,
+ * UTC-3) para o fuso local indicado por `offsetHours`, gerando uma string
+ * no padrão "DD/MM HH:MM (±OO)".
+ *
+ * A diferença em horas aplicada é `offsetHours - MATRIX_UTC_OFFSET_HOURS`,
+ * ou seja, um veículo em UTC+0 (3 h à frente da matriz) que apareça como
+ * "23/05 10:05" na coluna é convertido para "23/05 13:05 (+00)" na tooltip.
  */
 function formatLocalTimeTooltip(datetime: string, seed: string): string {
-  const cleaned = datetime.replace(',', '').replace(/\s+/g, ' ').trim();
-  return `${cleaned} (${pickUtcOffset(seed)})`;
+  const offsetHours = pickUtcOffsetHours(seed);
+  const diffMinutes = (offsetHours - MATRIX_UTC_OFFSET_HOURS) * 60;
+  const offsetLabel = formatOffsetLabel(offsetHours);
+
+  const match = datetime.match(/^(\d{1,2})\/(\d{1,2})[,\s]+(\d{1,2}):(\d{2})/);
+  if (!match) {
+    const cleaned = datetime.replace(',', '').replace(/\s+/g, ' ').trim();
+    return `${cleaned} (${offsetLabel})`;
+  }
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const hour = Number(match[3]);
+  const minute = Number(match[4]);
+
+  // Usamos um ano arbitrário (2025) só para tirar proveito do `Date` na
+  // hora de propagar overflow/underflow de dia/mês de forma robusta.
+  const base = new Date(Date.UTC(2025, month - 1, day, hour, minute));
+  base.setUTCMinutes(base.getUTCMinutes() + diffMinutes);
+
+  const dd = String(base.getUTCDate()).padStart(2, '0');
+  const mm = String(base.getUTCMonth() + 1).padStart(2, '0');
+  const hh = String(base.getUTCHours()).padStart(2, '0');
+  const mi = String(base.getUTCMinutes()).padStart(2, '0');
+
+  return `${dd}/${mm} ${hh}:${mi} (${offsetLabel})`;
 }
 
 function DateTimeCell({ value, seed }: { value: string; seed: string }) {
