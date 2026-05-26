@@ -487,7 +487,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
       </aside>
 
       <section className="central-validacao-content tratativa-content">
-        <header className="central-validacao-header">
+        <header className="central-validacao-header central-validacao-header--card">
           <h2 id="tratativa-ocorrencia-title" className="central-validacao-header__title">
             {isAuditoria ? 'Auditoria da ocorrência' : 'Tratativa da ocorrência'}
           </h2>
