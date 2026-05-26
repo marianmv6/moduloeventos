@@ -6214,6 +6214,61 @@ body.cr-fullscreen-modal-open .app-content {
   margin-bottom: 1rem;
 }
 
+/* ---------------------------------------------------------------------
+ * Aba "Reprodução" do modal de detalhe do evento (menu Operações > Eventos)
+ * Reaproveita os componentes/estilos do player de Validação de Alertas
+ * (.central-validacao-videos, .central-validacao-map, .central-validacao-timeline)
+ * para manter consistência visual entre as duas telas.
+ * ------------------------------------------------------------------- */
+.operacoes-event-detail-player {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0.75rem;
+}
+
+.operacoes-event-detail-player__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.operacoes-event-detail-player__map {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.operacoes-event-detail-player__map .operacoes-eventos-map {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.operacoes-event-detail-player__map .operacoes-eventos-map__canvas {
+  min-height: 0;
+  height: 100%;
+}
+
+.operacoes-event-detail-player__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 960px) {
+  .operacoes-event-detail-player__body {
+    grid-template-columns: 1fr;
+  }
+}
+
 .operacoes-event-detail-content {
   max-width: 100%;
 }
