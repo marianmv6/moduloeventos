@@ -26,6 +26,14 @@ export interface OperacoesEventDetailView {
   vehicle: OperacoesEventVehicleDetail;
   driver: OperacoesEventDriverDetail | null;
   formattedDateTime: string;
+  /** Labels formatados para a seção "Dados do evento" da aba Informações. */
+  eventDateLabel: string;
+  eventTimeLabel: string;
+  receivedDateLabel: string;
+  receivedTimeLabel: string;
+  locationLabel: string;
+  coordinatesLabel: string;
+  speedLabel: string;
 }
 
 const VEHICLE_GROUPS_BY_PLACA: Record<string, OperacoesOrganizationGroup[]> = {
@@ -153,6 +161,64 @@ export function formatEventDateTime(iso: string): string {
   return `${day}/${month}/${year}, ${hours}:${minutes}`;
 }
 
+function formatEventDateOnly(iso: string): string {
+  const date = new Date(iso);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+}
+
+function formatEventTimeOnly(iso: string, deltaSeconds = 0): string {
+  const date = new Date(iso);
+  date.setSeconds(date.getSeconds() + deltaSeconds);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+/** Dados auxiliares mockados para a nova seção "Dados do evento":
+ *  localização (reverse geocoding), coordenadas e velocidade. Mantemos
+ *  uma chave estável por placa para que o conjunto exibido seja
+ *  consistente entre aberturas da modal. */
+const EVENT_LOCATION_BY_PLACA: Record<
+  string,
+  { location: string; coordinates: string; speedKmh: number }
+> = {
+  SLE3P56: {
+    location: 'Av. Pres. João Goulart, 551 — Centro Histórico, Porto Alegre - RS',
+    coordinates: '-30.0346, -51.2177',
+    speedKmh: 64,
+  },
+  FAL0M70: {
+    location: 'BR-290, km 82 — Eldorado do Sul - RS',
+    coordinates: '-30.0815, -51.6182',
+    speedKmh: 78,
+  },
+  IQP2A01: {
+    location: 'Rod. dos Tamoios, km 24 — Caçapava - SP',
+    coordinates: '-23.0843, -45.7064',
+    speedKmh: 56,
+  },
+  HQH5986: {
+    location: 'Av. das Indústrias, 4500 — Canoas - RS',
+    coordinates: '-29.9182, -51.1855',
+    speedKmh: 47,
+  },
+  BKR5I96: {
+    location: 'BR-116, km 274 — Esteio - RS',
+    coordinates: '-29.8607, -51.1762',
+    speedKmh: 82,
+  },
+};
+
+const DEFAULT_EVENT_LOCATION = {
+  location: 'Localização aproximada não disponível',
+  coordinates: '—',
+  speedKmh: 0,
+};
+
 export function buildOperacoesEventDetail(event: OperacoesEventRow): OperacoesEventDetailView {
   const vehicleBase = VEHICLE_BY_PLACA[event.placa] ?? DEFAULT_VEHICLE;
   const vehicle: OperacoesEventVehicleDetail = {
@@ -171,10 +237,21 @@ export function buildOperacoesEventDetail(event: OperacoesEventRow): OperacoesEv
     };
   }
 
+  const location = EVENT_LOCATION_BY_PLACA[event.placa] ?? DEFAULT_EVENT_LOCATION;
+
   return {
     event,
     vehicle,
     driver,
     formattedDateTime: formatEventDateTime(event.occurredAt),
+    eventDateLabel: formatEventDateOnly(event.occurredAt),
+    eventTimeLabel: formatEventTimeOnly(event.occurredAt),
+    // O recebimento é registrado alguns segundos depois do evento, simulando
+    // a latência do dispositivo embarcado para a plataforma.
+    receivedDateLabel: formatEventDateOnly(event.occurredAt),
+    receivedTimeLabel: formatEventTimeOnly(event.occurredAt, 3),
+    locationLabel: location.location,
+    coordinatesLabel: location.coordinates,
+    speedLabel: location.speedKmh > 0 ? `${location.speedKmh} km/h` : '—',
   };
 }
