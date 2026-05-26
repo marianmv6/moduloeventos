@@ -100,11 +100,17 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     gatilhos?: boolean;
   }>({});
 
+  /** Pool de eventos disponiveis na politica: nao inclui "Personalizados". */
+  const policyScores = useMemo(
+    () => scores.filter((s) => s.eventType !== 'personalizados'),
+    [scores],
+  );
+
   const filteredScores = useMemo(() => {
     const q = eventSearchQuery.trim().toLowerCase();
     const list = q
-      ? scores.filter((s) => s.name.toLowerCase().includes(q))
-      : scores.slice();
+      ? policyScores.filter((s) => s.name.toLowerCase().includes(q))
+      : policyScores.slice();
     return list.sort((a, b) => {
       const aIn = !!configEventos[a.id];
       const bIn = !!configEventos[b.id];
@@ -112,7 +118,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       if (!aIn && bIn) return 1;
       return 0;
     });
-  }, [scores, eventSearchQuery, configEventos]);
+  }, [policyScores, eventSearchQuery, configEventos]);
 
   const activeUsers = useMemo(() => users.filter((u) => u.active), [users]);
   const activeTrails = useMemo(() => trails.filter((t) => t.active), [trails]);
@@ -199,7 +205,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   const selectAllEventos = (checked: boolean) => {
     if (checked) {
       const next: Record<string, PolicyEventConfig> = {};
-      scores.forEach((s) => {
+      policyScores.forEach((s) => {
         next[s.id] = configEventos[s.id] ?? { pontos: DEFAULT_PONTOS, duracaoAtiva: DEFAULT_DURACAO };
       });
       setConfigEventos(next);
@@ -207,7 +213,8 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     if (fieldErrors.configEventos) setFieldErrors((err) => ({ ...err, configEventos: false }));
   };
 
-  const allEventosSelected = scores.length > 0 && Object.keys(configEventos).length === scores.length;
+  const allEventosSelected =
+    policyScores.length > 0 && policyScores.every((s) => !!configEventos[s.id]);
 
   const toggleUsuario = (userId: string) => {
     setUsuariosSelected((prev) =>
