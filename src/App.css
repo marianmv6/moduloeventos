@@ -6263,6 +6263,27 @@ body.cr-fullscreen-modal-open .app-content {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.operacoes-event-detail-grid--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Linha "Localizacao aproximada | Coordenadas | Velocidade" ? a
+ * localizacao ocupa duas colunas (texto mais longo) e os demais
+ * campos ficam com uma coluna cada. */
+.operacoes-event-detail-grid--loc {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+@media (max-width: 1200px) {
+  .operacoes-event-detail-grid--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .operacoes-event-detail-grid--loc {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .operacoes-event-detail-empty,
 .operacoes-event-detail-placeholder {
   margin: 0;
@@ -7304,11 +7325,16 @@ body.cr-fullscreen-modal-open .app-content {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-/* Linha "Localização aproximada | Coordenadas | Velocidade" ? a
- * localização ocupa duas colunas (texto mais longo) e os demais
+/* Linha "Localiza??o aproximada | Coordenadas | Velocidade" ? a
+ * localiza??o ocupa duas colunas (texto mais longo) e os demais
  * campos ficam com uma coluna cada. */
 .central-validacao-info__grid--evento-loc {
   grid-template-columns: 2fr 1fr 1fr;
+}
+
+/* Linha "Tipo de evento" sozinha (ocupa uma coluna inteira). */
+.central-validacao-info__grid--evento-tipo {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 @media (max-width: 1200px) {

@@ -595,6 +595,10 @@ interface InfoTabProps {
   driverUnidentified?: boolean;
   selectedDriver: string;
   onChangeDriver: (value: string) => void;
+  /** Tipo de evento selecionado na 1ª aba — exibido como campo readonly
+   *  ("Tipo de evento") em "Dados do evento". Reflete em tempo real a
+   *  escolha do analista no AlertTypeSelect. */
+  eventTypeLabel: string;
 }
 
 const InfoTab: React.FC<InfoTabProps> = ({
@@ -602,12 +606,13 @@ const InfoTab: React.FC<InfoTabProps> = ({
   driverUnidentified,
   selectedDriver,
   onChangeDriver,
+  eventTypeLabel,
 }) => (
   <div className="central-validacao-info">
     <CollapsibleSection title="Dados gerais" defaultOpen>
       <div className="central-validacao-info__grid central-validacao-info__grid--2col">
         <InfoField label="Empresa" value="Bracell" />
-        <InfoField label="Filial" value="Expresso Nepomuceno" />
+        <InfoField label="Grupo de organização" value="Expresso Nepomuceno" />
       </div>
       <div className="central-validacao-info__grid central-validacao-info__grid--2col">
         <InfoField label="Placa / Prefixo" value="ANB1K52" />
@@ -620,6 +625,9 @@ const InfoTab: React.FC<InfoTabProps> = ({
     </CollapsibleSection>
 
     <CollapsibleSection title="Dados do evento" defaultOpen>
+      <div className="central-validacao-info__grid central-validacao-info__grid--evento-tipo">
+        <InfoField label="Tipo de evento" value={eventTypeLabel} />
+      </div>
       <div className="central-validacao-info__grid central-validacao-info__grid--4col">
         <InfoField label="Data do evento" value="14/05/25" />
         <InfoField label="Hora do evento" value="12:32:18" />
@@ -1000,6 +1008,9 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
             driverUnidentified={driverUnidentified}
             selectedDriver={selectedDriver}
             onChangeDriver={setSelectedDriver}
+            eventTypeLabel={
+              ALERT_LABELS[alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert]
+            }
           />
         )}
 

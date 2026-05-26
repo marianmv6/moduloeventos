@@ -134,10 +134,31 @@ export const OperacoesEventDetailModal: React.FC<OperacoesEventDetailModalProps>
 
             {activeTab === 'informacoes' && (
               <div className="operacoes-event-detail-content" role="tabpanel">
-                <div className="operacoes-event-detail-summary">
-                  <DetailField label="Tipo do evento" value={event.eventType} />
-                  <DetailField label="Data e hora" value={detail.formattedDateTime} />
-                </div>
+                <DetailSection title="Dados do evento">
+                  <div className="operacoes-event-detail-grid operacoes-event-detail-grid--2">
+                    <DetailField label="Tipo de evento" value={event.eventType} />
+                  </div>
+                  <div className="operacoes-event-detail-grid operacoes-event-detail-grid--4">
+                    <DetailField label="Data do evento" value={detail.eventDateLabel} />
+                    <DetailField label="Hora do evento" value={detail.eventTimeLabel} />
+                    <DetailField
+                      label="Data do recebimento"
+                      value={detail.receivedDateLabel}
+                    />
+                    <DetailField
+                      label="Hora do recebimento"
+                      value={detail.receivedTimeLabel}
+                    />
+                  </div>
+                  <div className="operacoes-event-detail-grid operacoes-event-detail-grid--loc">
+                    <DetailField
+                      label="Localização aproximada"
+                      value={detail.locationLabel}
+                    />
+                    <DetailField label="Coordenadas" value={detail.coordinatesLabel} />
+                    <DetailField label="Velocidade" value={detail.speedLabel} />
+                  </div>
+                </DetailSection>
 
                 <DetailSection title="Dados do veículo">
                   <div className="operacoes-event-detail-grid operacoes-event-detail-grid--2">
