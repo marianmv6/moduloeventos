@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
+import { buildEventTimelineLabels } from '../utils/eventTimeline';
 import type {
   CentralAlertType,
   CentralValidationEvent,
@@ -608,19 +609,30 @@ const InfoTab: React.FC<InfoTabProps> = ({
         <InfoField label="Empresa" value="Bracell" />
         <InfoField label="Filial" value="Expresso Nepomuceno" />
       </div>
-      <div className="central-validacao-info__grid central-validacao-info__grid--4col">
+      <div className="central-validacao-info__grid central-validacao-info__grid--2col">
         <InfoField label="Placa / Prefixo" value="ANB1K52" />
         {driverUnidentified ? (
           <DriverSelect value={selectedDriver} onChange={onChangeDriver} />
         ) : (
           <InfoField label="Condutor" value={driverName} />
         )}
-        <InfoField label="ID da autoria" value="38868155" />
-        <InfoField label="Autor de tratativa" value="Marco Romero da Costa" />
       </div>
+    </CollapsibleSection>
+
+    <CollapsibleSection title="Dados do evento" defaultOpen>
       <div className="central-validacao-info__grid central-validacao-info__grid--4col">
-        <InfoField label="Data do alerta" value="14/05/25" />
-        <InfoField label="Hora" value="12:32" />
+        <InfoField label="Data do evento" value="14/05/25" />
+        <InfoField label="Hora do evento" value="12:32:18" />
+        <InfoField label="Data do recebimento" value="14/05/25" />
+        <InfoField label="Hora do recebimento" value="12:32:21" />
+      </div>
+      <div className="central-validacao-info__grid central-validacao-info__grid--evento-loc">
+        <InfoField
+          label="Localização aproximada"
+          value="Av. Pres. João Goulart, 551 — Centro Histórico, Porto Alegre - RS"
+        />
+        <InfoField label="Coordenadas" value="-30.0346, -51.2177" />
+        <InfoField label="Velocidade" value="64 km/h" />
       </div>
     </CollapsibleSection>
 
@@ -958,19 +970,29 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               </button>
             </div>
 
-            <div className="central-validacao-timeline" aria-hidden>
-              <div className="central-validacao-timeline__bar">
-                <div className="central-validacao-timeline__marker" />
-              </div>
-              <div className="central-validacao-timeline__labels">
-                <span>00:00</span>
-                <span>00:02</span>
-                <span>00:04</span>
-                <span>00:06</span>
-                <span>00:08</span>
-                <span>00:10</span>
-              </div>
-            </div>
+            {(() => {
+              // Timeline absoluta centrada no horário do evento ativo
+              // (5 s antes / 5 s depois). A bolinha vermelha marca o
+              // instante exato do alerta — sempre no centro da janela.
+              const { labels, markerPercent } = buildEventTimelineLabels(activeEvent.time);
+              return (
+                <div className="central-validacao-timeline" aria-hidden>
+                  <div className="central-validacao-timeline__bar">
+                    <div className="central-validacao-timeline__marker" />
+                    <div
+                      className="central-validacao-timeline__event-marker"
+                      style={{ left: `${markerPercent}%` }}
+                      aria-label="Instante do evento"
+                    />
+                  </div>
+                  <div className="central-validacao-timeline__labels">
+                    {labels.map((label, index) => (
+                      <span key={index}>{label}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </>
         ) : (
           <InfoTab

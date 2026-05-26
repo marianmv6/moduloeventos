@@ -6,6 +6,7 @@ import type {
   TratativaHistoryEntry,
 } from '../types/tratativaOcorrencia.types';
 import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
+import { buildEventTimelineLabels } from '../utils/eventTimeline';
 
 interface TratativaOcorrenciaModalProps {
   open: boolean;
@@ -799,25 +800,38 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               <MapPanel />
             </div>
 
-            <div className="tratativa-eventos-timeline">
-              <button
-                type="button"
-                className="tratativa-eventos-play"
-                aria-label="Reproduzir"
-              >
-                <IconPlayBlue />
-              </button>
-              <div className="tratativa-eventos-timeline__bar" aria-hidden>
-                <span className="tratativa-eventos-timeline__cursor" />
-              </div>
-              <div className="tratativa-eventos-timeline__marks" aria-hidden>
-                {['00:00', '00:02', '00:04', '00:06', '00:08', '00:10'].map((label) => (
-                  <span key={label} className="tratativa-eventos-timeline__mark">
-                    {label}
-                  </span>
-                ))}
-              </div>
-            </div>
+            {(() => {
+              // Timeline centrada no horário do evento selecionado, com
+              // bolinha vermelha indicando o instante exato do alerta.
+              const { labels, markerPercent } = buildEventTimelineLabels(
+                selectedEvent?.time ?? '',
+              );
+              return (
+                <div className="tratativa-eventos-timeline">
+                  <button
+                    type="button"
+                    className="tratativa-eventos-play"
+                    aria-label="Reproduzir"
+                  >
+                    <IconPlayBlue />
+                  </button>
+                  <div className="tratativa-eventos-timeline__bar" aria-hidden>
+                    <span className="tratativa-eventos-timeline__cursor" />
+                    <span
+                      className="tratativa-eventos-timeline__event-marker"
+                      style={{ left: `${markerPercent}%` }}
+                    />
+                  </div>
+                  <div className="tratativa-eventos-timeline__marks" aria-hidden>
+                    {labels.map((label, index) => (
+                      <span key={index} className="tratativa-eventos-timeline__mark">
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
