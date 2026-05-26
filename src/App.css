@@ -5829,6 +5829,30 @@ body.cr-fullscreen-modal-open .app-content {
   width: 100%;
 }
 
+/* Cabecalho da tabela: bordas suavizadas (a tabela ja vive dentro de
+ * .central-controle-table-wrap, que tem borda + border-radius). */
+.central-controle-table thead th {
+  text-align: left;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: var(--font-noto-sans);
+  color: #475467;
+  background: rgba(233, 238, 238, 0.47);
+  border-bottom: 1px solid #e9eeee;
+  white-space: nowrap;
+}
+
+.central-controle-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.central-controle-table thead th:last-child {
+  border-top-right-radius: 12px;
+  min-width: 0;
+  padding-left: 1.25rem;
+}
+
 .central-controle-col-points {
   width: 6.5rem;
 }
@@ -5911,6 +5935,21 @@ body.cr-fullscreen-modal-open .app-content {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Icone de status (validado/aguardando) inline, ANTES do nome do
+ * evento. Mantemos o tamanho compatto e o alinhamento vertical com o
+ * texto do tipo de evento. */
+.central-controle-status-icon--inline {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.central-controle-status-icon--inline svg {
+  width: 18px;
+  height: 18px;
 }
 
 .central-controle-row__event-type {
