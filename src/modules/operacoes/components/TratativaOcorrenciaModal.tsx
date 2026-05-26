@@ -777,6 +777,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 label="Motorista"
                 value={selectedDriver?.name ?? 'Não identificado'}
               />
+              <ReadOnlyField
+                label="Localização"
+                value={selectedEvent?.location ?? '—'}
+              />
             </div>
 
             <div className="tratativa-eventos-player">
