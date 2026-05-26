@@ -5829,18 +5829,21 @@ body.cr-fullscreen-modal-open .app-content {
   width: 100%;
 }
 
-/* Cabecalho da tabela: bordas suavizadas (a tabela ja vive dentro de
- * .central-controle-table-wrap, que tem borda + border-radius). */
+/* Cabecalho da tabela: altura compacta (32 px) conforme referencia do
+ * Figma. A tabela ja vive dentro de .central-controle-table-wrap, que
+ * tem borda + border-radius. */
 .central-controle-table thead th {
   text-align: left;
-  padding: 0.75rem 1.25rem;
+  height: 32px;
+  padding: 0 1.25rem;
   font-size: 0.8125rem;
   font-weight: 500;
   font-family: var(--font-noto-sans);
-  color: #475467;
-  background: rgba(233, 238, 238, 0.47);
-  border-bottom: 1px solid #e9eeee;
+  color: #2F2F2F;
+  background: rgba(47, 47, 47, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   white-space: nowrap;
+  min-height: 0;
 }
 
 .central-controle-table thead th:first-child {
