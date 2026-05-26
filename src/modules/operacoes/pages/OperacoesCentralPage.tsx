@@ -411,8 +411,10 @@ function ExpandedOccurrenceGroup({
       <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${occurrence.severity}`}>
         <PointsCell points={current.pointsSum} severity={occurrence.severity} isCurrent />
         <DateTimeCell value={current.datetime} seed={current.id} />
+        {/* Ocorrencia colapsada exibe o evento atual (mais recente) — por
+            regra de negocio ele sempre estara aguardando validacao. */}
         <EventTypeCell
-          status={current.validationStatus ?? 'aguardando'}
+          status="aguardando"
           eventType={current.eventType}
           eventPoints={current.eventPoints}
         />
@@ -468,11 +470,13 @@ function EventOccurrenceRow({
   onPlay: () => void;
 }) {
   const isCurrent = Boolean(event.isCurrent);
-  /** Status exibido como ícone na coluna "Tipo de evento". Eventos sem
-   *  `validationStatus` explícito (caso do evento atual) são tratados
-   *  como "aguardando", conforme padrão do Figma. */
-  const status: CentralEventValidationStatus =
-    event.validationStatus ?? 'aguardando';
+  /** Status exibido como icone na coluna "Tipo de evento":
+   *  - o evento atual (mais recente) SEMPRE esta aguardando validacao
+   *    (regra de negocio: e ele que disparou a ocorrencia);
+   *  - os demais eventos usam o `validationStatus` definido no mock. */
+  const status: CentralEventValidationStatus = isCurrent
+    ? 'aguardando'
+    : event.validationStatus ?? 'aguardando';
 
   return (
     <tr
@@ -511,15 +515,15 @@ function EventOccurrenceRow({
 }
 
 function CollapsedSummaryRow({ row }: { row: CentralOccurrenceSummaryRow }) {
-  /** Linhas-resumo representam ocorrências com todos os eventos já
-   *  tratados (entraram na lista pelo histórico), portanto sempre
-   *  exibimos o ícone de "validado". */
+  /** Linhas-resumo representam ocorrencias PENDENTES na Central de
+   *  Tratativas — o "evento" exibido aqui e o ultimo/mais recente da
+   *  ocorrencia, que por definicao ainda esta aguardando validacao. */
   return (
     <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${row.severity}`}>
       <PointsCell points={row.totalPoints} severity={row.severity} />
       <DateTimeCell value={row.datetime} seed={row.id} />
       <EventTypeCell
-        status="validado"
+        status="aguardando"
         eventType={row.eventType}
         eventPoints={row.eventPoints}
       />
