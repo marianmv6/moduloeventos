@@ -63,6 +63,8 @@ export interface TratativaValidatedEvent {
   /** Data/hora completa do evento, usada no histórico de auditoria
    *  (ex.: "25/05/06 11:12:03"). */
   occurredAt?: string;
+  /** Localização aproximada do evento (label legível, ex.: "Canoas / RS"). */
+  location?: string;
 }
 
 /** Entrada do histórico de auditoria — exibida na aba "Histórico"

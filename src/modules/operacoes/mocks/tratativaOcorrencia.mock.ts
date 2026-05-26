@@ -158,6 +158,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       vehicleId: 'v1',
       driverId: 'd1',
       occurredAt: '25/05/06 08:13:25',
+      location: 'Canoas / RS',
     },
     {
       id: 'val-2',
@@ -167,6 +168,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       vehicleId: 'v1',
       driverId: 'd1',
       occurredAt: '25/05/06 08:13:53',
+      location: 'Canoas / RS',
     },
     {
       id: 'val-3',
@@ -176,6 +178,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       vehicleId: 'v2',
       driverId: 'd2',
       occurredAt: '25/05/06 08:14:27',
+      location: 'Esteio / RS',
     },
     {
       id: 'val-4',
@@ -185,6 +188,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       vehicleId: 'v2',
       driverId: 'd2',
       occurredAt: '25/05/06 08:14:44',
+      location: 'Esteio / RS',
     },
   ],
 };
