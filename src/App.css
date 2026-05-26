@@ -6642,10 +6642,10 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0.25rem 0;
 }
 
-/* Cabeçalho com barra cinza (padrão usado nas demais modais fullscreen
- * do sistema). Aplicado na Tratativa/Auditoria da ocorrência para
- * manter consistência visual com as modais de Contatos, E-mail,
- * Política, etc. */
+/* Cabe?alho com barra cinza (padr?o usado nas demais modais fullscreen
+ * do sistema). Aplicado na Tratativa/Auditoria da ocorr?ncia para
+ * manter consist?ncia visual com as modais de Contatos, E-mail,
+ * Pol?tica, etc. */
 .central-validacao-header--card {
   background: #F2F4F7;
   border-radius: 12px;
@@ -7134,6 +7134,21 @@ body.cr-fullscreen-modal-open .app-content {
   box-shadow: 0 0 0 1px #169eff;
 }
 
+/* Bolinha vermelha indicando o instante exato em que o evento ocorreu
+ * ? sempre posicionada no centro da janela de 10 s do player.
+ * O `left` ? definido inline a partir de `markerPercent`. */
+.central-validacao-timeline__event-marker {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: #e5394c;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 2px #fff;
+}
+
 .central-validacao-timeline__labels {
   display: flex;
   justify-content: space-between;
@@ -7287,6 +7302,19 @@ body.cr-fullscreen-modal-open .app-content {
 
 .central-validacao-info__grid--4col {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Linha "Localização aproximada | Coordenadas | Velocidade" ? a
+ * localização ocupa duas colunas (texto mais longo) e os demais
+ * campos ficam com uma coluna cada. */
+.central-validacao-info__grid--evento-loc {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+@media (max-width: 1200px) {
+  .central-validacao-info__grid--evento-loc {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .central-validacao-info__field {
@@ -7925,14 +7953,14 @@ body.cr-fullscreen-modal-open .app-content {
 
 .tratativa-eventos-player {
   display: grid;
-  /* Mesma proporção da modal de validação dos alertas
+  /* Mesma propor??o da modal de valida??o dos alertas
      (.central-validacao-body): 1.55fr / 1fr. */
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   gap: 0.75rem;
   align-items: stretch;
-  /* Cresce para preencher o espaço disponível na aba (mesma
-     mecânica do .central-validacao-body), respeitando a altura
-     mínima dos tiles. */
+  /* Cresce para preencher o espa?o dispon?vel na aba (mesma
+     mec?nica do .central-validacao-body), respeitando a altura
+     m?nima dos tiles. */
   flex: 1;
   min-height: 0;
 }
@@ -7951,6 +7979,18 @@ body.cr-fullscreen-modal-open .app-content {
   border-radius: 999px;
   background: #e9eef1;
   grid-column: 2 / span 1;
+}
+
+.tratativa-eventos-timeline__event-marker {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: #e5394c;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .tratativa-eventos-timeline__cursor {
