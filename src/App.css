@@ -5856,6 +5856,18 @@ body.cr-fullscreen-modal-open .app-content {
   padding-left: 1.25rem;
 }
 
+/* Wrapper para th que recebe texto + InfoTooltip ao lado. */
+.central-controle-th-with-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.central-controle-th-with-info .policy-form-header-info-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
 .central-controle-col-points {
   width: 6.5rem;
 }

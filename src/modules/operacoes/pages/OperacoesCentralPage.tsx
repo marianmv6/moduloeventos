@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
+import { InfoTooltip } from '../../risk-rules/components/shared/InfoTooltip';
 import { CentralControleFilterBanner } from '../components/CentralControleFilterBanner';
 import { CentralControleFilterPanel } from '../components/CentralControleFilterPanel';
 import { CentralControleToolbarSearch } from '../components/CentralControleToolbarSearch';
@@ -712,7 +713,12 @@ export const OperacoesCentralPage: React.FC = () => {
               <thead>
                 <tr className="central-controle-table__head-row">
                   <th scope="col">Pontuação</th>
-                  <th scope="col">Horário</th>
+                  <th scope="col">
+                    <span className="central-controle-th-with-info">
+                      Data/hora
+                      <InfoTooltip text="Data/hora do evento" />
+                    </span>
+                  </th>
                   <th scope="col">Tipo de evento</th>
                   <th scope="col">Placa / prefixo</th>
                   <th scope="col">Motorista</th>
