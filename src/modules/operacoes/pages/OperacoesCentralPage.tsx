@@ -200,7 +200,7 @@ function CentralTreatedBar({ treated, pending }: { treated: number; pending: num
   const pendingFlex = Math.max(pending, total > 0 ? 0.0001 : 0);
 
   return (
-    <div className="central-controle-treated-bar" role="group" aria-label="Eventos tratados">
+    <div className="central-controle-treated-bar" role="group" aria-label="Eventos analisados">
       <div
         className="central-controle-treated-bar__segment central-controle-treated-bar__segment--treated"
         style={{ flex: `${treatedFlex} 1 0%` }}
@@ -692,7 +692,7 @@ export const OperacoesCentralPage: React.FC = () => {
 
           <div className="central-controle-status-block">
             <div className="central-controle-status-block__head">
-              <h2 className="central-controle-status-block__title">Eventos tratados</h2>
+              <h2 className="central-controle-status-block__title">Eventos analisados</h2>
               <span className="central-controle-status-block__percent">
                 {(() => {
                   const total = treatedSummary.treated + treatedSummary.pending;
