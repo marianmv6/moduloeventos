@@ -422,15 +422,33 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   }, [data.actions, actionResolutions]);
 
   const handleSetResolution = (actionId: string, resolution: ActionResolution) => {
-    setActionResolutions((prev) => ({ ...prev, [actionId]: resolution }));
-    if (isAuditoria) return;
-
     const currentIdx = data.actions.findIndex((a) => a.id === actionId);
-    if (
-      resolution === 'nao_resolvido' &&
-      currentIdx === frontierIndex &&
-      currentIdx < data.actions.length - 1
-    ) {
+    if (currentIdx === -1) return;
+
+    setActionResolutions((prev) => {
+      const next = { ...prev, [actionId]: resolution };
+      /** Ao marcar "Resolvido" numa ação anterior, limpa resoluções das
+       *  etapas posteriores que tinham sido habilitadas via "Não resolvido". */
+      if (!isAuditoria && resolution === 'resolvido') {
+        for (let i = currentIdx + 1; i < data.actions.length; i++) {
+          delete next[data.actions[i].id];
+        }
+      }
+      return next;
+    });
+
+    if (isAuditoria) {
+      setSelectedActionId(actionId);
+      return;
+    }
+
+    if (resolution === 'resolvido') {
+      setFrontierIndex((frontier) => Math.min(frontier, currentIdx));
+      setSelectedActionId(actionId);
+      return;
+    }
+
+    if (currentIdx === frontierIndex && currentIdx < data.actions.length - 1) {
       const nextIdx = currentIdx + 1;
       setFrontierIndex(nextIdx);
       setSelectedActionId(data.actions[nextIdx].id);
@@ -653,22 +671,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 <h3 className="tratativa-info-section__title">Dados do motorista</h3>
               </header>
               <div className="tratativa-info-grid tratativa-info-grid--2">
-                <div className="tratativa-field">
-                  <span className="tratativa-field__label">Nome</span>
-                  {selectedDriverId ? (
-                    <SelectField
-                      value={selectedDriverId}
-                      options={driverSelectOptions}
-                      onChange={(id) => setSelectedDriverId(id)}
-                      ariaLabel="Selecionar motorista"
-                      disabled={isAuditoria}
-                    />
-                  ) : (
-                    <div className="tratativa-field__value tratativa-field__value--readonly">
-                      Não identificado
-                    </div>
-                  )}
-                </div>
+                <ReadOnlyField
+                  label="Nome"
+                  value={selectedDriver?.name ?? 'Não identificado'}
+                />
                 {selectedDriver && (
                   <div className="tratativa-field">
                     <span className="tratativa-field__label">Grupos de organização</span>
@@ -695,22 +701,14 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 <h3 className="tratativa-info-section__title">Dados do veículo</h3>
               </header>
               <div className="tratativa-info-grid tratativa-info-grid--3">
-                <div className="tratativa-field tratativa-field--col-1-2">
-                  <span className="tratativa-field__label">Placa / prefixo</span>
-                  {selectedVehicleId ? (
-                    <SelectField
-                      value={selectedVehicleId}
-                      options={vehicleSelectOptions}
-                      onChange={(id) => setSelectedVehicleId(id)}
-                      ariaLabel="Selecionar veículo"
-                      disabled={isAuditoria}
-                    />
-                  ) : (
-                    <div className="tratativa-field__value tratativa-field__value--readonly">
-                      Não identificado
-                    </div>
-                  )}
-                </div>
+                <ReadOnlyField
+                  label="Placa / prefixo"
+                  value={
+                    selectedVehicle
+                      ? `${selectedVehicle.placa} / ${selectedVehicle.prefixo}`
+                      : 'Não identificado'
+                  }
+                />
                 {selectedVehicle && (
                   <>
                     <ReadOnlyField label="Tipo" value={selectedVehicle.tipo} />
