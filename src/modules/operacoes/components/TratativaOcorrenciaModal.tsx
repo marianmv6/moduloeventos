@@ -4,6 +4,7 @@ import type {
   TratativaContact,
   TratativaAction,
   TratativaHistoryEntry,
+  TratativaActionResolution,
 } from '../types/tratativaOcorrencia.types';
 import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
@@ -45,7 +46,23 @@ function formatTreatmentClock(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-type ActionResolution = 'resolvido' | 'nao_resolvido';
+type ActionResolution = TratativaActionResolution;
+
+/** Índice da fronteira da trilha a partir das resoluções já registradas. */
+function computeFrontierIndex(
+  actions: TratativaAction[],
+  resolutions: Partial<Record<string, ActionResolution>>,
+): number {
+  let frontier = 0;
+  for (let i = 0; i < actions.length; i++) {
+    const resolution = resolutions[actions[i].id];
+    if (resolution === 'resolvido') break;
+    if (resolution === 'nao_resolvido') {
+      frontier = Math.min(i + 1, actions.length - 1);
+    }
+  }
+  return frontier;
+}
 
 /** Ícone de ampulheta exibido em ações ainda pendentes. */
 const IconHourglassPending: React.FC = () => (
@@ -395,14 +412,15 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     if (!open) return;
     setActiveTab('tratativa');
     setObservations({});
-    setActionResolutions(
-      isAuditoria
-        ? Object.fromEntries(data.actions.map((a) => [a.id, 'resolvido' as ActionResolution]))
-        : {},
-    );
+    const auditResolutions: Record<string, ActionResolution> = isAuditoria
+      ? (data.auditActionResolutions as Record<string, ActionResolution> | undefined) ?? {}
+      : {};
+    setActionResolutions(isAuditoria ? auditResolutions : {});
     setSavedTreatmentMs(0);
     setElapsedMs(0);
-    setFrontierIndex(0);
+    setFrontierIndex(
+      isAuditoria ? computeFrontierIndex(data.actions, auditResolutions) : 0,
+    );
     setSelectedDriverId(data.selectedDriverId);
     setSelectedVehicleId(data.selectedVehicleId);
     setSelectedEventId(data.validatedEvents[0]?.id ?? '');
@@ -676,7 +694,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                   value={selectedDriver?.name ?? 'Não identificado'}
                 />
                 {selectedDriver && (
-                  <div className="tratativa-field">
+                  <div className="tratativa-field tratativa-field--span-row">
                     <span className="tratativa-field__label">Grupos de organização</span>
                     <div className="tratativa-field__chips">
                       {selectedDriver.organizationGroups.map((g, idx) => (
@@ -716,7 +734,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                     <ReadOnlyField label="Modelo" value={selectedVehicle.modelo} />
                     <ReadOnlyField label="Ano / modelo" value={selectedVehicle.anoModelo} />
                     <ReadOnlyField label="Combustível" value={selectedVehicle.combustivel} />
-                    <div className="tratativa-field tratativa-field--col-2-4">
+                    <div className="tratativa-field tratativa-field--span-row">
                       <span className="tratativa-field__label">Grupos de organização</span>
                       <div className="tratativa-field__chips">
                         {selectedVehicle.organizationGroups.map((g, idx) => (
@@ -755,22 +773,14 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 label="Validado como"
                 value={selectedEvent?.validatedAs ?? '—'}
               />
-              <div className="tratativa-field">
-                <span className="tratativa-field__label">Placa / prefixo</span>
-                {selectedVehicleId ? (
-                  <SelectField
-                    value={selectedVehicleId}
-                    options={vehicleSelectOptions}
-                    onChange={(id) => setSelectedVehicleId(id)}
-                    ariaLabel="Selecionar veículo"
-                    disabled={isAuditoria}
-                  />
-                ) : (
-                  <div className="tratativa-field__value tratativa-field__value--readonly">
-                    Não identificado
-                  </div>
-                )}
-              </div>
+              <ReadOnlyField
+                label="Placa / prefixo"
+                value={
+                  selectedVehicle
+                    ? `${selectedVehicle.placa} / ${selectedVehicle.prefixo}`
+                    : 'Não identificado'
+                }
+              />
               <ReadOnlyField
                 label="Motorista"
                 value={selectedDriver?.name ?? 'Não identificado'}

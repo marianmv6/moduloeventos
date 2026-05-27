@@ -18,6 +18,11 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
       parameterTitle: 'ABW5F22 / MBB122',
       eventsCount: 4,
       treatmentDurationLabel: '5:47',
+      auditActionResolutions: {
+        a1: 'nao_resolvido',
+        a2: 'nao_resolvido',
+        a3: 'resolvido',
+      },
     },
     history: [
       {
@@ -49,6 +54,11 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
       selectedDriverId: 'd2',
       selectedVehicleId: 'v1',
       treatmentDurationLabel: '5:47',
+      actions: mockTratativaOcorrencia.actions.slice(0, 2),
+      auditActionResolutions: {
+        a1: 'nao_resolvido',
+        a2: 'resolvido',
+      },
     },
     history: [
       {
@@ -80,6 +90,11 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
       selectedDriverId: 'd3',
       selectedVehicleId: 'v3',
       treatmentDurationLabel: '5:47',
+      auditActionResolutions: {
+        a1: 'nao_resolvido',
+        a2: 'nao_resolvido',
+        a3: 'resolvido',
+      },
     },
     history: [
       {

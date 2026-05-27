@@ -246,23 +246,28 @@ function EventTypeCell({
   const tooltipText =
     status === 'validado' && validatedBy
       ? `Validado por ${validatedBy}`
-      : STATUS_LABEL[status];
+      : status === 'aguardando' && validatedByAi
+        ? 'Validado pela IA'
+        : STATUS_LABEL[status];
+
+  /** IA substitui ampulheta enquanto aguarda; ícone validado substitui ambos. */
+  const showWaitingIcon = status === 'aguardando' && !validatedByAi;
+  const showValidatedIcon = status === 'validado';
+  const showAiBadge = status === 'aguardando' && Boolean(validatedByAi);
 
   return (
     <td className="central-controle-row__event">
-      <LevelTooltip text={tooltipText} topLayer nowrap>
-        <span
-          className={`central-controle-status-icon central-controle-status-icon--inline central-controle-status-icon--${status}`}
-          aria-label={tooltipText}
-        >
-          {status === 'aguardando' ? (
-            <IconStatusWaitingValidation />
-          ) : (
-            <IconStatusValidated />
-          )}
-        </span>
-      </LevelTooltip>
-      {validatedByAi && (
+      {(showWaitingIcon || showValidatedIcon) && (
+        <LevelTooltip text={tooltipText} topLayer nowrap>
+          <span
+            className={`central-controle-status-icon central-controle-status-icon--inline central-controle-status-icon--${status}`}
+            aria-label={tooltipText}
+          >
+            {showWaitingIcon ? <IconStatusWaitingValidation /> : <IconStatusValidated />}
+          </span>
+        </LevelTooltip>
+      )}
+      {showAiBadge && (
         <LevelTooltip text="Validado pela IA" topLayer nowrap>
           <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
             IA

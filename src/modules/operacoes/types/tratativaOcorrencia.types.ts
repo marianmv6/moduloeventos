@@ -12,6 +12,9 @@ export interface TratativaContact {
   phone: string;
 }
 
+/** Resolução registrada em uma ação da trilha. */
+export type TratativaActionResolution = 'resolvido' | 'nao_resolvido';
+
 /** Cada ação prevista na trilha selecionada. */
 export interface TratativaAction {
   id: string;
@@ -112,4 +115,6 @@ export interface TratativaOcorrenciaData {
 
   /** Eventos validados anteriormente — alimentam o select da aba "Eventos". */
   validatedEvents: TratativaValidatedEvent[];
+  /** Resoluções da trilha no modo auditoria (ex.: não resolvido → resolvido). */
+  auditActionResolutions?: Partial<Record<string, TratativaActionResolution>>;
 }
