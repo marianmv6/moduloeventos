@@ -320,18 +320,18 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {childItem('central-operacoes', 'Central de tratativas', <IconCentralOperacoes />)}
             {childItem('operacoes-auditoria', 'Auditoria', <IconAuditoria />)}
             {childItemWithFlyout(
-              'configuracoes',
-              'Configurações',
-              <IconConfiguracoes />,
-              'nav-item-icon--settings',
-              CONFIG_FLYOUT_ITEMS,
-            )}
-            {childItemWithFlyout(
               'cadastros',
               'Cadastros',
               <IconCadastros />,
               'nav-item-icon--cadastros',
               CADASTROS_FLYOUT_ITEMS,
+            )}
+            {childItemWithFlyout(
+              'configuracoes',
+              'Configurações',
+              <IconConfiguracoes />,
+              'nav-item-icon--settings',
+              CONFIG_FLYOUT_ITEMS,
             )}
           </>
         )}

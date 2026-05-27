@@ -36,7 +36,6 @@ const OUTROS_APONTAMENTOS_OPTIONS: { value: string; label: string }[] = [
   { value: 'objetos-soltos-cabine', label: 'Objetos soltos na cabine' },
   { value: 'outro-motorista', label: 'Outro motorista' },
   { value: 'sem-cinto', label: 'Sem cinto de segurança' },
-  { value: 'lorem-ipsum', label: 'Lorem ipsum dolor' },
 ];
 
 const DRIVER_OPTIONS: { value: string; label: string }[] = [
@@ -224,7 +223,9 @@ interface AlertTypeSelectProps {
   id: string;
   value: CentralAlertType;
   onChange: (value: CentralAlertType) => void;
-  showAiBadge?: boolean;
+  /** Evento sugerido pela IA — mantém badge IA mesmo após troca de tipo. */
+  fromAi?: boolean;
+  aiSuggestedAlert?: CentralAlertType;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -233,7 +234,8 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
   id,
   value,
   onChange,
-  showAiBadge,
+  fromAi = false,
+  aiSuggestedAlert,
   placeholder,
   disabled,
 }) => {
@@ -271,7 +273,7 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
         >
           {display}
         </span>
-        {showAiBadge && value && (
+        {fromAi && (
           <span className="central-validacao-ia-badge" aria-label="Sugerido pela IA">
             IA
           </span>
@@ -298,7 +300,7 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
                   }}
                 >
                   <span>{opt.label}</span>
-                  {showAiBadge && selected && (
+                  {fromAi && aiSuggestedAlert === opt.value && (
                     <span className="central-validacao-ia-badge" aria-hidden>
                       IA
                     </span>
@@ -974,10 +976,8 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                   setActiveAlertType(value);
                   resetActiveConfirmed();
                 }}
-                showAiBadge={
-                  activeEvent.fromAi &&
-                  (alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert) === 'sonolencia-n1'
-                }
+                fromAi={activeEvent.fromAi}
+                aiSuggestedAlert={activeEvent.suggestedAlert}
               />
 
               <OutrosApontamentosSelect
@@ -1010,11 +1010,13 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 <div className="central-validacao-timeline" aria-hidden>
                   <div className="central-validacao-timeline__bar">
                     <div className="central-validacao-timeline__marker" />
-                    <div
-                      className="central-validacao-timeline__event-marker"
-                      style={{ left: `${markerPercent}%` }}
-                      aria-label="Instante do evento"
-                    />
+                    <LevelTooltip text="Evento gerado" topLayer nowrap>
+                      <div
+                        className="central-validacao-timeline__event-marker"
+                        style={{ left: `${markerPercent}%` }}
+                        aria-label="Evento gerado"
+                      />
+                    </LevelTooltip>
                   </div>
                   <div className="central-validacao-timeline__labels">
                     {labels.map((label, index) => (
@@ -1074,7 +1076,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 className="central-validacao-btn central-validacao-btn--primary"
                 onClick={handleSendAndTreat}
               >
-                Enviar e tratar
+                Iniciar tratativa
               </button>
             ) : (
               <LevelTooltip text="Confirme antes de continuar" topLayer nowrap>
@@ -1084,7 +1086,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                   disabled
                   aria-disabled="true"
                 >
-                  Enviar e tratar
+                  Iniciar tratativa
                 </button>
               </LevelTooltip>
             )
