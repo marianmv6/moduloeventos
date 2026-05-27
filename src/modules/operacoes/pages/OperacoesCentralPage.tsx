@@ -257,23 +257,28 @@ function EventTypeCell({
 
   return (
     <td className="central-controle-row__event">
-      {(showWaitingIcon || showValidatedIcon) && (
-        <LevelTooltip text={tooltipText} topLayer nowrap>
-          <span
-            className={`central-controle-status-icon central-controle-status-icon--inline central-controle-status-icon--${status}`}
-            aria-label={tooltipText}
-          >
-            {showWaitingIcon ? <IconStatusWaitingValidation /> : <IconStatusValidated />}
-          </span>
-        </LevelTooltip>
-      )}
-      {showAiBadge && (
-        <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
-            IA
-          </span>
-        </LevelTooltip>
-      )}
+      <span className="central-controle-row__event-status-slot">
+        {(showWaitingIcon || showValidatedIcon) && (
+          <LevelTooltip text={tooltipText} topLayer nowrap>
+            <span
+              className={`central-controle-status-icon central-controle-status-icon--inline central-controle-status-icon--${status}`}
+              aria-label={tooltipText}
+            >
+              {showWaitingIcon ? <IconStatusWaitingValidation /> : <IconStatusValidated />}
+            </span>
+          </LevelTooltip>
+        )}
+        {showAiBadge && (
+          <LevelTooltip text="Validado pela IA" topLayer nowrap>
+            <span
+              className="central-validacao-ia-badge central-validacao-ia-badge--controle-table"
+              aria-label="Validado pela IA"
+            >
+              IA
+            </span>
+          </LevelTooltip>
+        )}
+      </span>
       <span className="central-controle-row__event-type">{eventType}</span>
       <span className="central-controle-row__event-points">, {eventPoints} pts</span>
     </td>

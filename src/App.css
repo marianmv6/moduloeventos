@@ -6059,6 +6059,27 @@ body.cr-fullscreen-modal-open .app-content {
   text-overflow: ellipsis;
 }
 
+/* Slot fixo antes do tipo de evento ? ampulheta, validado ou badge IA
+ * ocupam a mesma largura para alinhar o texto entre linhas da coluna. */
+.central-controle-row__event-status-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  min-width: 1.75rem;
+  height: 1.375rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.central-controle-row__event-status-slot .central-validacao-ia-badge--controle-table {
+  padding: 0.125rem 0.3125rem;
+  font-size: 0.625rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
 /* Icone de status (validado/aguardando) inline, ANTES do nome do
  * evento. Mantemos o tamanho compatto e o alinhamento vertical com o
  * texto do tipo de evento. */
@@ -6066,7 +6087,7 @@ body.cr-fullscreen-modal-open .app-content {
   width: 22px;
   height: 22px;
   vertical-align: middle;
-  margin-right: 0.5rem;
+  margin-right: 0;
 }
 
 .central-controle-status-icon--inline svg {
