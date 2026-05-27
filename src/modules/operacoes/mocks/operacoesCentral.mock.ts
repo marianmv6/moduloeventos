@@ -214,38 +214,69 @@ export const mockCentralOccurrenceList = buildCentralOccurrenceList();
 
 export const mockCentralStatusSummary = computeCentralStatusSummary(mockCentralOccurrenceList);
 
-/** Eventos pendentes de validação ao clicar no play da ocorrência expandida */
-export const mockCentralValidationEvents: CentralValidationEvent[] = [
+/** Ocorrência 1 — 3 eventos; o primeiro (mais antigo) já validado. */
+export const mockCentralValidationEventsOcc1: CentralValidationEvent[] = [
   {
-    id: 'val-1',
-    time: '08:13:25',
-    plate: 'ANB1K52',
+    id: 'val-1-oldest',
+    time: '08:30:00',
+    plate: 'ABC1D23',
     suggestedAlert: 'sonolencia-n1',
-    fromAi: true,
     validated: true,
   },
   {
-    id: 'val-2',
-    time: '08:13:53',
-    plate: 'ANB1K52',
-    suggestedAlert: 'sonolencia-n1',
+    id: 'val-1-mid',
+    time: '10:05:00',
+    plate: 'ABC1D23',
+    suggestedAlert: 'sonolencia-n2',
+  },
+  {
+    id: 'val-1-current',
+    time: '10:05:00',
+    plate: 'ABC1D23',
+    suggestedAlert: 'sonolencia-n2',
+  },
+];
+
+/** Ocorrência 2 — 2 eventos para validação. */
+export const mockCentralValidationEventsOcc2: CentralValidationEvent[] = [
+  {
+    id: 'val-2-older',
+    time: '09:45:00',
+    plate: 'FAL0M70',
+    suggestedAlert: 'sonolencia-n2',
     fromAi: true,
   },
   {
-    id: 'val-3',
-    time: '08:14:27',
-    plate: 'ANB1K52',
-    suggestedAlert: 'sonolencia-n1',
-    fromAi: true,
-  },
-  {
-    id: 'val-4',
-    time: '08:14:44',
-    plate: 'ANB1K52',
+    id: 'val-2-current',
+    time: '09:58:00',
+    plate: 'FAL0M70',
     suggestedAlert: 'sonolencia-n1',
     fromAi: true,
   },
 ];
 
-/** Nome do condutor exibido no cabeçalho do modal de validação */
-export const mockValidationDriverName = 'Pedro Ramos de Paula';
+/** @deprecated Use getCentralValidationEventsForOccurrence */
+export const mockCentralValidationEvents = mockCentralValidationEventsOcc1;
+
+/** Eventos do modal de validação conforme a ocorrência da Central. */
+export function getCentralValidationEventsForOccurrence(
+  occurrenceId: string,
+): CentralValidationEvent[] {
+  switch (occurrenceId) {
+    case 'occ-1':
+      return mockCentralValidationEventsOcc1;
+    case 'occ-2':
+      return mockCentralValidationEventsOcc2;
+    default:
+      return mockCentralValidationEventsOcc1;
+  }
+}
+
+/** Nome do condutor no cabeçalho do modal de validação. */
+export function getValidationDriverNameForOccurrence(occurrenceId: string): string {
+  const occurrence = mockCentralOccurrenceGroups.find((o) => o.id === occurrenceId);
+  return occurrence?.driverName ?? 'Condutor não identificado';
+}
+
+/** @deprecated Use getValidationDriverNameForOccurrence */
+export const mockValidationDriverName = mockCentralOccurrenceExpanded.driverName;

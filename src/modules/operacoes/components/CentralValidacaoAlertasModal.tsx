@@ -731,6 +731,26 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
     setActiveTab('detalhes');
   }, [open]);
 
+  /** Reinicia navegação e confirmações ao abrir outra ocorrência. */
+  useEffect(() => {
+    if (!open) return;
+    const idx = events.findIndex((e) => !e.validated);
+    const startIdx = idx === -1 ? Math.max(events.length - 1, 0) : idx;
+    setActiveIndex(startIdx);
+    setFrontierIndex(startIdx);
+    const ids = new Set<string>();
+    const initialAlerts: Record<string, CentralAlertType> = {};
+    events.forEach((event) => {
+      if (event.validated) ids.add(event.id);
+      initialAlerts[event.id] = event.suggestedAlert;
+    });
+    setConfirmedIds(ids);
+    setAlertTypes(initialAlerts);
+    setOtherAnnotations({});
+    setSelectedDriver('');
+    setExpandedVideo(null);
+  }, [open, events]);
+
   const totalEvents = events.length;
   const activeEvent = events[activeIndex];
   const counterLabel = activeEvent ? `Evento ${activeIndex + 1}/${totalEvents}` : '';

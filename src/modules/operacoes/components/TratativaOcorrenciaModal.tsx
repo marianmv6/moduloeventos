@@ -253,7 +253,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
         aria-label={`Status da ação ${action.sequence}`}
         onClick={(event) => event.stopPropagation()}
       >
-        <label className="tratativa-action__resolution-option">
+        <label className="tratativa-action__resolution-option policy-form-checkbox-option">
           <input
             type="radio"
             name={`action-resolution-${action.id}`}
@@ -263,7 +263,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
           />
           <span>Resolvido</span>
         </label>
-        <label className="tratativa-action__resolution-option">
+        <label className="tratativa-action__resolution-option policy-form-checkbox-option">
           <input
             type="radio"
             name={`action-resolution-${action.id}`}
@@ -338,8 +338,9 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   >({});
   /** Índice da ação atual na trilha — só avança ao marcar "Não resolvido". */
   const [frontierIndex, setFrontierIndex] = useState(0);
-  /** Tempo total gravado ao concluir (sem cronômetro em tempo real). */
+  /** Tempo gravado ao concluir; enquanto aberto, elapsedMs atualiza a cada segundo. */
   const [savedTreatmentMs, setSavedTreatmentMs] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(
     data.selectedDriverId,
   );
@@ -366,6 +367,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     startedAtRef.current = Date.now();
   }, [open]);
 
+  /** Cronômetro em tempo real — somente no modo tratativa (auditoria permanece fixo). */
+  useEffect(() => {
+    if (!open || isAuditoria || savedTreatmentMs > 0) return;
+    const tick = () => {
+      if (startedAtRef.current !== null) {
+        setElapsedMs(Date.now() - startedAtRef.current);
+      }
+    };
+    tick();
+    const intervalId = window.setInterval(tick, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [open, isAuditoria, savedTreatmentMs]);
+
   useEffect(() => {
     if (open) {
       const prev = document.body.style.overflow;
@@ -387,6 +401,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
         : {},
     );
     setSavedTreatmentMs(0);
+    setElapsedMs(0);
     setFrontierIndex(0);
     setSelectedDriverId(data.selectedDriverId);
     setSelectedVehicleId(data.selectedVehicleId);
@@ -395,20 +410,28 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     setExpandedVideo(null);
   }, [open, data, isAuditoria]);
 
-  const allActionsResolved = useMemo(
-    () =>
-      data.actions.length > 0 &&
-      data.actions.every((action) => actionResolutions[action.id] === 'resolvido'),
-    [data.actions, actionResolutions],
-  );
+  /** Concluir liberado se alguma ação for "Resolvido" ou se a última
+   *  ação da trilha for marcada como "Não resolvido" (fim da trilha). */
+  const canConcludeTreatment = useMemo(() => {
+    if (data.actions.length === 0) return false;
+    if (data.actions.some((action) => actionResolutions[action.id] === 'resolvido')) {
+      return true;
+    }
+    const lastAction = data.actions[data.actions.length - 1];
+    return actionResolutions[lastAction.id] === 'nao_resolvido';
+  }, [data.actions, actionResolutions]);
 
   const handleSetResolution = (actionId: string, resolution: ActionResolution) => {
     setActionResolutions((prev) => ({ ...prev, [actionId]: resolution }));
     if (isAuditoria) return;
 
     const currentIdx = data.actions.findIndex((a) => a.id === actionId);
-    if (resolution === 'nao_resolvido' && currentIdx === frontierIndex) {
-      const nextIdx = Math.min(frontierIndex + 1, data.actions.length - 1);
+    if (
+      resolution === 'nao_resolvido' &&
+      currentIdx === frontierIndex &&
+      currentIdx < data.actions.length - 1
+    ) {
+      const nextIdx = currentIdx + 1;
       setFrontierIndex(nextIdx);
       setSelectedActionId(data.actions[nextIdx].id);
     } else {
@@ -421,7 +444,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   };
 
   const handleConclude = () => {
-    if (!allActionsResolved) return;
+    if (!canConcludeTreatment) return;
     const durationMs =
       startedAtRef.current !== null ? Date.now() - startedAtRef.current : savedTreatmentMs;
     setSavedTreatmentMs(durationMs);
@@ -430,9 +453,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
 
   const treatmentTimeLabel = isAuditoria
     ? (data.treatmentDurationLabel ?? '5:47')
-    : savedTreatmentMs > 0
-      ? formatTreatmentClock(savedTreatmentMs)
-      : data.treatmentDurationLabel ?? '0:00';
+    : formatTreatmentClock(savedTreatmentMs > 0 ? savedTreatmentMs : elapsedMs);
 
   const selectedDriver = data.driverOptions.find((d) => d.id === selectedDriverId);
   const selectedVehicle = data.vehicleOptions.find((v) => v.id === selectedVehicleId);
@@ -553,7 +574,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               <div className="tratativa-fields-row tratativa-fields-row--meta">
                 <ReadOnlyField label="Gravidade" value={data.gravityLabel} />
                 <ReadOnlyField label="Tratativa" value={data.trailLabel} />
-                <ReadOnlyField label="Tempo em tratativa" value={treatmentTimeLabel} />
+                <ReadOnlyField label="Tempo de tratativa" value={treatmentTimeLabel} />
               </div>
             </div>
 
@@ -563,15 +584,14 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 <div className="tratativa-actions-list">
                   {data.actions.map((action, index) => {
                     const resolution = actionResolutions[action.id];
-                    /** Em auditoria, todas as ações são consideradas
-                     *  concluídas (esmaecidas). Em tratativa: pending
-                     *  após a fronteira; active na fronteira sem resolução;
-                     *  done quando já teve resolução ou índice < fronteira. */
+                    /** Em auditoria, todas concluídas. Em tratativa: pending
+                     *  após a fronteira; active na ação atual sem resolução;
+                     *  done quando já tem resolução (resolvido ou não resolvido). */
                     const status: ActionCardProps['status'] = isAuditoria
                       ? 'done'
                       : index > frontierIndex
                         ? 'pending'
-                        : resolution || index < frontierIndex
+                        : resolution
                           ? 'done'
                           : index === frontierIndex
                             ? 'active'
@@ -852,8 +872,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               type="button"
               className="tratativa-btn tratativa-btn--primary"
               onClick={handleConclude}
-              disabled={!allActionsResolved}
-              aria-disabled={!allActionsResolved}
+              disabled={!canConcludeTreatment}
+              aria-disabled={!canConcludeTreatment}
             >
               Concluir tratativa
             </button>

@@ -24,8 +24,8 @@ import {
   computeCentralStatusSummary,
   computeCentralTreatedSummary,
   mockCentralOccurrenceExpanded,
-  mockCentralValidationEvents,
-  mockValidationDriverName,
+  getCentralValidationEventsForOccurrence,
+  getValidationDriverNameForOccurrence,
 } from '../mocks/operacoesCentral.mock';
 import { mockTratativaOcorrencia } from '../mocks/tratativaOcorrencia.mock';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
@@ -550,12 +550,32 @@ export const OperacoesCentralPage: React.FC = () => {
     EMPTY_CENTRAL_CONTROLE_FILTERS,
   );
   const [validationModalOpen, setValidationModalOpen] = useState(false);
+  const [validationOccurrenceId, setValidationOccurrenceId] = useState<string | null>(null);
   const [tratativaModalOpen, setTratativaModalOpen] = useState(false);
   const [treatmentDurationByOccurrence, setTreatmentDurationByOccurrence] = useState<
     Record<string, string>
   >({});
 
-  const openValidationModal = () => setValidationModalOpen(true);
+  const validationEvents = useMemo(
+    () =>
+      validationOccurrenceId
+        ? getCentralValidationEventsForOccurrence(validationOccurrenceId)
+        : [],
+    [validationOccurrenceId],
+  );
+
+  const validationDriverName = useMemo(
+    () =>
+      validationOccurrenceId
+        ? getValidationDriverNameForOccurrence(validationOccurrenceId)
+        : '',
+    [validationOccurrenceId],
+  );
+
+  const openValidationModal = (occurrenceId: string) => {
+    setValidationOccurrenceId(occurrenceId);
+    setValidationModalOpen(true);
+  };
   const closeValidationModal = () => setValidationModalOpen(false);
 
   /** Substitui o modal de validação pelo modal de tratativa quando o
@@ -736,7 +756,7 @@ export const OperacoesCentralPage: React.FC = () => {
                       occurrence={entry.occurrence}
                       expanded={expandedId === entry.occurrence.id}
                       onToggle={() => toggleExpanded(entry.occurrence.id)}
-                      onPlay={openValidationModal}
+                      onPlay={() => openValidationModal(entry.occurrence.id)}
                     />
                   ) : (
                     <CollapsedSummaryRow key={entry.row.id} row={entry.row} />
@@ -750,8 +770,8 @@ export const OperacoesCentralPage: React.FC = () => {
 
       <CentralValidacaoAlertasModal
         open={validationModalOpen}
-        events={mockCentralValidationEvents}
-        driverName={mockValidationDriverName}
+        events={validationEvents}
+        driverName={validationDriverName}
         onClose={closeValidationModal}
         onReturn={closeValidationModal}
         onConfirmClose={closeValidationModal}
