@@ -4,7 +4,8 @@ import type { VoiceMessagesPanelHandle } from '../components/treatments/VoiceMes
 import type { EmailTemplatesPanelHandle } from '../components/treatments/EmailTemplatesPanel';
 import type { PolicyListHandle } from '../components/policy/PolicyList';
 import type { TrailListHandle } from '../components/treatments/TrailList';
-import { mockPolicies, mockScoreRules, mockTreatments, mockTrails, mockContacts, mockVoiceMessages, mockHistory, mockUsers, mockEmailTemplates } from '../mocks/risk.mock';
+import { mockScoreRules, mockUsers } from '../mocks/risk.mock';
+import { loadRiskRulesState, saveRiskRulesState } from '../utils/riskRulesStorage';
 import { TYPE_FILTER_OPTIONS, type TypeFilterValue } from '../constants/eventTypes';
 import { PolicyList } from '../components/policy/PolicyList';
 import { PolicyForm } from '../components/policy/PolicyForm';
@@ -52,11 +53,12 @@ interface RiskRulesPageProps {
  */
 export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras-tratativa' }) => {
   const isCadastroPage = CADASTRO_ROUTES.includes(appRoute);
+  const [persisted] = useState(() => loadRiskRulesState());
   const [typeFilter, setTypeFilter] = useState<TypeFilterValue>('todos');
-  const [policies, setPolicies] = useState(mockPolicies);
+  const [policies, setPolicies] = useState(persisted.policies);
   const policiesRef = useRef(policies);
   policiesRef.current = policies;
-  const [scores, setScores] = useState<ScoreRule[]>(mockScoreRules);
+  const [scores, setScores] = useState<ScoreRule[]>(persisted.scores);
 
   const filteredScores = useMemo(() => {
     if (typeFilter === 'todos') return scores;
@@ -70,12 +72,25 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     if (missingCount === 0) return null;
     return `Faltam ${missingCount} evento(s) a serem contemplados nas políticas.`;
   }, [policies, scores]);
-  const [treatments, setTreatments] = useState(mockTreatments);
-  const [trails, setTrails] = useState<Trail[]>(mockTrails);
-  const [contacts, setContacts] = useState<Contact[]>(mockContacts);
-  const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>(mockVoiceMessages);
-  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>(mockEmailTemplates);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [treatments, setTreatments] = useState(persisted.treatments);
+  const [trails, setTrails] = useState<Trail[]>(persisted.trails);
+  const [contacts, setContacts] = useState<Contact[]>(persisted.contacts);
+  const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>(persisted.voiceMessages);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>(persisted.emailTemplates);
+  const [history, setHistory] = useState<HistoryEntry[]>(persisted.history);
+
+  useEffect(() => {
+    saveRiskRulesState({
+      policies,
+      scores,
+      treatments,
+      trails,
+      contacts,
+      voiceMessages,
+      emailTemplates,
+      history,
+    });
+  }, [policies, scores, treatments, trails, contacts, voiceMessages, emailTemplates, history]);
   const [emailTemplateFormOpen, setEmailTemplateFormOpen] = useState(false);
   const [emailTemplateEditing, setEmailTemplateEditing] = useState<EmailTemplate | null>(null);
   const contactsPanelRef = useRef<ContactsPanelHandle>(null);
@@ -1007,7 +1022,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                 <PolicyForm
                   id="policy-form"
                   initialData={policyEditing ?? undefined}
-                  scores={mockScoreRules}
+                  scores={scores}
                   trails={trails}
                   users={mockUsers}
                   onSubmit={handlePolicySubmit}

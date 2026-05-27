@@ -45,6 +45,14 @@ const DURACAO_ATIVA_OPTIONS: ModalSelectOption[] = [
   { value: '12h', label: '12 h' },
 ];
 
+/** Converte texto digitado em inteiro >= 0, sem zeros à esquerda ("05" → 5). */
+function parsePointsInput(raw: string, max = 999): number {
+  const digits = raw.replace(/\D/g, '');
+  if (digits === '') return 0;
+  const normalized = digits.replace(/^0+/, '') || '0';
+  return Math.min(max, Number(normalized));
+}
+
 const STATUS_OPTIONS: ModalSelectOption[] = [
   { value: 'ativo', label: 'Ativo' },
   { value: 'inativo', label: 'Inativo' },
@@ -522,16 +530,30 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
                         <label htmlFor={`gatilho-points-${index}`}>A partir de</label>
                         <input
                           id={`gatilho-points-${index}`}
-                          type="number"
-                          min={0}
-                          max={999}
-                          value={g.aPartirDePontos}
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={3}
+                          value={g.aPartirDePontos === 0 ? '0' : String(g.aPartirDePontos)}
                           onChange={(e) => {
-                            const v = Math.min(999, Math.max(0, Number(e.target.value) || 0));
-                            updateGatilho(index, { aPartirDePontos: v });
+                            updateGatilho(index, {
+                              aPartirDePontos: parsePointsInput(e.target.value, 999),
+                            });
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key !== '0') return;
+                            const input = e.currentTarget;
+                            const { value, selectionStart, selectionEnd } = input;
+                            const start = selectionStart ?? value.length;
+                            const end = selectionEnd ?? value.length;
+                            const next = `${value.slice(0, start)}0${value.slice(end)}`;
+                            if (next.length > 1 && next.startsWith('0')) {
+                              e.preventDefault();
+                            }
                           }}
                           className="policy-form-gatilho-input-points"
-                          inputMode="numeric"
+                          aria-valuemin={0}
+                          aria-valuemax={999}
                         />
                       </div>
                       <div className="trail-step-action policy-form-gatilho-trail-inline">

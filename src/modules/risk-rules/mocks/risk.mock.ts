@@ -78,7 +78,7 @@ const PONTUACOES_POR_EVENTO: { name: string; eventType: EventType; weight: numbe
   { name: 'Pedestre', eventType: 'video', weight: 20 },
   { name: 'Risco de colisão', eventType: 'video', weight: 25 },
   { name: 'Excesso de velocidade', eventType: 'telemetria', weight: 15 },
-  { name: 'Excesso de velocidade em busca remota', eventType: 'telemetria', weight: 20 },
+  { name: 'Excesso de velocidade por cerca remota', eventType: 'telemetria', weight: 20 },
   { name: 'Aceleração brusca', eventType: 'telemetria', weight: 10 },
   { name: 'Freada brusca', eventType: 'telemetria', weight: 10 },
   { name: 'Curva em velocidade elevada', eventType: 'telemetria', weight: 15 },

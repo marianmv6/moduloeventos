@@ -13,7 +13,7 @@ interface TratativaOcorrenciaModalProps {
   data: TratativaOcorrenciaData;
   onClose: () => void;
   onReturn?: () => void;
-  onConclude?: () => void;
+  onConclude?: (durationMs: number) => void;
   /** "tratativa" (padrão) = fluxo ativo; "auditoria" = visualização
    *  somente-leitura, com aba adicional "Histórico" e sem footer. */
   mode?: 'tratativa' | 'auditoria';
@@ -37,17 +37,15 @@ const VIDEO_CHANNELS = [
   { id: 'canal-4', label: 'Canal 4', placeholder: 'Canal 4' },
 ] as const;
 
-/** Formata milissegundos no padrão "8m 22s" / "1h 03m 22s". */
-function formatElapsed(ms: number): string {
+/** Formata milissegundos no padrão "M:SS" (ex.: "5:47"). */
+function formatTreatmentClock(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
-  }
-  return `${minutes}m ${String(seconds).padStart(2, '0')}s`;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
+
+type ActionResolution = 'resolvido' | 'nao_resolvido';
 
 /** Ícone de ampulheta exibido em ações ainda pendentes. */
 const IconHourglassPending: React.FC = () => (
@@ -178,10 +176,9 @@ interface ActionCardProps {
   status: 'done' | 'active' | 'pending';
   observation: string;
   onChangeObservation: (value: string) => void;
-  onToggleDone: () => void;
-  done: boolean;
-  /** Modo auditoria: bloqueia textarea e checkbox; mostra cards expandidos
-   *  para todas as ações concluídas, com o "Feito" marcado e desabilitado. */
+  resolution?: ActionResolution;
+  onSetResolution: (resolution: ActionResolution) => void;
+  /** Modo auditoria: bloqueia textarea e opções; mostra cards expandidos. */
   readOnly?: boolean;
   /** Card atualmente selecionado — destaca visualmente e indica que o
    *  painel "Detalhes" mostra os contatos desta ação. */
@@ -195,8 +192,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
   status,
   observation,
   onChangeObservation,
-  onToggleDone,
-  done,
+  resolution,
+  onSetResolution,
   readOnly = false,
   selected = false,
   onSelect,
@@ -250,18 +247,33 @@ const ActionCard: React.FC<ActionCardProps> = ({
         disabled={readOnly}
         onClick={(event) => event.stopPropagation()}
       />
-      <label
-        className="tratativa-action__check"
+      <div
+        className="tratativa-action__resolution"
+        role="radiogroup"
+        aria-label={`Status da ação ${action.sequence}`}
         onClick={(event) => event.stopPropagation()}
       >
-        <input
-          type="checkbox"
-          checked={readOnly ? true : done}
-          onChange={readOnly ? undefined : onToggleDone}
-          disabled={readOnly}
-        />
-        <span>Feito</span>
-      </label>
+        <label className="tratativa-action__resolution-option">
+          <input
+            type="radio"
+            name={`action-resolution-${action.id}`}
+            checked={resolution === 'resolvido'}
+            onChange={readOnly ? undefined : () => onSetResolution('resolvido')}
+            disabled={readOnly}
+          />
+          <span>Resolvido</span>
+        </label>
+        <label className="tratativa-action__resolution-option">
+          <input
+            type="radio"
+            name={`action-resolution-${action.id}`}
+            checked={resolution === 'nao_resolvido'}
+            onChange={readOnly ? undefined : () => onSetResolution('nao_resolvido')}
+            disabled={readOnly}
+          />
+          <span>Não resolvido</span>
+        </label>
+      </div>
     </div>
   );
 };
@@ -321,7 +333,13 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   const isAuditoria = mode === 'auditoria';
   const [activeTab, setActiveTab] = useState<ActiveTab>('tratativa');
   const [observations, setObservations] = useState<Record<string, string>>({});
-  const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
+  const [actionResolutions, setActionResolutions] = useState<
+    Record<string, ActionResolution>
+  >({});
+  /** Índice da ação atual na trilha — só avança ao marcar "Não resolvido". */
+  const [frontierIndex, setFrontierIndex] = useState(0);
+  /** Tempo total gravado ao concluir (sem cronômetro em tempo real). */
+  const [savedTreatmentMs, setSavedTreatmentMs] = useState(0);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(
     data.selectedDriverId,
   );
@@ -338,24 +356,14 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   /** Vídeo expandido na aba Eventos (mesma mecânica do modal de validação). */
   const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
 
-  /** Tempo em tratativa atualizado em tempo real (cronômetro). */
-  const [elapsedMs, setElapsedMs] = useState(0);
   const startedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open) {
       startedAtRef.current = null;
-      setElapsedMs(0);
       return;
     }
     startedAtRef.current = Date.now();
-    setElapsedMs(0);
-    const id = window.setInterval(() => {
-      if (startedAtRef.current !== null) {
-        setElapsedMs(Date.now() - startedAtRef.current);
-      }
-    }, 1000);
-    return () => window.clearInterval(id);
   }, [open]);
 
   useEffect(() => {
@@ -373,56 +381,39 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     if (!open) return;
     setActiveTab('tratativa');
     setObservations({});
-    setDoneIds(new Set());
+    setActionResolutions(
+      isAuditoria
+        ? Object.fromEntries(data.actions.map((a) => [a.id, 'resolvido' as ActionResolution]))
+        : {},
+    );
+    setSavedTreatmentMs(0);
+    setFrontierIndex(0);
     setSelectedDriverId(data.selectedDriverId);
     setSelectedVehicleId(data.selectedVehicleId);
     setSelectedEventId(data.validatedEvents[0]?.id ?? '');
     setSelectedActionId(data.actions[0]?.id ?? '');
     setExpandedVideo(null);
-  }, [open, data]);
+  }, [open, data, isAuditoria]);
 
-  const allActionsDone = useMemo(
-    () => data.actions.length > 0 && data.actions.every((action) => doneIds.has(action.id)),
-    [data.actions, doneIds],
+  const allActionsResolved = useMemo(
+    () =>
+      data.actions.length > 0 &&
+      data.actions.every((action) => actionResolutions[action.id] === 'resolvido'),
+    [data.actions, actionResolutions],
   );
 
-  /** Índice da próxima ação ainda não concluída — define qual card está "ativo". */
-  const currentActionIndex = useMemo(() => {
-    const idx = data.actions.findIndex((action) => !doneIds.has(action.id));
-    return idx === -1 ? data.actions.length : idx;
-  }, [data.actions, doneIds]);
+  const handleSetResolution = (actionId: string, resolution: ActionResolution) => {
+    setActionResolutions((prev) => ({ ...prev, [actionId]: resolution }));
+    if (isAuditoria) return;
 
-  const handleToggleDone = (actionId: string) => {
-    setDoneIds((prev) => {
-      const next = new Set(prev);
-      const wasDone = next.has(actionId);
-      if (wasDone) {
-        next.delete(actionId);
-      } else {
-        next.add(actionId);
-      }
-      // Em modo tratativa a seleção acompanha o avanço da trilha:
-      //  - ao marcar uma ação como "Feito": pula para a próxima
-      //    ação ainda pendente (item esmaecido fica para trás);
-      //  - ao desfazer: volta para a ação que acabou de virar pendente
-      //    (a "ativa" novamente), evitando que um card pendente
-      //    fique aparentando estar selecionado.
-      // No modo auditoria todas as ações já estão concluídas e o
-      // usuário escolhe livremente qual visualizar — nada a fazer.
-      if (!isAuditoria) {
-        if (!wasDone) {
-          const nextPendingIdx = data.actions.findIndex(
-            (a) => a.id !== actionId && !next.has(a.id),
-          );
-          if (nextPendingIdx !== -1) {
-            setSelectedActionId(data.actions[nextPendingIdx].id);
-          }
-        } else {
-          setSelectedActionId(actionId);
-        }
-      }
-      return next;
-    });
+    const currentIdx = data.actions.findIndex((a) => a.id === actionId);
+    if (resolution === 'nao_resolvido' && currentIdx === frontierIndex) {
+      const nextIdx = Math.min(frontierIndex + 1, data.actions.length - 1);
+      setFrontierIndex(nextIdx);
+      setSelectedActionId(data.actions[nextIdx].id);
+    } else {
+      setSelectedActionId(actionId);
+    }
   };
 
   const handleObservationChange = (actionId: string, value: string) => {
@@ -430,9 +421,18 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   };
 
   const handleConclude = () => {
-    if (!allActionsDone) return;
-    onConclude?.();
+    if (!allActionsResolved) return;
+    const durationMs =
+      startedAtRef.current !== null ? Date.now() - startedAtRef.current : savedTreatmentMs;
+    setSavedTreatmentMs(durationMs);
+    onConclude?.(durationMs);
   };
+
+  const treatmentTimeLabel = isAuditoria
+    ? (data.treatmentDurationLabel ?? '5:47')
+    : savedTreatmentMs > 0
+      ? formatTreatmentClock(savedTreatmentMs)
+      : data.treatmentDurationLabel ?? '0:00';
 
   const selectedDriver = data.driverOptions.find((d) => d.id === selectedDriverId);
   const selectedVehicle = data.vehicleOptions.find((v) => v.id === selectedVehicleId);
@@ -490,7 +490,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
       <section className="central-validacao-content tratativa-content">
         <header className="central-validacao-header central-validacao-header--card">
           <h2 id="tratativa-ocorrencia-title" className="central-validacao-header__title">
-            {isAuditoria ? 'Auditoria da ocorrência' : 'Tratativa da ocorrência'}
+            {isAuditoria ? 'Auditoria da tratativa' : 'Tratativa da ocorrência'}
           </h2>
           <button
             type="button"
@@ -557,24 +557,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 className="tratativa-field--col-3-5"
               />
               <ReadOnlyField
-                label="Tipo de evento"
-                value={data.eventTypeLabel}
-                className="tratativa-field--col-1-2"
-              />
-              <ReadOnlyField
                 label="Gravidade"
                 value={data.gravityLabel}
-                className="tratativa-field--col-2-3"
+                className="tratativa-field--col-1-2"
               />
               <ReadOnlyField
                 label="Tratativa"
                 value={data.trailLabel}
-                className="tratativa-field--col-4-5"
+                className="tratativa-field--col-2-4"
               />
               <ReadOnlyField
                 label="Tempo em tratativa"
-                value={formatElapsed(elapsedMs)}
-                className="tratativa-field--col-5-6 tratativa-field--timer"
+                value={treatmentTimeLabel}
+                className="tratativa-field--col-4-6"
               />
             </div>
 
@@ -583,22 +578,23 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 <h3 className="tratativa-pane__title">Ações</h3>
                 <div className="tratativa-actions-list">
                   {data.actions.map((action, index) => {
-                    const isDone = doneIds.has(action.id);
+                    const resolution = actionResolutions[action.id];
                     /** Em auditoria, todas as ações são consideradas
-                     *  concluídas (esmaecidas). Em tratativa segue o
-                     *  fluxo sequencial: done > active > pending. */
+                     *  concluídas (esmaecidas). Em tratativa: pending
+                     *  após a fronteira; active na fronteira sem resolução;
+                     *  done quando já teve resolução ou índice < fronteira. */
                     const status: ActionCardProps['status'] = isAuditoria
                       ? 'done'
-                      : isDone
-                        ? 'done'
-                        : index === currentActionIndex
-                          ? 'active'
-                          : 'pending';
-                    /** Cards selecionáveis: na auditoria todas as ações;
-                     *  em tratativa apenas as que não estão pendentes
-                     *  (i.e., done ou active), permitindo trocar a
-                     *  visualização do painel "Detalhes". */
-                    const canSelect = isAuditoria || status !== 'pending';
+                      : index > frontierIndex
+                        ? 'pending'
+                        : resolution || index < frontierIndex
+                          ? 'done'
+                          : index === frontierIndex
+                            ? 'active'
+                            : 'pending';
+                    /** Cards selecionáveis: na auditoria todas; em
+                     *  tratativa apenas até a fronteira da trilha. */
+                    const canSelect = isAuditoria || index <= frontierIndex;
                     return (
                       <ActionCard
                         key={action.id}
@@ -608,8 +604,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                         onChangeObservation={(value) =>
                           handleObservationChange(action.id, value)
                         }
-                        onToggleDone={() => handleToggleDone(action.id)}
-                        done={isDone}
+                        resolution={resolution}
+                        onSetResolution={(value) => handleSetResolution(action.id, value)}
                         readOnly={isAuditoria}
                         selected={selectedActionId === action.id}
                         onSelect={
@@ -872,8 +868,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               type="button"
               className="tratativa-btn tratativa-btn--primary"
               onClick={handleConclude}
-              disabled={!allActionsDone}
-              aria-disabled={!allActionsDone}
+              disabled={!allActionsResolved}
+              aria-disabled={!allActionsResolved}
             >
               Concluir tratativa
             </button>

@@ -17,6 +17,7 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
       ...mockTratativaOcorrencia,
       parameterTitle: 'ABW5F22 / MBB122',
       eventsCount: 4,
+      treatmentDurationLabel: '5:47',
     },
     history: [
       {
@@ -47,6 +48,7 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
       eventsCount: 2,
       selectedDriverId: 'd2',
       selectedVehicleId: 'v1',
+      treatmentDurationLabel: '5:47',
     },
     history: [
       {
@@ -77,6 +79,7 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
       eventsCount: 3,
       selectedDriverId: 'd3',
       selectedVehicleId: 'v3',
+      treatmentDurationLabel: '5:47',
     },
     history: [
       {

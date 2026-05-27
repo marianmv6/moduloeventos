@@ -9,26 +9,12 @@ import { AppSidebar } from './components/layout/AppSidebar';
 import './App.css';
 
 function App() {
-  const [menuLevel, setMenuLevel] = useState('configuracoes');
-  const [activeRoute, setActiveRoute] = useState('regras-tratativa');
+  const [menuLevel, setMenuLevel] = useState('operacoes');
+  const [activeRoute, setActiveRoute] = useState('operacoes-eventos');
 
   const handleRouteChange = (route) => {
     setActiveRoute(route);
-    if (route === 'contatos' || route === 'email-automatico' || route === 'mensagem-voz') {
-      setMenuLevel('cadastros');
-    } else if (
-      route === 'regras-tratativa' ||
-      route === 'tipos-evento' ||
-      route === 'tratativas'
-    ) {
-      setMenuLevel('configuracoes');
-    } else if (
-      route === 'central-operacoes' ||
-      route === 'operacoes-eventos' ||
-      route === 'operacoes-auditoria'
-    ) {
-      setMenuLevel('operacoes');
-    }
+    setMenuLevel('operacoes');
   };
 
   const renderContent = () => {

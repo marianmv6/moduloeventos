@@ -551,6 +551,9 @@ export const OperacoesCentralPage: React.FC = () => {
   );
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [tratativaModalOpen, setTratativaModalOpen] = useState(false);
+  const [treatmentDurationByOccurrence, setTreatmentDurationByOccurrence] = useState<
+    Record<string, string>
+  >({});
 
   const openValidationModal = () => setValidationModalOpen(true);
   const closeValidationModal = () => setValidationModalOpen(false);
@@ -758,10 +761,23 @@ export const OperacoesCentralPage: React.FC = () => {
 
       <TratativaOcorrenciaModal
         open={tratativaModalOpen}
-        data={mockTratativaOcorrencia}
+        data={{
+          ...mockTratativaOcorrencia,
+          treatmentDurationLabel:
+            treatmentDurationByOccurrence[mockTratativaOcorrencia.occurrenceId] ?? '0:00',
+        }}
         onClose={closeTratativaModal}
         onReturn={closeTratativaModal}
-        onConclude={closeTratativaModal}
+        onConclude={(durationMs) => {
+          const minutes = Math.floor(durationMs / 60000);
+          const seconds = Math.floor((durationMs % 60000) / 1000);
+          const label = `${minutes}:${String(seconds).padStart(2, '0')}`;
+          setTreatmentDurationByOccurrence((prev) => ({
+            ...prev,
+            [mockTratativaOcorrencia.occurrenceId]: label,
+          }));
+          closeTratativaModal();
+        }}
       />
     </div>
   );

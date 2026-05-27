@@ -30,7 +30,7 @@ export const EVENTOS_VIDEO = [
 /** Eventos do tipo Telemetria */
 export const EVENTOS_TELEMETRIA = [
   'Excesso de velocidade',
-  'Excesso de velocidade em busca remota',
+  'Excesso de velocidade por cerca remota',
   'Aceleração brusca',
   'Freada brusca',
   'Curva em velocidade elevada',

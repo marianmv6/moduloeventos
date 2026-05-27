@@ -954,7 +954,10 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                   setActiveAlertType(value);
                   resetActiveConfirmed();
                 }}
-                showAiBadge={activeEvent.fromAi}
+                showAiBadge={
+                  activeEvent.fromAi &&
+                  (alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert) === 'sonolencia-n1'
+                }
               />
 
               <OutrosApontamentosSelect
@@ -1030,7 +1033,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               className="central-validacao-btn central-validacao-btn--secondary"
               onClick={handleSendAndClose}
             >
-              Enviar e fechar
+              Fechar
             </button>
           ) : (
             <LevelTooltip text="Confirme antes de continuar" topLayer nowrap>
@@ -1040,7 +1043,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 disabled
                 aria-disabled="true"
               >
-                Enviar e fechar
+                Fechar
               </button>
             </LevelTooltip>
           )}
@@ -1071,7 +1074,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               className="central-validacao-btn central-validacao-btn--primary"
               onClick={handleSendAndNext}
             >
-              Enviar e ver o próximo
+              Ver o próximo
             </button>
           ) : (
             <LevelTooltip text="Confirme antes de continuar" topLayer nowrap>
@@ -1081,7 +1084,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 disabled
                 aria-disabled="true"
               >
-                Enviar e ver o próximo
+                Ver o próximo
               </button>
             </LevelTooltip>
           )}

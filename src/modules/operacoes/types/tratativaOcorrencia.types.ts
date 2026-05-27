@@ -96,6 +96,8 @@ export interface TratativaOcorrenciaData {
 
   /** Trilha de tratativa aplicada (campo readonly na aba "Tratativa"). */
   trailLabel: string;
+  /** Tempo total da tratativa (ex.: "5:47") — exibido de forma estática. */
+  treatmentDurationLabel?: string;
   actions: TratativaAction[];
   contacts: TratativaContact[];
 

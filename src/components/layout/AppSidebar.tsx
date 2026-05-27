@@ -1,20 +1,15 @@
-import React from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   IconAuditoria,
   IconCadastros,
   IconCentralOperacoes,
   IconConfiguracoes,
-  IconEmail,
-  IconEventos,
-  IconMensagemVoz,
   IconOperacoes,
   IconOperacoesEventos,
-  IconRegrasTratativa,
-  IconTratativas,
-  IconUsersGroup,
 } from './NavIcons';
 
-export type MenuLevel = 'root' | 'configuracoes' | 'cadastros' | 'operacoes';
+export type MenuLevel = 'root' | 'operacoes';
 
 export type AppRoute =
   | 'regras-tratativa'
@@ -27,6 +22,27 @@ export type AppRoute =
   | 'operacoes-auditoria'
   | 'operacoes-eventos';
 
+type FlyoutId = 'configuracoes' | 'cadastros';
+
+interface FlyoutItem {
+  route: AppRoute;
+  label: string;
+}
+
+const CONFIG_FLYOUT_ITEMS: FlyoutItem[] = [
+  { route: 'tratativas', label: 'Regras de tratativas' },
+  { route: 'regras-tratativa', label: 'Políticas de tratativas' },
+];
+
+const CADASTROS_FLYOUT_ITEMS: FlyoutItem[] = [
+  { route: 'contatos', label: 'Contatos' },
+  { route: 'email-automatico', label: 'E-mail automático' },
+  { route: 'mensagem-voz', label: 'Mensagem voz' },
+];
+
+const CONFIG_ROUTES: AppRoute[] = ['tratativas', 'regras-tratativa', 'tipos-evento'];
+const CADASTRO_ROUTES: AppRoute[] = ['contatos', 'email-automatico', 'mensagem-voz'];
+
 interface AppSidebarProps {
   menuLevel: MenuLevel;
   activeRoute: AppRoute;
@@ -34,20 +50,114 @@ interface AppSidebarProps {
   onRouteChange: (route: AppRoute) => void;
 }
 
+const IconNavChevron: React.FC = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <path
+      d="M6 4L10 8L6 12"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   menuLevel,
   activeRoute,
   onMenuLevelChange,
   onRouteChange,
 }) => {
-  const goRoot = () => onMenuLevelChange('root');
+  const [openFlyout, setOpenFlyout] = useState<FlyoutId | null>(null);
+  const [flyoutAnchor, setFlyoutAnchor] = useState<DOMRect | null>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const flyoutTriggerRefs = useRef<Partial<Record<FlyoutId, HTMLButtonElement | null>>>({});
+
+  const goRoot = () => {
+    setOpenFlyout(null);
+    onMenuLevelChange('root');
+  };
+
+  useEffect(() => {
+    if (CONFIG_ROUTES.includes(activeRoute)) {
+      setOpenFlyout('configuracoes');
+    } else if (CADASTRO_ROUTES.includes(activeRoute)) {
+      setOpenFlyout('cadastros');
+    }
+  }, [activeRoute]);
+
+  useEffect(() => {
+    if (menuLevel !== 'operacoes') {
+      setOpenFlyout(null);
+    }
+  }, [menuLevel]);
+
+  useLayoutEffect(() => {
+    if (!openFlyout) {
+      setFlyoutAnchor(null);
+      return;
+    }
+    const el = flyoutTriggerRefs.current[openFlyout];
+    if (el) {
+      setFlyoutAnchor(el.getBoundingClientRect());
+    }
+  }, [openFlyout]);
+
+  useEffect(() => {
+    const onOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (navRef.current?.contains(target)) return;
+      if ((event.target as Element).closest?.('.nav-flyout')) return;
+      setOpenFlyout(null);
+    };
+    if (openFlyout) {
+      document.addEventListener('mousedown', onOutside);
+    }
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [openFlyout]);
+
+  const renderFlyout = (flyoutId: FlyoutId, label: string, items: FlyoutItem[]) => {
+    if (openFlyout !== flyoutId || !flyoutAnchor) return null;
+    return createPortal(
+      <div
+        className="nav-flyout nav-flyout--portal"
+        role="menu"
+        aria-label={label}
+        style={{
+          position: 'fixed',
+          top: flyoutAnchor.top,
+          left: flyoutAnchor.right + 8,
+        }}
+      >
+        {items.map((item) => (
+          <button
+            key={item.route}
+            type="button"
+            role="menuitem"
+            className={`nav-flyout__item${activeRoute === item.route ? ' nav-flyout__item--active' : ''}`}
+            onClick={() => {
+              onRouteChange(item.route);
+              setOpenFlyout(flyoutId);
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>,
+      document.body,
+    );
+  };
 
   const parentItem = (
     icon: React.ReactNode,
     label: string,
-    onClick: () => void
+    onClick: () => void,
   ) => (
-    <button type="button" className="nav-item nav-item-parent nav-item-parent--clickable" onClick={onClick}>
+    <button
+      type="button"
+      className="nav-item nav-item-parent nav-item-parent--clickable"
+      onClick={onClick}
+    >
       <span className="nav-item-icon" aria-hidden>
         {icon}
       </span>
@@ -59,20 +169,62 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     route: AppRoute,
     label: string,
     icon: React.ReactNode,
-    iconClassName?: string
+    iconClassName?: string,
   ) => {
     const isActive = activeRoute === route;
     return (
       <button
         type="button"
         className={`nav-item nav-item--child${isActive ? ' active' : ''}`}
-        onClick={() => onRouteChange(route)}
+        onClick={() => {
+          setOpenFlyout(null);
+          onRouteChange(route);
+        }}
       >
         <span className={`nav-item-icon${iconClassName ? ` ${iconClassName}` : ''}`} aria-hidden>
           {icon}
         </span>
         <span className="nav-item-text">{label}</span>
       </button>
+    );
+  };
+
+  const childItemWithFlyout = (
+    flyoutId: FlyoutId,
+    label: string,
+    icon: React.ReactNode,
+    iconClassName: string | undefined,
+    items: FlyoutItem[],
+  ) => {
+    const routesForFlyout = flyoutId === 'configuracoes' ? CONFIG_ROUTES : CADASTRO_ROUTES;
+    const isSectionActive = routesForFlyout.includes(activeRoute);
+    const isOpen = openFlyout === flyoutId;
+
+    return (
+      <div className="nav-item-flyout-wrap">
+        <button
+          ref={(el) => {
+            flyoutTriggerRefs.current[flyoutId] = el;
+          }}
+          type="button"
+          className={`nav-item nav-item--child nav-item--has-flyout${
+            isSectionActive ? ' active' : ''
+          }${isOpen ? ' nav-item--flyout-open' : ''}`}
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+          onClick={() => {
+            setOpenFlyout((prev) => (prev === flyoutId ? null : flyoutId));
+          }}
+        >
+          <span className={`nav-item-icon${iconClassName ? ` ${iconClassName}` : ''}`} aria-hidden>
+            {icon}
+          </span>
+          <span className="nav-item-text">{label}</span>
+          <span className="nav-item-chevron" aria-hidden>
+            <IconNavChevron />
+          </span>
+        </button>
+      </div>
     );
   };
 
@@ -144,49 +296,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         </div>
         <div className="menu-header-separator" aria-hidden />
       </div>
-      <nav>
+      <nav ref={navRef}>
         {menuLevel === 'root' && (
-          <>
-            <button
-              type="button"
-              className="nav-item nav-item--root"
-              onClick={() => {
-                onMenuLevelChange('operacoes');
-                onRouteChange('operacoes-eventos');
-              }}
-            >
-              <span className="nav-item-icon nav-item-icon--operacoes" aria-hidden>
-                <IconOperacoes />
-              </span>
-              <span className="nav-item-text">Operações</span>
-            </button>
-            <button
-              type="button"
-              className="nav-item nav-item--root"
-              onClick={() => {
-                onMenuLevelChange('cadastros');
-                onRouteChange('contatos');
-              }}
-            >
-              <span className="nav-item-icon nav-item-icon--cadastros" aria-hidden>
-                <IconCadastros />
-              </span>
-              <span className="nav-item-text">Cadastros</span>
-            </button>
-            <button
-              type="button"
-              className="nav-item nav-item--root"
-              onClick={() => {
-                onMenuLevelChange('configuracoes');
-                onRouteChange('regras-tratativa');
-              }}
-            >
-              <span className="nav-item-icon nav-item-icon--settings" aria-hidden>
-                <IconConfiguracoes />
-              </span>
-              <span className="nav-item-text">Configurações</span>
-            </button>
-          </>
+          <button
+            type="button"
+            className="nav-item nav-item--root"
+            onClick={() => {
+              onMenuLevelChange('operacoes');
+              onRouteChange('operacoes-eventos');
+            }}
+          >
+            <span className="nav-item-icon nav-item-icon--operacoes" aria-hidden>
+              <IconOperacoes />
+            </span>
+            <span className="nav-item-text">Operações</span>
+          </button>
         )}
 
         {menuLevel === 'operacoes' && (
@@ -195,26 +319,25 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
             {childItem('central-operacoes', 'Central de tratativas', <IconCentralOperacoes />)}
             {childItem('operacoes-auditoria', 'Auditoria', <IconAuditoria />)}
-          </>
-        )}
-
-        {menuLevel === 'configuracoes' && (
-          <>
-            {parentItem(<IconConfiguracoes />, 'Configurações', goRoot)}
-            {childItem('regras-tratativa', 'Políticas de tratativa', <IconRegrasTratativa />)}
-            {childItem('tratativas', 'Regras de tratativa', <IconTratativas />)}
-          </>
-        )}
-
-        {menuLevel === 'cadastros' && (
-          <>
-            {parentItem(<IconCadastros />, 'Cadastros', goRoot)}
-            {childItem('contatos', 'Contatos', <IconUsersGroup />)}
-            {childItem('email-automatico', 'E-mail automático', <IconEmail />)}
-            {childItem('mensagem-voz', 'Mensagem voz', <IconMensagemVoz />)}
+            {childItemWithFlyout(
+              'configuracoes',
+              'Configurações',
+              <IconConfiguracoes />,
+              'nav-item-icon--settings',
+              CONFIG_FLYOUT_ITEMS,
+            )}
+            {childItemWithFlyout(
+              'cadastros',
+              'Cadastros',
+              <IconCadastros />,
+              'nav-item-icon--cadastros',
+              CADASTROS_FLYOUT_ITEMS,
+            )}
           </>
         )}
       </nav>
+      {renderFlyout('configuracoes', 'Configurações', CONFIG_FLYOUT_ITEMS)}
+      {renderFlyout('cadastros', 'Cadastros', CADASTROS_FLYOUT_ITEMS)}
     </aside>
   );
 };
