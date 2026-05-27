@@ -545,32 +545,16 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
 
         {activeTab === 'tratativa' && (
           <div className="tratativa-body">
-            <div className="tratativa-fields-grid">
-              <ReadOnlyField
-                label="Política de tratativa"
-                value={data.policyName}
-                className="tratativa-field--col-1-3"
-              />
-              <ReadOnlyField
-                label="Tipo de política"
-                value={data.policyTypeLabel}
-                className="tratativa-field--col-3-5"
-              />
-              <ReadOnlyField
-                label="Gravidade"
-                value={data.gravityLabel}
-                className="tratativa-field--col-1-2"
-              />
-              <ReadOnlyField
-                label="Tratativa"
-                value={data.trailLabel}
-                className="tratativa-field--col-2-4"
-              />
-              <ReadOnlyField
-                label="Tempo em tratativa"
-                value={treatmentTimeLabel}
-                className="tratativa-field--col-4-6"
-              />
+            <div className="tratativa-fields">
+              <div className="tratativa-fields-row tratativa-fields-row--policy">
+                <ReadOnlyField label="Política de tratativa" value={data.policyName} />
+                <ReadOnlyField label="Tipo de política" value={data.policyTypeLabel} />
+              </div>
+              <div className="tratativa-fields-row tratativa-fields-row--meta">
+                <ReadOnlyField label="Gravidade" value={data.gravityLabel} />
+                <ReadOnlyField label="Tratativa" value={data.trailLabel} />
+                <ReadOnlyField label="Tempo em tratativa" value={treatmentTimeLabel} />
+              </div>
             </div>
 
             <div className="tratativa-cols">
