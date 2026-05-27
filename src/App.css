@@ -7395,17 +7395,19 @@ body.cr-fullscreen-modal-open .app-content {
 /* Bolinha vermelha indicando o instante exato em que o evento ocorreu
  * ? sempre posicionada no centro da janela de 10 s do player.
  * O `left` ? definido inline a partir de `markerPercent`. */
+.central-validacao-timeline__bar > .level-tooltip-wrap {
+  display: inline-flex;
+  z-index: 1;
+}
+
 .central-validacao-timeline__event-marker {
-  position: absolute;
-  top: 50%;
+  display: block;
   width: 8px;
   height: 8px;
   background: #e5394c;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: auto;
-  cursor: default;
   box-shadow: 0 0 0 2px #fff;
+  cursor: default;
 }
 
 .central-validacao-timeline__labels {

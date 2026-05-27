@@ -273,7 +273,7 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
         >
           {display}
         </span>
-        {fromAi && (
+        {fromAi && aiSuggestedAlert != null && value === aiSuggestedAlert && (
           <span className="central-validacao-ia-badge" aria-label="Sugerido pela IA">
             IA
           </span>
@@ -1010,10 +1010,20 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 <div className="central-validacao-timeline" aria-hidden>
                   <div className="central-validacao-timeline__bar">
                     <div className="central-validacao-timeline__marker" />
-                    <LevelTooltip text="Evento gerado" topLayer nowrap>
-                      <div
+                    <LevelTooltip
+                      text="Evento gerado"
+                      topLayer
+                      nowrap
+                      style={{
+                        position: 'absolute',
+                        left: `${markerPercent}%`,
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        lineHeight: 0,
+                      }}
+                    >
+                      <span
                         className="central-validacao-timeline__event-marker"
-                        style={{ left: `${markerPercent}%` }}
                         aria-label="Evento gerado"
                       />
                     </LevelTooltip>
