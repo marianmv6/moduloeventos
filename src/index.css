@@ -47,6 +47,12 @@
   --color-action-selected: #169EFF80;
   --color-header-title: #20ACAC;
   --font-size-header-title: 0.906rem;
+  /* Camadas: modais de conteúdo abaixo do menu; validação/tratativa acima de tudo */
+  --z-app-content: 1;
+  --z-modal-fullscreen: 10;
+  --z-sidebar: 100;
+  --z-nav-flyout: 110;
+  --z-modal-system-fullscreen: 10000;
 }
 
 /* Checkbox EXATAMENTE como na foto: 15px, cantos 2px, borda 1px azul, interior branco; selecionado = azul + check branco. */

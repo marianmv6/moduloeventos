@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface CrModalProps {
   open: boolean;
@@ -50,7 +51,7 @@ export const CrModal: React.FC<CrModalProps> = ({
 
   if (!open) return null;
 
-  return (
+  const overlay = (
     <div
       className={`cr-modal-overlay ${fullScreen ? 'cr-modal-overlay--fullscreen' : ''}`}
       role="dialog"
@@ -90,6 +91,15 @@ export const CrModal: React.FC<CrModalProps> = ({
       </div>
     </div>
   );
+
+  if (fullScreen) {
+    const portalRoot = document.querySelector('.app-content');
+    if (portalRoot) {
+      return createPortal(overlay, portalRoot);
+    }
+  }
+
+  return overlay;
 };
 
 export default CrModal;

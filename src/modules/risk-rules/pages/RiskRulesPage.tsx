@@ -29,6 +29,7 @@ import { EmailTemplateForm } from '../components/treatments/EmailTemplateForm';
 import { VoiceMessagesPanel } from '../components/treatments/VoiceMessagesPanel';
 import { MAX_EMAIL_TEMPLATES_PER_COMPANY, DEFAULT_TEMPLATE_ID } from '../constants/emailTemplateConstants';
 import type { AppRoute } from '../../../components/layout/AppSidebar';
+import { setRiskRulesNavigationGuard } from '../utils/riskRulesNavigationGuard';
 
 const ROUTE_TITLES: Record<AppRoute, string> = {
   'regras-tratativa': 'Políticas de tratativa',
@@ -195,6 +196,14 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
   }>({ open: false, pendingToast: null });
   const [policyFormDirty, setPolicyFormDirty] = useState(false);
   const [trailFormDirty, setTrailFormDirty] = useState(false);
+  const pendingNavigationRef = useRef<(() => void) | null>(null);
+  const modalGuardStateRef = useRef({
+    policyFormOpen: false,
+    trailFormOpen: false,
+    emailTemplateFormOpen: false,
+    policyFormDirty: false,
+    trailFormDirty: false,
+  });
   const [toast, setToast] = useState<{ visible: boolean; message: string; variant: ToastVariant }>({
     visible: false,
     message: '',
@@ -217,6 +226,20 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     setToast({ visible: true, message, variant });
   const closeToast = () => setToast((t) => ({ ...t, visible: false }));
 
+  const runPendingNavigation = () => {
+    const proceed = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    proceed?.();
+  };
+
+  modalGuardStateRef.current = {
+    policyFormOpen,
+    trailFormOpen,
+    emailTemplateFormOpen,
+    policyFormDirty,
+    trailFormDirty,
+  };
+
   const openPolicyForm = (policy?: Policy) => {
     setPolicyEditing(policy ?? null);
     setPolicyFormOpen(true);
@@ -228,7 +251,8 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     closeToast();
   };
 
-  const requestClosePolicyForm = () => {
+  const requestClosePolicyForm = (onAfterClose?: () => void) => {
+    pendingNavigationRef.current = onAfterClose ?? null;
     if (policyFormDirty) {
       setUnsavedConfirm({
         open: true,
@@ -239,9 +263,13 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
         onDiscard: () => {
           setUnsavedConfirm((c) => ({ ...c, open: false }));
           closePolicyForm();
+          runPendingNavigation();
         },
       });
-    } else closePolicyForm();
+    } else {
+      closePolicyForm();
+      runPendingNavigation();
+    }
   };
 
   const openTreatmentForm = (treatment?: Treatment) => {
@@ -265,7 +293,8 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     closeToast();
   };
 
-  const requestCloseTrailForm = () => {
+  const requestCloseTrailForm = (onAfterClose?: () => void) => {
+    pendingNavigationRef.current = onAfterClose ?? null;
     if (trailFormDirty) {
       setUnsavedConfirm({
         open: true,
@@ -276,10 +305,41 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
         onDiscard: () => {
           setUnsavedConfirm((c) => ({ ...c, open: false }));
           closeTrailForm();
+          runPendingNavigation();
         },
       });
-    } else closeTrailForm();
+    } else {
+      closeTrailForm();
+      runPendingNavigation();
+    }
   };
+
+  const requestClosePolicyFormRef = useRef(requestClosePolicyForm);
+  requestClosePolicyFormRef.current = requestClosePolicyForm;
+  const requestCloseTrailFormRef = useRef(requestCloseTrailForm);
+  requestCloseTrailFormRef.current = requestCloseTrailForm;
+
+  useEffect(() => {
+    setRiskRulesNavigationGuard((proceed) => {
+      const state = modalGuardStateRef.current;
+      if (state.policyFormOpen) {
+        requestClosePolicyFormRef.current(proceed);
+        return;
+      }
+      if (state.trailFormOpen) {
+        requestCloseTrailFormRef.current(proceed);
+        return;
+      }
+      if (state.emailTemplateFormOpen) {
+        setEmailTemplateFormOpen(false);
+        setEmailTemplateEditing(null);
+        proceed();
+        return;
+      }
+      proceed();
+    });
+    return () => setRiskRulesNavigationGuard(null);
+  }, []);
 
   const handlePolicySubmit = (data: Omit<Policy, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (policyEditing) {
@@ -334,6 +394,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
       }
     }
     closePolicyForm();
+    runPendingNavigation();
   };
 
   const handleTreatmentSubmit = (data: Omit<Treatment, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -469,6 +530,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
       showToast('Trilha criada com sucesso.');
     }
     closeTrailForm();
+    runPendingNavigation();
   };
 
   const handleTrailDelete = (trail: Trail) => {
@@ -999,7 +1061,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
       </div>
 
       <div className="page-content risk-rules-content">
-        {policyCoverageWarning && (
+        {policyCoverageWarning && !policyFormOpen && (
           <div className="policy-coverage-warning" role="alert">
             {policyCoverageWarning}
           </div>

@@ -134,7 +134,7 @@ export const mockTrails: Trail[] = [
     mode: 'points',
     steps: [
       { id: 'ts-1', order: 1, trigger: { type: 'points', minScore: 20 }, action: 'email_automatico', config: { contactIds: ['cont-1'] } },
-      { id: 'ts-2', order: 2, trigger: { type: 'points', minScore: 40 }, action: 'contato_gestor', config: { contactIds: ['cont-1', 'cont-2'] } },
+      { id: 'ts-2', order: 2, trigger: { type: 'points', minScore: 40 }, action: 'contato_gestor', config: { contactIds: ['cont-1', 'cont-2'], defaultMessage: 'Informar ao gestor sobre a ocorrência e solicitar retorno imediato.' } },
     ],
     active: true,
     createdAt: '2025-01-10T08:00:00Z',
@@ -144,8 +144,32 @@ export const mockTrails: Trail[] = [
 
 /** Contatos (cadastro auxiliar para trilhas) */
 export const mockContacts: Contact[] = [
-  { id: 'cont-1', companyId: 'creare', name: 'Gestor Operação', phone: '+5511999990001', email: 'gestor@empresa.com', description: 'Contato principal' },
-  { id: 'cont-2', companyId: 'bracell', name: 'Suporte', phone: '+5511888880002', email: 'suporte@empresa.com' },
+  {
+    id: 'cont-1',
+    companyId: 'creare',
+    name: 'Gestor Operação',
+    phone: '+5511999990001',
+    email: 'gestor@empresa.com',
+    description: 'Contato principal',
+    contactPreferences: ['whatsapp', 'ligacao'],
+    acceptContactOutsideHours: false,
+  },
+  {
+    id: 'cont-2',
+    companyId: 'bracell',
+    name: 'Suporte',
+    phone: '+5511888880002',
+    email: 'suporte@empresa.com',
+    contactPreferences: ['email'],
+    acceptContactOutsideHours: true,
+  },
+  {
+    id: 'cont-grp-1',
+    companyId: 'creare',
+    name: 'Alertas Operação',
+    description: 'Grupo gestores',
+    isWhatsAppGroup: true,
+  },
 ];
 
 /** Mensagens de voz (cadastro auxiliar) */

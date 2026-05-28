@@ -301,10 +301,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <button
             type="button"
             className="nav-item nav-item--root"
-            onClick={() => {
-              onMenuLevelChange('operacoes');
-              onRouteChange('operacoes-eventos');
-            }}
+            onClick={() => onRouteChange('operacoes-eventos')}
           >
             <span className="nav-item-icon nav-item-icon--operacoes" aria-hidden>
               <IconOperacoes />

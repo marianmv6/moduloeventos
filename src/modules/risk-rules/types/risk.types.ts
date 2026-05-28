@@ -95,6 +95,7 @@ export type TrailMode = 'points' | 'levels';
 export type StepActionType =
   | 'email_automatico'
   | 'contato_gestor'
+  | 'notificar_contato'
   | 'whatsapp_grupo'
   | 'mensagem_voz'
   | 'acao_personalizada';
@@ -111,6 +112,8 @@ export interface TrailStepConfig {
   emailTemplateId?: string;
   description?: string;
   url?: string;
+  /** Mensagem padrão exibida na tela de tratativa da ocorrência (contato / grupo) */
+  defaultMessage?: string;
 }
 
 /** Template de e-mail automático: título, descrição, status e variáveis ativas */
@@ -155,6 +158,9 @@ export interface Trail {
 /** Turnos disponíveis para contato (multi-select) */
 export type ContactShift = 'manha' | 'tarde' | 'noite' | 'madrugada';
 
+/** Preferência de contato (multi-select) */
+export type ContactPreference = 'whatsapp' | 'ligacao' | 'email';
+
 export interface Contact {
   id: string;
   /** Empresa do contato */
@@ -170,6 +176,12 @@ export interface Contact {
   timeStart?: string;
   /** Horário opcional fim (ex: "12:00") */
   timeEnd?: string;
+  /** Preferências de contato: WhatsApp, Ligação, E-mail */
+  contactPreferences?: ContactPreference[];
+  /** Aceita contato fora do horário cadastrado */
+  acceptContactOutsideHours?: boolean;
+  /** Indica cadastro de grupo de WhatsApp (somente nome e descrição) */
+  isWhatsAppGroup?: boolean;
 }
 
 export type VoiceMessageFormat = 'WAV' | 'MP3';

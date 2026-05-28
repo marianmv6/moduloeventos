@@ -143,7 +143,8 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
     );
   };
 
-  const showMutedPlaceholder = mutedPlaceholder && !multiple && !value;
+  const hasValue = multiple ? value.trim().length > 0 : Boolean(value);
+  const showMutedPlaceholder = mutedPlaceholder && !hasValue;
 
   return (
     <div

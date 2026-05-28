@@ -58,7 +58,9 @@ export const TimePicker: React.FC<TimePickerProps> = ({ id, label, value, onChan
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="time-picker__display">{display || '--'}</span>
+        <span className={`time-picker__display${!hour ? ' time-picker__display--placeholder' : ''}`}>
+          {display || '(Digite ou selecione)'}
+        </span>
         <span className="modal-select__arrow" aria-hidden>
           <svg width="8" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 0 L5 6 L10 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" fill="none" />

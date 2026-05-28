@@ -1,12 +1,13 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
-import type { Contact, ContactShift } from '../../types/risk.types';
+import type { Contact, ContactPreference, ContactShift } from '../../types/risk.types';
+import { CONTACT_PREFERENCE_OPTIONS, contactGroupDisplay } from '../../constants/contactDisplay';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { TimePicker } from '../shared/TimePicker';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
-import { COMPANY_OPTIONS, getCompanyName } from '../../constants/companies';
+import { COMPANY_OPTIONS } from '../../constants/companies';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const TURNOS_OPTIONS: ModalSelectOption[] = [
@@ -15,6 +16,18 @@ const TURNOS_OPTIONS: ModalSelectOption[] = [
   { value: 'noite', label: 'Noite' },
   { value: 'madrugada', label: 'Madrugada' },
 ];
+
+const OUTSIDE_HOURS_OPTIONS: ModalSelectOption[] = [
+  { value: 'true', label: 'Sim' },
+  { value: 'false', label: 'Não' },
+];
+
+const GROUP_FILTER_OPTIONS: ModalSelectOption[] = [
+  { value: 'true', label: 'Sim' },
+  { value: 'false', label: 'Não' },
+];
+
+const DESCRIPTION_MAX_LENGTH = 30;
 
 /** Máscara telefone: DDD + 9 dígitos → (XX) 9XXXX-XXXX */
 function formatPhone(value: string): string {
@@ -26,6 +39,13 @@ function formatPhone(value: string): string {
 
 function phoneToRaw(formatted: string): string {
   return formatted.replace(/\D/g, '');
+}
+
+function parseContactPreferences(value: string): ContactPreference[] {
+  return value
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean) as ContactPreference[];
 }
 
 export interface ContactsPanelHandle {
@@ -50,6 +70,8 @@ interface ContactsPanelProps {
   onFilterStateChange?: (state: { open: boolean; appliedCount: number }) => void;
 }
 
+type ContactFilters = { nome: string; grupo: string };
+
 export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>(function ContactsPanel(
   { contacts, onSave, onDelete, onValidationError, hideToolbar = false, onFilterStateChange },
   ref
@@ -60,22 +82,23 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
-  const [companyId, setCompanyId] = useState(defaultCompanyId);
+  const [isWhatsAppGroup, setIsWhatsAppGroup] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
-  const [turnosValue, setTurnosValue] = useState(''); // comma-separated for ModalSelect
+  const [turnosValue, setTurnosValue] = useState('');
   const [timeStart, setTimeStart] = useState('');
   const [timeEnd, setTimeEnd] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; phone?: boolean; email?: boolean; companyId?: boolean }>({});
+  const [contactPreferencesValue, setContactPreferencesValue] = useState('');
+  const [acceptOutsideHours, setAcceptOutsideHours] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; phone?: boolean; email?: boolean }>({});
 
-  const EMPTY_FILTERS = { empresa: '', nome: '' };
-  const [filters, setFilters] = useState<{ empresa: string; nome: string }>(EMPTY_FILTERS);
+  const EMPTY_FILTERS: ContactFilters = { nome: '', grupo: '' };
+  const [filters, setFilters] = useState<ContactFilters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const filterFields: AdvancedFilterField<{ empresa: string; nome: string }>[] = [
-    { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+  const filterFields: AdvancedFilterField<ContactFilters>[] = [
     {
       key: 'nome',
       label: 'Nome',
@@ -83,6 +106,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
         .sort()
         .map((n) => ({ value: n, label: n })),
     },
+    { key: 'grupo', label: 'Grupo', options: GROUP_FILTER_OPTIONS },
   ];
 
   const appliedCount = useMemo(
@@ -97,15 +121,15 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
   const filteredContacts = useMemo(() => {
     const baseList = isClient ? contacts.filter((c) => c.companyId === currentUser.companyId) : contacts;
     return baseList.filter((c) => {
-      if (filters.empresa && c.companyId !== filters.empresa) return false;
       if (filters.nome && c.name !== filters.nome) return false;
+      if (filters.grupo === 'true' && !c.isWhatsAppGroup) return false;
+      if (filters.grupo === 'false' && c.isWhatsAppGroup) return false;
       return true;
     });
   }, [contacts, filters, isClient, currentUser.companyId]);
 
-  const openNew = () => {
-    setEditing(null);
-    setCompanyId(defaultCompanyId);
+  const resetFormFields = () => {
+    setIsWhatsAppGroup(false);
     setName('');
     setPhone('');
     setEmail('');
@@ -113,7 +137,14 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     setTurnosValue('');
     setTimeStart('');
     setTimeEnd('');
+    setContactPreferencesValue('');
+    setAcceptOutsideHours('');
     setFieldErrors({});
+  };
+
+  const openNew = () => {
+    setEditing(null);
+    resetFormFields();
     setModalOpen(true);
   };
 
@@ -130,7 +161,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
 
   const openEdit = (c: Contact) => {
     setEditing(c);
-    setCompanyId(c.companyId ?? defaultCompanyId);
+    setIsWhatsAppGroup(c.isWhatsAppGroup === true);
     setName(c.name ?? '');
     setPhone(c.phone ? formatPhone(c.phone) : '');
     setEmail(c.email ?? '');
@@ -138,9 +169,14 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     setTurnosValue(c.turnos?.length ? c.turnos.join(', ') : '');
     setTimeStart(c.timeStart ?? '');
     setTimeEnd(c.timeEnd ?? '');
+    setContactPreferencesValue(c.contactPreferences?.length ? c.contactPreferences.join(', ') : '');
+    setAcceptOutsideHours(
+      c.acceptContactOutsideHours === true ? 'true' : c.acceptContactOutsideHours === false ? 'false' : '',
+    );
     setFieldErrors({});
     setModalOpen(true);
   };
+
   const closeModal = () => {
     setModalOpen(false);
     setEditing(null);
@@ -155,15 +191,38 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const nameTrimmed = name.trim();
+    const descriptionTrimmed = description.trim();
+
+    if (isWhatsAppGroup) {
+      const nameInvalid = !nameTrimmed;
+      setFieldErrors({ name: nameInvalid });
+      if (nameInvalid) return;
+
+      onSave({
+        ...(editing?.id && { id: editing.id }),
+        companyId: editing?.companyId ?? defaultCompanyId,
+        isWhatsAppGroup: true,
+        name: nameTrimmed,
+        description: descriptionTrimmed || undefined,
+      });
+      closeModal();
+      return;
+    }
+
     const phoneRaw = phoneToRaw(phone);
     const emailTrimmed = email.trim();
+    const preferences = parseContactPreferences(contactPreferencesValue);
+    const phoneRequired = preferences.includes('whatsapp') || preferences.includes('ligacao');
+    const emailRequired = preferences.includes('email');
     const nameInvalid = !nameTrimmed;
-    const phoneInvalid = phoneRaw.length < 10;
-    const emailInvalid = !emailTrimmed || !emailTrimmed.includes('@');
-    const companyInvalid = !companyId;
-    const errors = { name: nameInvalid, phone: phoneInvalid, email: emailInvalid, companyId: companyInvalid };
+    const phoneInvalid = phoneRequired && phoneRaw.length < 10;
+    const emailInvalid = emailRequired && (!emailTrimmed || !emailTrimmed.includes('@'));
+    const errors = { name: nameInvalid, phone: phoneInvalid, email: emailInvalid };
     setFieldErrors(errors);
-    if (nameInvalid || phoneInvalid || emailInvalid || companyInvalid) return;
+    if (nameInvalid || phoneInvalid || emailInvalid) {
+      onValidationError?.('Verifique os campos não preenchidos antes de salvar.');
+      return;
+    }
 
     const startFilled = timeStart.trim() !== '';
     const endFilled = timeEnd.trim() !== '';
@@ -175,19 +234,32 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     const turnosParsed = turnosValue
       ? (turnosValue.split(',').map((v) => v.trim()).filter(Boolean) as ContactShift[])
       : undefined;
+    const contactPreferencesParsed = preferences.length ? preferences : undefined;
     onSave({
       ...(editing?.id && { id: editing.id }),
-      companyId,
+      companyId: editing?.companyId ?? defaultCompanyId,
+      isWhatsAppGroup: false,
       name: nameTrimmed,
       phone: formatPhone(phoneRaw),
       email: emailTrimmed,
-      description: description.trim() || undefined,
+      description: descriptionTrimmed || undefined,
       turnos: turnosParsed?.length ? turnosParsed : undefined,
       timeStart: timeStart.trim() || undefined,
       timeEnd: timeEnd.trim() || undefined,
+      contactPreferences: contactPreferencesParsed?.length ? contactPreferencesParsed : undefined,
+      acceptContactOutsideHours:
+        acceptOutsideHours === 'true' ? true : acceptOutsideHours === 'false' ? false : undefined,
     });
     closeModal();
   };
+
+  const modalTitle = editing
+    ? isWhatsAppGroup
+      ? 'Editar grupo de WhatsApp'
+      : 'Editar contato'
+    : isWhatsAppGroup
+      ? 'Novo grupo de WhatsApp'
+      : 'Novo contato';
 
   return (
     <>
@@ -212,12 +284,12 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
         <table className="list-table">
           <thead>
             <tr>
-              <th>Empresa</th>
               <th>Nome</th>
               <th>Telefone</th>
               <th>Email</th>
               <th>Turnos</th>
               <th>Descrição</th>
+              <th>Grupo</th>
               <th></th>
             </tr>
           </thead>
@@ -231,30 +303,34 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
             ) : (
               filteredContacts.map((c) => (
                 <tr key={c.id}>
-                  <td>{getCompanyName(c.companyId)}</td>
                   <td>{c.name ?? '—'}</td>
-                  <td>{c.phone ?? '—'}</td>
-                  <td>{c.email ?? '—'}</td>
+                  <td>{c.isWhatsAppGroup ? '—' : (c.phone ?? '—')}</td>
+                  <td>{c.isWhatsAppGroup ? '—' : (c.email ?? '—')}</td>
                   <td>
-                    <span className="contact-turnos-cell">
-                      {c.turnos?.length
-                        ? c.turnos.map((t) => (
-                            <span key={t} className="contact-turno-chip">
-                              {TURNOS_OPTIONS.find((o) => o.value === t)?.label ?? t}
+                    {c.isWhatsAppGroup ? (
+                      '—'
+                    ) : (
+                      <span className="contact-turnos-cell">
+                        {c.turnos?.length
+                          ? c.turnos.map((t) => (
+                              <span key={t} className="contact-turno-chip">
+                                {TURNOS_OPTIONS.find((o) => o.value === t)?.label ?? t}
+                              </span>
+                            ))
+                          : '—'}
+                        {(c.timeStart || c.timeEnd) && (
+                          <>
+                            <br />
+                            <span className="contact-time-range">
+                              {[c.timeStart, c.timeEnd].filter(Boolean).join('–')}
                             </span>
-                          ))
-                        : '—'}
-                      {(c.timeStart || c.timeEnd) && (
-                        <>
-                          <br />
-                          <span className="contact-time-range">
-                            {[c.timeStart, c.timeEnd].filter(Boolean).join('–')}
-                          </span>
-                        </>
-                      )}
-                    </span>
+                          </>
+                        )}
+                      </span>
+                    )}
                   </td>
                   <td className="drawer-contacts-table__desc-cell">{c.description ?? '—'}</td>
+                  <td>{contactGroupDisplay(c)}</td>
                   <td className="list-cell-actions">
                     <div className="list-actions">
                       <button
@@ -284,130 +360,213 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
 
       <CrModal
         open={modalOpen}
-        title={editing ? 'Editar contato' : 'Novo contato'}
+        title={modalTitle}
         onClose={closeModal}
         formId="contact-form"
         primaryLabel="Salvar"
         cancelLabel="Cancelar"
       >
         <form id="contact-form" onSubmit={handleSubmit} className="form-card contact-form">
-          <div className="form-group">
-            <ModalSelect
-              id="contact-company"
-              label="Empresa"
-              value={companyId}
-              onChange={(v) => setCompanyId(v)}
-              options={currentUser.availableCompanies}
-              placeholder="Selecione a empresa"
-              disabled={isClient}
-              className="modal-select--no-pill"
-            />
+          <div className="form-field contact-form-field--toggle">
+            <label id="contact-whatsapp-group-label" htmlFor="contact-whatsapp-group-switch">
+              Grupo de WhatsApp
+            </label>
+            <button
+              id="contact-whatsapp-group-switch"
+              type="button"
+              role="switch"
+              aria-labelledby="contact-whatsapp-group-label"
+              aria-checked={isWhatsAppGroup}
+              className={`form-toggle-switch${isWhatsAppGroup ? ' form-toggle-switch--on' : ''}`}
+              onClick={() => {
+                setIsWhatsAppGroup((v) => !v);
+                setFieldErrors({});
+              }}
+            >
+              <span className="form-toggle-switch__knob" aria-hidden="true" />
+            </button>
           </div>
-          <div className="form-row">
-            <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
-              <label htmlFor="contact-name">Nome</label>
-              <div className="form-field__input-wrap">
-                <input
-                  id="contact-name"
-                  type="text"
-                  value={name}
-                  maxLength={30}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));
-                  }}
-                  placeholder="Nome"
-                  className={fieldErrors.name ? 'input-error' : ''}
-                  aria-invalid={fieldErrors.name}
-                />
-                {fieldErrors.name && (
-                  <span className="form-group__field-error-icon">
-                    <FieldErrorIcon />
-                  </span>
-                )}
+
+          {isWhatsAppGroup ? (
+            <>
+              <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
+                <label htmlFor="contact-group-name">Nome do grupo</label>
+                <div className="form-field__input-wrap">
+                  <input
+                    id="contact-group-name"
+                    type="text"
+                    value={name}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));
+                    }}
+                    placeholder="Digite o nome do grupo"
+                    className={fieldErrors.name ? 'input-error' : ''}
+                    aria-invalid={fieldErrors.name}
+                  />
+                  {fieldErrors.name && (
+                    <span className="form-group__field-error-icon">
+                      <FieldErrorIcon />
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className={`form-field ${fieldErrors.phone ? 'has-error' : ''}`}>
-              <label htmlFor="contact-phone">Telefone</label>
-              <div className="form-field__input-wrap">
-                <input
-                  id="contact-phone"
-                  type="tel"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  placeholder="(00) 00000-0000"
-                  maxLength={16}
-                  className={fieldErrors.phone ? 'input-error' : ''}
-                  aria-invalid={fieldErrors.phone}
-                />
-                {fieldErrors.phone && (
-                  <span className="form-group__field-error-icon">
-                    <FieldErrorIcon />
-                  </span>
-                )}
+              <div className="form-field">
+                <label htmlFor="contact-group-desc">Descrição</label>
+                <div className="form-field__input-wrap">
+                  <input
+                    id="contact-group-desc"
+                    type="text"
+                    value={description}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Descrição livre"
+                  />
+                </div>
               </div>
-            </div>
-            <div className={`form-field ${fieldErrors.email ? 'has-error' : ''}`}>
-              <label htmlFor="contact-email">Email</label>
-              <div className="form-field__input-wrap">
-                <input
-                  id="contact-email"
-                  type="text"
-                  inputMode="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (fieldErrors.email) setFieldErrors((err) => ({ ...err, email: false }));
-                  }}
-                  placeholder="email@exemplo.com"
-                  className={fieldErrors.email ? 'input-error' : ''}
-                  aria-invalid={fieldErrors.email}
-                />
-                {fieldErrors.email && (
-                  <span className="form-group__field-error-icon">
-                    <FieldErrorIcon />
-                  </span>
-                )}
+            </>
+          ) : (
+            <>
+              <div className="form-row">
+                <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
+                  <label htmlFor="contact-name">Nome</label>
+                  <div className="form-field__input-wrap">
+                    <input
+                      id="contact-name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));
+                      }}
+                      placeholder="Nome"
+                      className={fieldErrors.name ? 'input-error' : ''}
+                      aria-invalid={fieldErrors.name}
+                    />
+                    {fieldErrors.name && (
+                      <span className="form-group__field-error-icon">
+                        <FieldErrorIcon />
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className={`form-field ${fieldErrors.phone ? 'has-error' : ''}`}>
+                  <label htmlFor="contact-phone">Telefone</label>
+                  <div className="form-field__input-wrap">
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      placeholder="(00) 00000-0000"
+                      maxLength={16}
+                      className={fieldErrors.phone ? 'input-error' : ''}
+                      aria-invalid={fieldErrors.phone}
+                    />
+                    {fieldErrors.phone && (
+                      <span className="form-group__field-error-icon">
+                        <FieldErrorIcon />
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className={`form-field ${fieldErrors.email ? 'has-error' : ''}`}>
+                  <label htmlFor="contact-email">Email</label>
+                  <div className="form-field__input-wrap">
+                    <input
+                      id="contact-email"
+                      type="text"
+                      inputMode="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (fieldErrors.email) setFieldErrors((err) => ({ ...err, email: false }));
+                      }}
+                      placeholder="email@exemplo.com"
+                      className={fieldErrors.email ? 'input-error' : ''}
+                      aria-invalid={fieldErrors.email}
+                    />
+                    {fieldErrors.email && (
+                      <span className="form-group__field-error-icon">
+                        <FieldErrorIcon />
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="form-group">
-            <ModalSelect
-              id="contact-turnos"
-              label="Turno"
-              value={turnosValue}
-              onChange={setTurnosValue}
-              options={TURNOS_OPTIONS}
-              placeholder="Selecione"
-              multiple
-              className="modal-select--no-pill"
-            />
-          </div>
-          <div className="contact-form-row contact-form-row--time">
-            <TimePicker
-              id="contact-time-start"
-              label="Horário início"
-              value={timeStart}
-              onChange={setTimeStart}
-            />
-            <TimePicker
-              id="contact-time-end"
-              label="Horário fim"
-              value={timeEnd}
-              onChange={setTimeEnd}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="contact-desc">Descrição</label>
-            <textarea
-              id="contact-desc"
-              className="textarea-description"
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Texto livre"
-            />
-          </div>
+              <div className="form-group">
+                <ModalSelect
+                  id="contact-turnos"
+                  label="Turno"
+                  value={turnosValue}
+                  onChange={setTurnosValue}
+                  options={TURNOS_OPTIONS}
+                  placeholder="(Digite ou selecione)"
+                  multiple
+                  mutedPlaceholder
+                  className="modal-select--no-pill"
+                />
+              </div>
+              <div className="contact-form-row contact-form-row--time">
+                <TimePicker
+                  id="contact-time-start"
+                  label="Horário início"
+                  value={timeStart}
+                  onChange={setTimeStart}
+                />
+                <TimePicker
+                  id="contact-time-end"
+                  label="Horário fim"
+                  value={timeEnd}
+                  onChange={setTimeEnd}
+                />
+              </div>
+              <div className="contact-form-row contact-form-row--split">
+                <div className="form-group">
+                  <ModalSelect
+                    id="contact-preferences"
+                    label="Preferência de contato"
+                    value={contactPreferencesValue}
+                    onChange={(v) => {
+                      setContactPreferencesValue(v);
+                      setFieldErrors((err) => ({ ...err, phone: false, email: false }));
+                    }}
+                    options={CONTACT_PREFERENCE_OPTIONS}
+                    placeholder="(Digite ou selecione)"
+                    multiple
+                    mutedPlaceholder
+                    className="modal-select--no-pill"
+                  />
+                </div>
+                <div className="form-group">
+                  <ModalSelect
+                    id="contact-outside-hours"
+                    label="Aceita contato fora do horário?"
+                    value={acceptOutsideHours}
+                    onChange={setAcceptOutsideHours}
+                    options={OUTSIDE_HOURS_OPTIONS}
+                    placeholder="(Digite ou selecione)"
+                    mutedPlaceholder
+                    className="modal-select--no-pill"
+                  />
+                </div>
+              </div>
+              <div className="form-field">
+                <label htmlFor="contact-desc">Descrição</label>
+                <div className="form-field__input-wrap">
+                  <input
+                    id="contact-desc"
+                    type="text"
+                    value={description}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Descrição livre"
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </form>
       </CrModal>
     </>

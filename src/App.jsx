@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { RiskRulesPage } from './modules/risk-rules';
+import { requestRiskRulesNavigation } from './modules/risk-rules/utils/riskRulesNavigationGuard';
 import {
   OperacoesEventosPage,
   OperacoesCentralPage,
@@ -13,8 +14,13 @@ function App() {
   const [activeRoute, setActiveRoute] = useState('operacoes-eventos');
 
   const handleRouteChange = (route) => {
-    setActiveRoute(route);
-    setMenuLevel('operacoes');
+    requestRiskRulesNavigation(() => {
+      setActiveRoute(route);
+      const operacoesRoutes = ['operacoes-eventos', 'central-operacoes', 'operacoes-auditoria'];
+      if (operacoesRoutes.includes(route)) {
+        setMenuLevel('operacoes');
+      }
+    });
   };
 
   const renderContent = () => {

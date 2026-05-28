@@ -63,7 +63,7 @@ html, body {
   flex-shrink: 0;
   overflow: visible;
   position: relative;
-  z-index: 20;
+  z-index: var(--z-sidebar);
 }
 
 .launcher-sidebar > .menu-header {
@@ -166,7 +166,7 @@ html, body {
 
 /* Painel flutuante do terceiro nivel (conforme referencia Figma) */
 .nav-flyout {
-  z-index: 1000;
+  z-index: var(--z-nav-flyout);
   min-width: 12.5rem;
   padding: 0.5rem;
   background: var(--color-nav-flyout-bg);
@@ -481,6 +481,8 @@ html, body {
   min-height: 0;
   overflow: hidden;
   background: var(--color-background);
+  position: relative;
+  isolation: isolate;
 }
 
 /* Top bar do sistema (cabe?alho principal) */
@@ -519,6 +521,8 @@ html, body {
   background-color: var(--color-background);
   color: var(--color-text-primary);
   position: relative;
+  z-index: var(--z-app-content);
+  isolation: isolate;
 }
 
 /* Corpo da tela ??? padr?o Figma (?rea principal, sem menu) */
@@ -2259,7 +2263,7 @@ body.cr-fullscreen-modal-open .app-content {
   place-items: stretch;
   align-items: stretch;
   justify-content: stretch;
-  z-index: 9999;
+  z-index: var(--z-modal-fullscreen);
   box-sizing: border-box;
   background: var(--color-background);
   overflow: hidden;
@@ -2603,17 +2607,33 @@ body.cr-fullscreen-modal-open .app-content {
   font-style: italic;
   margin: 0 0 0.5rem 0;
 }
-/* Alinhar t?tulo da se??o (ex.: "Contatos que recebem email") ao in?cio do conte?do da tabela (coluna Contato) */
-.trail-step-config > label:first-child:not(.trail-step-config__section-title) {
-  padding-left: calc(2.5rem + 0.6rem * 2);
-  box-sizing: border-box;
-}
 /* Mesma altura entre "Selecionar todos" e a lista que entre "Pontua??o m?nima" e o input (0.25rem) */
 .trail-step-config > .policy-form-checkbox-option {
   margin-bottom: 0;
 }
 .trail-step-config select[multiple] {
   min-height: 80px;
+}
+.trail-step-config__default-message {
+  margin-top: 1rem;
+}
+.trail-step-config__default-message-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  font-family: var(--font-noto-sans);
+  color: #101828;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+.trail-step-config__default-message-input:focus {
+  border-color: rgb(22, 158, 255);
+  outline: none;
+  box-shadow: none;
 }
 /* Bloco Etapas: fundo cinza, mesmo estilo do bloco Gatilhos da pol?tica */
 .trail-form-etapas-section {
@@ -2634,30 +2654,156 @@ body.cr-fullscreen-modal-open .app-content {
 }
 .trail-step-contacts-table {
   width: 100%;
-  min-width: 20rem;
+  min-width: 40rem;
   table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  font-family: var(--font-noto-sans);
+  background: #ffffff;
 }
 .trail-step-contacts-table th,
 .trail-step-contacts-table td {
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.625rem;
   vertical-align: middle;
-  font-size: 0.875rem;
-  box-sizing: border-box;
-}
-.trail-step-contacts-table th {
-  font-weight: 600;
-  color: var(--color-text-secondary);
   text-align: left;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: 400;
+  color: #344054;
+  border-bottom: 1px solid #e9eeee;
 }
-.trail-step-contacts-table th:first-child,
-.trail-step-contacts-table td:first-child {
+.trail-step-contacts-table thead th {
+  background: #f0f0f0;
+  border: none;
+  border-bottom: 1px solid #e9eeee;
+  white-space: nowrap;
+  min-height: 2.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  line-height: 1.25;
+}
+.trail-step-contacts-table thead th.trail-step-contacts-table__th-wrap {
+  white-space: normal;
+  line-height: 1.2;
+  hyphens: auto;
+}
+.trail-step-contacts-table-wrap .trail-step-contacts-table thead th:first-child {
+  border-radius: 8px 0 0 0;
+}
+.trail-step-contacts-table-wrap .trail-step-contacts-table thead th:last-child {
+  border-radius: 0 8px 0 0;
+}
+.trail-step-contacts-table tbody {
+  background: #ffffff;
+}
+/* Checkbox */
+.trail-step-contacts-table th:nth-child(1),
+.trail-step-contacts-table td:nth-child(1) {
   width: 2.5rem;
-  min-width: 2.5rem;
+  padding-left: 0.625rem;
+  padding-right: 0.375rem;
+  text-align: center;
 }
-.trail-step-contacts-table label {
-  font-weight: normal;
+.trail-step-contacts-table thead th:nth-child(1) {
+  vertical-align: middle;
+}
+.trail-step-contacts-table td:nth-child(1) input[type='checkbox'] {
+  vertical-align: middle;
+}
+.trail-step-contacts-table .tsc-col-check {
+  width: 2.5rem;
+}
+/* Contato */
+.trail-step-contacts-table th:nth-child(2),
+.trail-step-contacts-table td:nth-child(2),
+.trail-step-contacts-table .tsc-col-contact {
+  width: 20%;
+  padding-left: 0.75rem;
+  padding-right: 0.5rem;
+}
+/* Turnos / Hor?rios */
+.trail-step-contacts-table th:nth-child(3),
+.trail-step-contacts-table td:nth-child(3),
+.trail-step-contacts-table .tsc-col-turnos {
+  width: 11%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.trail-step-contacts-table th:nth-child(4),
+.trail-step-contacts-table td:nth-child(4),
+.trail-step-contacts-table .tsc-col-horarios {
+  width: 11%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+/* Prefer?ncia / Fora do hor?rio */
+.trail-step-contacts-table th:nth-child(5),
+.trail-step-contacts-table td:nth-child(5),
+.trail-step-contacts-table .tsc-col-pref {
+  width: 16%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.trail-step-contacts-table th:nth-child(6),
+.trail-step-contacts-table td:nth-child(6),
+.trail-step-contacts-table .tsc-col-outside {
+  width: 14%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+/* Descri??o */
+.trail-step-contacts-table th:nth-child(7),
+.trail-step-contacts-table td:nth-child(7),
+.trail-step-contacts-table .tsc-col-desc {
+  width: 28%;
+  padding-left: 0.5rem;
+  padding-right: 0.75rem;
+}
+.trail-step-contacts-table .tsc-cell-contact,
+.trail-step-contacts-table .tsc-cell-desc {
+  overflow: hidden;
+  min-width: 0;
+}
+.trail-step-contacts-table .tsc-cell-desc .truncated-text-tooltip-wrap {
+  width: 100%;
+  min-width: 0;
+}
+.trail-step-contacts-table .tsc-contact-name {
+  font-weight: 400;
   cursor: pointer;
   margin: 0;
+  display: block;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Grupos WhatsApp */
+.trail-step-contacts-table--group-only {
+  min-width: 24rem;
+}
+.trail-step-contacts-table--group-only th:nth-child(2),
+.trail-step-contacts-table--group-only td:nth-child(2),
+.trail-step-contacts-table--group-only .tsc-col-contact {
+  width: 38%;
+  padding-left: 0.75rem;
+  padding-right: 0.5rem;
+}
+.trail-step-contacts-table--group-only th:nth-child(3),
+.trail-step-contacts-table--group-only td:nth-child(3),
+.trail-step-contacts-table--group-only .tsc-col-desc {
+  width: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.75rem;
+}
+.trail-step-contacts-table--group-only .tsc-cell-desc {
+  overflow: hidden;
+  min-width: 0;
+}
+.trail-step-contacts-table--group-only .tsc-cell-desc .truncated-text-tooltip-wrap {
+  width: 100%;
+  min-width: 0;
 }
 .trail-gatilho-tratativa-fixa {
   font-size: 0.875rem;
@@ -2724,7 +2870,7 @@ body.cr-fullscreen-modal-open .app-content {
   padding-right: 1rem;
   vertical-align: middle;
 }
-/* 7 colunas (Empresa adicionada como primeira): distribui??o mais equilibrada */
+/* 7 colunas: Nome, Telefone, Email, Turnos, Descri??o, Grupo, A??es */
 .drawer-contacts-table .list-table th:first-child,
 .drawer-contacts-table .list-table td:first-child {
   width: 13%;
@@ -2749,16 +2895,16 @@ body.cr-fullscreen-modal-open .app-content {
   word-break: normal;
   overflow-wrap: anywhere;
 }
+.drawer-contacts-table .list-table th:nth-child(6),
+.drawer-contacts-table .list-table td:nth-child(6) {
+  width: 8%;
+  min-width: 3.5rem;
+  white-space: nowrap;
+}
 .drawer-contacts-table .list-table th:nth-child(5),
 .drawer-contacts-table .list-table td:nth-child(5) {
   width: 16%;
   min-width: 6rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.drawer-contacts-table .list-table th:nth-child(6),
-.drawer-contacts-table .list-table td:nth-child(6) {
-  width: 19%;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -3440,31 +3586,93 @@ body.cr-fullscreen-modal-open .app-content {
   }
 }
 
-/* Altura/dist?ncia entre blocos: Nome???Turno igual a Hor?rio???Descri??o */
-.form-card.contact-form .form-group + .form-group,
-.form-card.contact-form .form-group + .contact-form-row,
-.form-card.contact-form .contact-form-row + .form-group,
-.form-card.contact-form .contact-form-row + .contact-form-row {
-  margin-top: 1rem;
+/* Modal contato: espa?amento igual ?s demais modais (.form-group { margin-bottom: 1rem }) */
+.cr-modal__body .form-card.contact-form {
+  --contact-control-h: 2.5rem;
 }
-/* Reduzir dist?ncia entre a primeira linha (Nome/Telefone/Email) e Turno */
-.form-card.contact-form .form-row + .form-group {
-  margin-top: 0.5rem;
+.cr-modal__body .form-card.contact-form > .form-group,
+.cr-modal__body .form-card.contact-form > .form-row,
+.cr-modal__body .form-card.contact-form > .contact-form-row,
+.cr-modal__body .form-card.contact-form > .form-field {
+  margin-bottom: 1rem;
 }
-/* Turno: mesma altura dos demais campos da modal (Nome, Telefone, Email) */
-.form-card.contact-form .form-group .modal-select .modal-select__input-wrap {
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 10px;
-  border: 1px solid #D0D5DD;
-  align-items: center;
+.cr-modal__body .form-card.contact-form .contact-form-row--split .form-group {
+  margin-bottom: 0;
 }
-.form-card.contact-form .form-group .modal-select .modal-select__input {
-  min-height: 28px;
-  padding: 6px 36px 6px 0;
+.form-card.contact-form .form-field > label {
+  display: block;
+  margin-bottom: 6px;
   font-size: 0.875rem;
   line-height: 1.25;
+  font-weight: normal;
+  color: #344054;
+}
+.form-card.contact-form .form-field.has-error .form-field__input-wrap input {
+  padding-right: 2.25rem;
+}
+.form-card.contact-form .form-field.has-error input,
+.form-card.contact-form .form-field input.input-error {
+  border-color: var(--color-error);
+}
+.form-card.contact-form .form-field .form-field__input-wrap {
+  position: relative;
+  width: 100%;
   box-sizing: border-box;
+}
+.form-card.contact-form .form-field .form-field__input-wrap .form-group__field-error-icon {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.form-card.contact-form .contact-form-field--toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.form-toggle-switch {
+  flex-shrink: 0;
+  width: 35px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 11px;
+  background: #e9eeee;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+}
+.form-toggle-switch:not(.form-toggle-switch--on):hover {
+  background: #dfe3e3;
+}
+.form-toggle-switch--on {
+  background: #37b574;
+}
+.form-toggle-switch--on:hover {
+  background: #32a568;
+}
+.form-toggle-switch__knob {
+  position: absolute;
+  top: 50%;
+  left: 3.89px;
+  width: 15.56px;
+  height: 15.56px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transform: translateY(-50%);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+.form-toggle-switch--on .form-toggle-switch__knob {
+  transform: translateY(-50%) translateX(12.44px);
+}
+.form-toggle-switch:focus-visible {
+  outline: 2px solid #37b574;
+  outline-offset: 2px;
 }
 /* Primeira linha do modal de contato: Nome, Telefone, Email ??? Grid 3 colunas iguais */
 .form-row {
@@ -3505,83 +3713,46 @@ body.cr-fullscreen-modal-open .app-content {
 .form-row .form-field.has-error .form-field__input-wrap input {
   padding-right: 2.25rem;
 }
-.form-row .form-field input {
-  width: 100%;
-  height: 40px;
-  box-sizing: border-box;
-  padding: 6px 10px;
-  font-size: 0.875rem;
-  font-family: var(--font-noto-sans);
-  color: #101828;
-  border: 1px solid #D0D5DD;
-  border-radius: 10px;
-}
 .form-row .form-field.has-error input,
 .form-row .form-field input.input-error {
   border-color: var(--color-error);
 }
-/* Modal novo/editar contato: componentes em foco com borda azul */
-.form-card.contact-form .form-field input:focus,
-.form-card.contact-form .form-group textarea:focus {
-  border-color: rgb(22, 158, 255);
-  outline: none;
-  box-shadow: none;
+.contact-form-row--split {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
-.form-card.contact-form .modal-select__input-wrap:focus-within {
-  border-color: rgb(22, 158, 255);
-  outline: none;
-  box-shadow: none;
+.contact-form-row--split .form-group {
+  margin: 0;
+  min-width: 0;
 }
 @media (max-width: 560px) {
   .form-row {
     grid-template-columns: 1fr;
   }
+  .contact-form-row--split {
+    grid-template-columns: 1fr;
+  }
 }
 .contact-form-row {
   display: grid;
-  gap: 1rem;
+  gap: 16px;
 }
 .contact-form-row--time {
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  align-items: start;
+  gap: 16px;
 }
 .contact-form-row--time .form-group input {
   width: 100%;
   box-sizing: border-box;
 }
-/* TimePicker no modal de contato: mesmo padr?o dos outros campos (borda, cor, foco); 24h sem AM/PM */
-.contact-form-row--time .time-picker .modal-select__label {
-  font-size: 0.875rem;
-  color: #344054;
-  margin-bottom: 6px;
-}
-.contact-form-row--time .time-picker .modal-select__input-wrap.time-picker__trigger {
-  border: 1px solid #D0D5DD;
-  border-radius: 10px;
-  background: #fff;
-  min-height: 28px;
-  padding: 6px 10px;
-}
-.contact-form-row--time .time-picker .modal-select__input-wrap.time-picker__trigger:focus-within {
-  border-color: rgb(22, 158, 255);
-  outline: none;
-  box-shadow: none;
-}
-.contact-form-row--time .time-picker .time-picker__display {
-  font-size: 0.875rem;
-  font-family: var(--font-noto-sans);
-  color: #101828;
+/* TimePicker no modal de contato */
+.contact-form-row--time .time-picker .time-picker__display--placeholder {
+  color: #98a2b3;
 }
 .contact-form-row--time .time-picker .time-picker__dropdown .modal-select__option--selected,
 .contact-form-row--time .time-picker .time-picker__dropdown .modal-select__option:hover {
   background-color: #169EFF;
   color: #fff;
-}
-/* TimePicker: s? horas; fonte proporcional ? modal (0.875rem como os demais campos) */
-.contact-form-row--time .time-picker .modal-select__input-wrap.time-picker__trigger {
-  min-height: 28px;
-  padding: 6px 10px;
 }
 .contact-form-row--time .time-picker .time-picker__dropdown {
   max-height: 180px;
@@ -3780,7 +3951,7 @@ body.cr-fullscreen-modal-open .app-content {
   margin-bottom: 6px;
 }
 
-.cr-modal__body .form-group input,
+.cr-modal__body .form-group input:not(.modal-select__input),
 .cr-modal__body .form-group select,
 .cr-modal__body .form-group textarea {
   border: 1px solid #D0D5DD;
@@ -3885,8 +4056,100 @@ body.cr-fullscreen-modal-open .app-content {
   opacity: 1;
 }
 .modal-select--muted-placeholder .modal-select__input-wrap:focus-within .modal-select__input {
+  color: #98a2b3;
+}
+
+/* Modal novo/editar contato: altura e alinhamento uniformes (sobrescreve regras gen?ricas do modal-select) */
+.cr-modal__body .form-card.contact-form .form-row,
+.cr-modal__body .form-card.contact-form .contact-form-row--time,
+.cr-modal__body .form-card.contact-form .contact-form-row--split {
+  align-items: end;
+}
+.cr-modal__body .form-card.contact-form .form-field .form-field__input-wrap {
+  height: var(--contact-control-h);
+  min-height: var(--contact-control-h);
+}
+.cr-modal__body .form-card.contact-form .form-row .form-field input,
+.cr-modal__body .form-card.contact-form .form-field input[type='text'],
+.cr-modal__body .form-card.contact-form .form-field input[type='tel'] {
+  display: block;
+  width: 100%;
+  height: var(--contact-control-h);
+  min-height: var(--contact-control-h);
+  max-height: var(--contact-control-h);
+  padding: 0 0.625rem;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-family: var(--font-noto-sans);
+  color: #101828;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background: #fff;
+}
+.cr-modal__body .form-card.contact-form .form-row .form-field input::placeholder,
+.cr-modal__body .form-card.contact-form .form-field input::placeholder {
+  color: #98a2b3;
+  opacity: 1;
+}
+.cr-modal__body .form-card.contact-form .form-group .modal-select__input-wrap,
+.cr-modal__body .form-card.contact-form .time-picker .modal-select__input-wrap.time-picker__trigger {
+  display: flex;
+  align-items: center;
+  height: var(--contact-control-h);
+  min-height: var(--contact-control-h);
+  max-height: var(--contact-control-h);
+  padding: 0 0.625rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.cr-modal__body .form-card.contact-form .form-group .modal-select__input {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  padding: 0 1.75rem 0 0;
+  line-height: 1.25;
+  border: none;
+  background: transparent;
+}
+.cr-modal__body .form-card.contact-form .time-picker .time-picker__display {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+  font-size: 0.875rem;
+}
+.cr-modal__body .form-card.contact-form .modal-select__label {
+  margin-bottom: 6px;
+}
+.cr-modal__body .form-card.contact-form .modal-select.modal-select--muted-placeholder .modal-select__input {
+  color: #98a2b3;
+}
+.cr-modal__body .form-card.contact-form .modal-select:not(.modal-select--muted-placeholder) .modal-select__input {
   color: #101828;
 }
+.cr-modal__body .form-card.contact-form .time-picker .time-picker__display--placeholder {
+  color: #98a2b3;
+}
+.cr-modal__body .form-card.contact-form .form-field input:focus,
+.cr-modal__body .form-card.contact-form .modal-select__input-wrap:focus-within,
+.cr-modal__body .form-card.contact-form .time-picker .modal-select__input-wrap.time-picker__trigger:focus-within {
+  border-color: rgb(22, 158, 255);
+  outline: none;
+  box-shadow: none;
+}
+.cr-modal__body .form-card.contact-form .form-field.has-error input,
+.cr-modal__body .form-card.contact-form .form-field input.input-error,
+.cr-modal__body .form-card.contact-form .form-group.has-error .modal-select__input-wrap {
+  border-color: var(--color-error);
+}
+.cr-modal__body .form-card.contact-form .form-field.has-error .form-field__input-wrap input {
+  padding-right: 2.25rem;
+}
+
 .modal-select__arrow {
   position: absolute;
   right: 14px;
@@ -4434,9 +4697,9 @@ body.cr-fullscreen-modal-open .app-content {
 .cr-modal__body .policy-form .policy-form-gatilhos-hint {
   font-size: 0.6875rem;
 }
-/* T?tulo dentro do card: negrito (Gatilho 1) */
+/* T?tulo dentro do card: mesmo peso de "A??o 1" em nova tratativa */
 .policy-form-gatilhos-section .trail-step-title {
-  font-weight: 700;
+  font-weight: 600;
   color: #344054;
 }
 /* ?cone de lixeira no padr?o azul */
@@ -4591,7 +4854,7 @@ body.cr-fullscreen-modal-open .app-content {
   border-radius: 8px;
 }
 .cr-modal__body .policy-form .policy-form-gatilhos-section .trail-step-title {
-  font-weight: 700;
+  font-weight: 600;
   color: #344054;
 }
 .cr-modal__body .policy-form .policy-form-gatilhos-section .trail-step-remove-btn {
@@ -4813,7 +5076,7 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-coverage-warning {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1;
   padding: 0.5rem 1rem;
   margin: 0 0 1rem 0;
   background: rgba(230, 81, 0, 0.18);
@@ -6776,10 +7039,11 @@ body.cr-fullscreen-modal-open .app-content {
    Modal de valida??o de alertas (bot?o play da Central de Controle)
    =========================================================================== */
 
+/* Valida??o e tratativa: ?nicas modais que cobrem o menu (tela inteira) */
 .central-validacao-modal {
   position: fixed;
   inset: 0;
-  z-index: 100000;
+  z-index: var(--z-modal-system-fullscreen);
   display: flex;
   background: #fff;
   font-family: var(--font-noto-sans);
@@ -8019,6 +8283,30 @@ body.cr-fullscreen-modal-open .app-content {
 .tratativa-action__hourglass {
   display: inline-flex;
   align-items: center;
+}
+
+.tratativa-action__default-message {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  background: #f5f6f8;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+}
+
+.tratativa-action__default-message-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #667085;
+  margin-bottom: 0.25rem;
+}
+
+.tratativa-action__default-message-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #344054;
+  white-space: pre-wrap;
 }
 
 .tratativa-action__textarea {

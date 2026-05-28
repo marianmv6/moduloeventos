@@ -30,6 +30,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       id: 'a1',
       sequence: 1,
       title: 'Contato gestor imediato',
+      defaultMessage: 'Informar ao gestor sobre a ocorrência e solicitar retorno imediato.',
       contacts: [
         {
           id: 'c1',

@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { SystemFullscreenPortal } from '../../../components/layout/SystemFullscreenPortal';
 import { AppTooltipBubble } from '../../risk-rules/components/shared/AppTooltipBubble';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
@@ -772,8 +773,10 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
     if (open) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('cr-fullscreen-modal-open');
       return () => {
         document.body.style.overflow = prevOverflow;
+        document.body.classList.remove('cr-fullscreen-modal-open');
       };
     }
   }, [open]);
@@ -899,6 +902,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   if (!open || !activeEvent) return null;
 
   return (
+    <SystemFullscreenPortal>
     <div
       className="central-validacao-modal"
       role="dialog"
@@ -1166,6 +1170,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
         saveLabel="Continuar"
       />
     </div>
+    </SystemFullscreenPortal>
   );
 };
 

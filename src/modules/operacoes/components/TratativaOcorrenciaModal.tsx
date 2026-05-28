@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { SystemFullscreenPortal } from '../../../components/layout/SystemFullscreenPortal';
 import type {
   TratativaOcorrenciaData,
   TratativaContact,
@@ -254,6 +255,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
           {action.sequence}. {action.title}
         </span>
       </div>
+      {action.defaultMessage && (
+        <div className="tratativa-action__default-message">
+          <span className="tratativa-action__default-message-label">Mensagem padrão</span>
+          <p className="tratativa-action__default-message-text">{action.defaultMessage}</p>
+        </div>
+      )}
       <textarea
         className="tratativa-action__textarea"
         placeholder="Observação (Opcional)"
@@ -401,8 +408,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     if (open) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('cr-fullscreen-modal-open');
       return () => {
         document.body.style.overflow = prev;
+        document.body.classList.remove('cr-fullscreen-modal-open');
       };
     }
   }, [open]);
@@ -523,6 +532,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   const selectedEvent = data.validatedEvents.find((e) => e.id === selectedEventId);
 
   return (
+    <SystemFullscreenPortal>
     <div
       className="central-validacao-modal tratativa-ocorrencia-modal"
       role="dialog"
@@ -889,6 +899,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
         )}
       </section>
     </div>
+    </SystemFullscreenPortal>
   );
 };
 

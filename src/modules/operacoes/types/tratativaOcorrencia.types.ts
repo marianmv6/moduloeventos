@@ -22,6 +22,8 @@ export interface TratativaAction {
    *  explicitamente para permitir saltos de numeração futuramente. */
   sequence: number;
   title: string;
+  /** Mensagem padrão configurada na trilha (exibida na tratativa da ocorrência). */
+  defaultMessage?: string;
   /** Contatos exibidos no painel "Detalhes" quando esta ação está
    *  selecionada. Se ausente, faz fallback para a lista global em
    *  `TratativaOcorrenciaData.contacts`. */

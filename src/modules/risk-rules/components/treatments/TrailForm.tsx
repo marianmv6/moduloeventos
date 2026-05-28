@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Trail, TrailStep, TrailStepTrigger, StepActionType, Contact } from '../../types/risk.types';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
+import { InfoTooltip } from '../shared/InfoTooltip';
 import { IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { COMPANY_OPTIONS } from '../../constants/companies';
+import { contactOutsideHoursDisplay, contactPreferenceDisplay } from '../../constants/contactDisplay';
+import { TruncatedTextTooltip } from '../shared/TruncatedTextTooltip';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const TURNOS_LABELS: Record<string, string> = {
@@ -36,9 +39,158 @@ function contactHorarioDisplay(c: Contact): string {
   return [c.timeStart, c.timeEnd].filter(Boolean).join('–');
 }
 
+function contactDescriptionDisplay(c: Contact): string {
+  return c.description?.trim() || '—';
+}
+
+interface ContactStepTableProps {
+  step: TrailStep;
+  contacts: Contact[];
+  idPrefix: string;
+  onToggleContact: (stepId: string, contactId: string) => void;
+  variant?: 'full' | 'groupOnly';
+}
+
+function ContactStepTable({
+  step,
+  contacts,
+  idPrefix,
+  onToggleContact,
+  variant = 'full',
+}: ContactStepTableProps) {
+  if (variant === 'groupOnly') {
+    return (
+      <div className="trail-step-contacts-table-wrap">
+        <table className="trail-step-contacts-table trail-step-contacts-table--group-only">
+          <colgroup>
+            <col className="tsc-col-check" />
+            <col className="tsc-col-contact" />
+            <col className="tsc-col-desc" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" className="trail-step-contacts-table__th-checkbox" aria-label="Selecionar" />
+              <th scope="col">Grupo</th>
+              <th scope="col">Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contacts.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="list-empty">
+                  Nenhum grupo de WhatsApp cadastrado.
+                </td>
+              </tr>
+            ) : (
+              contacts.map((c) => (
+                <tr key={c.id}>
+                  <td>
+                    <input
+                      id={`${idPrefix}-${c.id}`}
+                      type="checkbox"
+                      checked={(step.config?.contactIds ?? []).includes(c.id)}
+                      onChange={() => onToggleContact(step.id, c.id)}
+                    />
+                  </td>
+                  <td className="tsc-cell-contact">
+                    <label htmlFor={`${idPrefix}-${c.id}`} className="tsc-contact-name">
+                      {c.name || c.id}
+                    </label>
+                  </td>
+                  <td className="tsc-cell-desc">
+                    <TruncatedTextTooltip text={contactDescriptionDisplay(c)} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="trail-step-contacts-table-wrap">
+      <table className="trail-step-contacts-table">
+        <colgroup>
+          <col className="tsc-col-check" />
+          <col className="tsc-col-contact" />
+          <col className="tsc-col-turnos" />
+          <col className="tsc-col-horarios" />
+          <col className="tsc-col-pref" />
+          <col className="tsc-col-outside" />
+          <col className="tsc-col-desc" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col" className="trail-step-contacts-table__th-checkbox" aria-label="Selecionar" />
+            <th scope="col">Contato</th>
+            <th scope="col">Turnos</th>
+            <th scope="col">Horários</th>
+            <th scope="col" className="trail-step-contacts-table__th-wrap">Preferência de contato</th>
+            <th scope="col" className="trail-step-contacts-table__th-wrap">Contato fora do horário</th>
+            <th scope="col">Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          {contacts.map((c) => (
+            <tr key={c.id}>
+              <td>
+                <input
+                  id={`${idPrefix}-${c.id}`}
+                  type="checkbox"
+                  checked={(step.config?.contactIds ?? []).includes(c.id)}
+                  onChange={() => onToggleContact(step.id, c.id)}
+                />
+              </td>
+              <td className="tsc-cell-contact">
+                <label htmlFor={`${idPrefix}-${c.id}`} className="tsc-contact-name">
+                  {c.name || c.id}
+                </label>
+              </td>
+              <td>{contactTurnoDisplay(c)}</td>
+              <td>{contactHorarioDisplay(c)}</td>
+              <td>{contactPreferenceDisplay(c)}</td>
+              <td>{contactOutsideHoursDisplay(c)}</td>
+              <td className="tsc-cell-desc">
+                <TruncatedTextTooltip text={contactDescriptionDisplay(c)} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+interface DefaultMessageFieldProps {
+  step: TrailStep;
+  onUpdate: (message: string) => void;
+}
+
+function DefaultMessageField({ step, onUpdate }: DefaultMessageFieldProps) {
+  return (
+    <div className="trail-step-config__default-message">
+      <label className="form-label-optional" htmlFor={`step-default-message-${step.id}`}>
+        Mensagem padrão (opcional)
+      </label>
+      <textarea
+        id={`step-default-message-${step.id}`}
+        className="trail-step-config__default-message-input"
+        rows={3}
+        maxLength={DEFAULT_MESSAGE_MAX_LENGTH}
+        value={step.config?.defaultMessage ?? ''}
+        onChange={(e) => onUpdate(e.target.value)}
+        placeholder="Texto exibido na tela de tratativa da ocorrência"
+      />
+    </div>
+  );
+}
+
 const ACTION_OPTIONS: ModalSelectOption[] = [
   { value: 'email_automatico', label: 'Email automático' },
   { value: 'contato_gestor', label: 'Contato gestor imediato' },
+  { value: 'notificar_contato', label: 'Notificar contato' },
   { value: 'whatsapp_grupo', label: 'WhatsApp grupo' },
   { value: 'mensagem_voz', label: 'Mensagem de voz' },
   { value: 'acao_personalizada', label: 'Ação personalizada' },
@@ -50,6 +202,7 @@ const STATUS_OPTIONS: ModalSelectOption[] = [
 ];
 
 const MAX_STEPS = 5;
+const DEFAULT_MESSAGE_MAX_LENGTH = 250;
 
 const DEFAULT_TRIGGER: TrailStepTrigger = { type: 'points', minScore: 0 };
 
@@ -92,6 +245,23 @@ export const TrailForm: React.FC<TrailFormProps> = ({
   const isClient = currentUser.kind === 'client';
   const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
 
+  const regularContacts = useMemo(
+    () => contacts.filter((c) => !c.isWhatsAppGroup),
+    [contacts],
+  );
+  const emailContacts = useMemo(
+    () =>
+      regularContacts.filter((c) => {
+        const value = c.email?.trim();
+        return Boolean(value && value.includes('@'));
+      }),
+    [regularContacts],
+  );
+  const whatsAppGroupContacts = useMemo(
+    () => contacts.filter((c) => c.isWhatsAppGroup),
+    [contacts],
+  );
+
   const [companyId, setCompanyId] = useState(initialData?.companyId ?? defaultCompanyId);
   const [name, setName] = useState(initialData?.name ?? '');
   const [active, setActive] = useState(initialData?.active ?? true);
@@ -124,6 +294,7 @@ export const TrailForm: React.FC<TrailFormProps> = ({
       if (aIds !== bIds) return true;
       if ((a.config?.voiceMessageId ?? '') !== (b.config?.voiceMessageId ?? '')) return true;
       if ((a.config?.emailTemplateId ?? '') !== (b.config?.emailTemplateId ?? '')) return true;
+      if ((a.config?.defaultMessage ?? '') !== (b.config?.defaultMessage ?? '')) return true;
     }
     return false;
   }, [initialData, name, active, steps]);
@@ -151,6 +322,7 @@ export const TrailForm: React.FC<TrailFormProps> = ({
         (s) =>
           s.action === 'email_automatico' ||
           s.action === 'contato_gestor' ||
+          s.action === 'notificar_contato' ||
           s.action === 'whatsapp_grupo'
       ),
     [steps]
@@ -167,6 +339,25 @@ export const TrailForm: React.FC<TrailFormProps> = ({
     setSteps((prev) =>
       prev.map((s) => (s.id === stepId ? { ...s, ...patch } : s))
     );
+  };
+
+  const updateStepDefaultMessage = (stepId: string, defaultMessage: string) => {
+    const step = steps.find((s) => s.id === stepId);
+    if (!step) return;
+    const limited = defaultMessage.slice(0, DEFAULT_MESSAGE_MAX_LENGTH);
+    updateStep(stepId, {
+      config: { ...step.config, defaultMessage: limited || undefined },
+    });
+  };
+
+  const toggleStepContact = (stepId: string, contactId: string) => {
+    const step = steps.find((s) => s.id === stepId);
+    if (!step) return;
+    const current = step.config?.contactIds ?? [];
+    const next = current.includes(contactId)
+      ? current.filter((id) => id !== contactId)
+      : [...current, contactId];
+    updateStep(stepId, { config: { ...step.config, contactIds: next } });
   };
 
   useEffect(() => {
@@ -198,7 +389,16 @@ export const TrailForm: React.FC<TrailFormProps> = ({
       companyId,
       trackingType: initialData?.trackingType ?? 'motorista',
       mode: initialData?.mode ?? 'points',
-      steps: steps.map((s) => ({ ...s, trigger: s.trigger ?? DEFAULT_TRIGGER })),
+      steps: steps.map((s) => ({
+        ...s,
+        trigger: s.trigger ?? DEFAULT_TRIGGER,
+        config: s.config
+          ? {
+              ...s.config,
+              defaultMessage: s.config.defaultMessage?.trim().slice(0, DEFAULT_MESSAGE_MAX_LENGTH) || undefined,
+            }
+          : undefined,
+      })),
       active,
     });
   };
@@ -249,7 +449,10 @@ export const TrailForm: React.FC<TrailFormProps> = ({
       <div className={`form-group ${fieldErrors.steps ? 'has-error' : ''}`}>
         <div className="trail-form-etapas-section">
           <div className="trail-form-etapas-header policy-form-gatilhos-header">
-            <label className="policy-form-gatilhos-title">Ações (1 a {MAX_STEPS})</label>
+            <span className="policy-form-gatilhos-title-with-info">
+              <span className="policy-form-gatilhos-title">Ações (1 a {MAX_STEPS})</span>
+              <InfoTooltip text="Estabeleça as ações que o analista deve realizar. Você pode configurar uma sequência de até 5 ações, que serão disponibilizadas uma a uma caso a anterior não resolva a ocorrência." />
+            </span>
             {steps.length < MAX_STEPS && (
               <button type="button" className="btn btn-sm btn-primary" onClick={addStep}>
                 + Adicionar ação
@@ -300,146 +503,63 @@ export const TrailForm: React.FC<TrailFormProps> = ({
                         value={step.config?.emailTemplateId ?? ''}
                         onChange={(v) => updateStep(step.id, { config: { ...step.config, emailTemplateId: v || undefined } })}
                         placeholder="Selecione o template"
+                        mutedPlaceholder
                       />
                     </div>
                   )}
                   <label className="trail-step-config__section-title">Selecione quem deve receber o e-mail</label>
-                  <p className="trail-step-config__hint">Pode ser selecionado mais de um</p>
-                  <div className="trail-step-contacts-table-wrap">
-                    <table className="list-table trail-step-contacts-table">
-                      <thead>
-                        <tr>
-                          <th style={{ width: '2.5rem' }}></th>
-                          <th>Contato</th>
-                          <th>Turnos</th>
-                          <th>Horários</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {contacts.map((c) => (
-                          <tr key={c.id}>
-                            <td>
-                              <input
-                                id={`trail-step-${step.id}-contact-${c.id}`}
-                                type="checkbox"
-                                checked={(step.config?.contactIds ?? []).includes(c.id)}
-                                onChange={() => {
-                                  const current = step.config?.contactIds ?? [];
-                                  const next = current.includes(c.id)
-                                    ? current.filter((id) => id !== c.id)
-                                    : [...current, c.id];
-                                  updateStep(step.id, {
-                                    config: { ...step.config, contactIds: next },
-                                  });
-                                }}
-                              />
-                            </td>
-                            <td>
-                              <label htmlFor={`trail-step-${step.id}-contact-${c.id}`}>
-                                {c.name || c.id}
-                              </label>
-                            </td>
-                            <td>{contactTurnoDisplay(c)}</td>
-                            <td>{contactHorarioDisplay(c)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ContactStepTable
+                    step={step}
+                    contacts={emailContacts}
+                    idPrefix={`trail-step-${step.id}-contact`}
+                    onToggleContact={toggleStepContact}
+                  />
                 </div>
               )}
               {step.action === 'contato_gestor' && (
                 <div className="trail-step-config">
                   <label className="trail-step-config__section-title">Selecione quem deve ser contatado</label>
-                  <p className="trail-step-config__hint">Pode ser selecionado mais de um</p>
-                  <div className="trail-step-contacts-table-wrap">
-                    <table className="list-table trail-step-contacts-table">
-                      <thead>
-                        <tr>
-                          <th style={{ width: '2.5rem' }}></th>
-                          <th>Contato</th>
-                          <th>Turnos</th>
-                          <th>Horários</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {contacts.map((c) => (
-                          <tr key={c.id}>
-                            <td>
-                              <input
-                                id={`trail-step-${step.id}-gestor-${c.id}`}
-                                type="checkbox"
-                                checked={(step.config?.contactIds ?? []).includes(c.id)}
-                                onChange={() => {
-                                  const current = step.config?.contactIds ?? [];
-                                  const next = current.includes(c.id)
-                                    ? current.filter((id) => id !== c.id)
-                                    : [...current, c.id];
-                                  updateStep(step.id, {
-                                    config: { ...step.config, contactIds: next },
-                                  });
-                                }}
-                              />
-                            </td>
-                            <td>
-                              <label htmlFor={`trail-step-${step.id}-gestor-${c.id}`}>
-                                {c.name || c.id}
-                              </label>
-                            </td>
-                            <td>{contactTurnoDisplay(c)}</td>
-                            <td>{contactHorarioDisplay(c)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ContactStepTable
+                    step={step}
+                    contacts={regularContacts}
+                    idPrefix={`trail-step-${step.id}-gestor`}
+                    onToggleContact={toggleStepContact}
+                  />
+                  <DefaultMessageField
+                    step={step}
+                    onUpdate={(v) => updateStepDefaultMessage(step.id, v)}
+                  />
+                </div>
+              )}
+              {step.action === 'notificar_contato' && (
+                <div className="trail-step-config">
+                  <label className="trail-step-config__section-title">Selecione o contato</label>
+                  <ContactStepTable
+                    step={step}
+                    contacts={regularContacts}
+                    idPrefix={`trail-step-${step.id}-notificar`}
+                    onToggleContact={toggleStepContact}
+                  />
+                  <DefaultMessageField
+                    step={step}
+                    onUpdate={(v) => updateStepDefaultMessage(step.id, v)}
+                  />
                 </div>
               )}
               {step.action === 'whatsapp_grupo' && (
                 <div className="trail-step-config">
-                  <label className="trail-step-config__section-title">Selecione os contatos do grupo ou nome correspondente</label>
-                  <p className="trail-step-config__hint">Pode ser selecionado mais de um</p>
-                  <div className="trail-step-contacts-table-wrap">
-                    <table className="list-table trail-step-contacts-table">
-                      <thead>
-                        <tr>
-                          <th style={{ width: '2.5rem' }}></th>
-                          <th>Contato</th>
-                          <th>Turnos</th>
-                          <th>Horários</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {contacts.map((c) => (
-                          <tr key={c.id}>
-                            <td>
-                              <input
-                                id={`trail-step-${step.id}-whatsapp-${c.id}`}
-                                type="checkbox"
-                                checked={(step.config?.contactIds ?? []).includes(c.id)}
-                                onChange={() => {
-                                  const current = step.config?.contactIds ?? [];
-                                  const next = current.includes(c.id)
-                                    ? current.filter((id) => id !== c.id)
-                                    : [...current, c.id];
-                                  updateStep(step.id, {
-                                    config: { ...step.config, contactIds: next },
-                                  });
-                                }}
-                              />
-                            </td>
-                            <td>
-                              <label htmlFor={`trail-step-${step.id}-whatsapp-${c.id}`}>
-                                {c.name || c.id}
-                              </label>
-                            </td>
-                            <td>{contactTurnoDisplay(c)}</td>
-                            <td>{contactHorarioDisplay(c)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <label className="trail-step-config__section-title">Selecione os grupos de WhatsApp</label>
+                  <ContactStepTable
+                    step={step}
+                    contacts={whatsAppGroupContacts}
+                    idPrefix={`trail-step-${step.id}-whatsapp`}
+                    onToggleContact={toggleStepContact}
+                    variant="groupOnly"
+                  />
+                  <DefaultMessageField
+                    step={step}
+                    onUpdate={(v) => updateStepDefaultMessage(step.id, v)}
+                  />
                 </div>
               )}
               {step.action === 'mensagem_voz' && (
