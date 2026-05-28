@@ -242,8 +242,8 @@ export const TrailForm: React.FC<TrailFormProps> = ({
   onDirtyChange,
 }) => {
   const currentUser = useCurrentUser();
-  const isClient = currentUser.kind === 'client';
   const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
+  const companyId = initialData?.companyId ?? defaultCompanyId;
 
   const regularContacts = useMemo(
     () => contacts.filter((c) => !c.isWhatsAppGroup),
@@ -262,8 +262,8 @@ export const TrailForm: React.FC<TrailFormProps> = ({
     [contacts],
   );
 
-  const [companyId, setCompanyId] = useState(initialData?.companyId ?? defaultCompanyId);
   const [name, setName] = useState(initialData?.name ?? '');
+  const [description, setDescription] = useState(initialData?.description ?? '');
   const [active, setActive] = useState(initialData?.active ?? true);
   const [steps, setSteps] = useState<TrailStep[]>(() => {
     if (initialData?.steps?.length) {
@@ -279,8 +279,9 @@ export const TrailForm: React.FC<TrailFormProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; steps?: boolean }>({});
 
   const isDirty = useMemo(() => {
-    if (!initialData) return name.trim() !== '' || steps.length > 1 || steps[0]?.action !== 'email_automatico';
+    if (!initialData) return name.trim() !== '' || description.trim() !== '' || steps.length > 1 || steps[0]?.action !== 'email_automatico';
     if (name.trim() !== (initialData.name ?? '').trim()) return true;
+    if (description.trim() !== (initialData.description ?? '').trim()) return true;
     if (active !== (initialData.active ?? true)) return true;
     const initSteps = initialData.steps ?? [];
     if (steps.length !== initSteps.length) return true;
@@ -297,7 +298,7 @@ export const TrailForm: React.FC<TrailFormProps> = ({
       if ((a.config?.defaultMessage ?? '') !== (b.config?.defaultMessage ?? '')) return true;
     }
     return false;
-  }, [initialData, name, active, steps]);
+  }, [initialData, name, description, active, steps]);
 
   useEffect(() => {
     onDirtyChange?.(isDirty);
@@ -386,6 +387,7 @@ export const TrailForm: React.FC<TrailFormProps> = ({
     }
     onSubmit({
       name: nameTrimmed,
+      description: description.trim() || undefined,
       companyId,
       trackingType: initialData?.trackingType ?? 'motorista',
       mode: initialData?.mode ?? 'points',
@@ -407,20 +409,6 @@ export const TrailForm: React.FC<TrailFormProps> = ({
 
   return (
     <form id={id} className="trail-form form-card" onSubmit={handleSubmit}>
-      <div className="form-group">
-        <div className="form-group__label-row">
-          <label htmlFor="trail-company">Empresa</label>
-        </div>
-        <ModalSelect
-          id="trail-company"
-          options={currentUser.availableCompanies}
-          value={companyId}
-          onChange={(v) => setCompanyId(v)}
-          placeholder="Selecione a empresa"
-          disabled={isClient}
-          className="modal-select--no-pill"
-        />
-      </div>
       <div className={`form-group ${fieldErrors.name ? 'has-error' : ''}`}>
         <div className="form-group__label-row">
           <label htmlFor="trail-name">Nome da tratativa</label>
@@ -444,6 +432,18 @@ export const TrailForm: React.FC<TrailFormProps> = ({
             </span>
           )}
         </div>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="trail-desc">Descrição</label>
+        <textarea
+          id="trail-desc"
+          className="policy-form-desc textarea-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Descrição opcional"
+          rows={2}
+        />
       </div>
 
       <div className={`form-group ${fieldErrors.steps ? 'has-error' : ''}`}>

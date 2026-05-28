@@ -2,7 +2,6 @@ import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react
 import type { Trail } from '../../types/risk.types';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
-import { getCompanyName } from '../../constants/companies';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const STATUS_OPTIONS = [
@@ -30,14 +29,13 @@ export const TrailList = forwardRef<TrailListHandle, TrailListProps>(function Tr
   const currentUser = useCurrentUser();
   const isClient = currentUser.kind === 'client';
 
-  const EMPTY_FILTERS = { empresa: '', nome: '', status: '' };
-  const [filters, setFilters] = useState<{ empresa: string; nome: string; status: string }>(
+  const EMPTY_FILTERS = { nome: '', status: '' };
+  const [filters, setFilters] = useState<{ nome: string; status: string }>(
     EMPTY_FILTERS,
   );
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const filterFields: AdvancedFilterField<{ empresa: string; nome: string; status: string }>[] = [
-    { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+  const filterFields: AdvancedFilterField<{ nome: string; status: string }>[] = [
     {
       key: 'nome',
       label: 'Nome',
@@ -72,7 +70,6 @@ export const TrailList = forwardRef<TrailListHandle, TrailListProps>(function Tr
       ? trails.filter((t) => t.companyId === currentUser.companyId)
       : trails;
     return baseList.filter((t) => {
-      if (filters.empresa && t.companyId !== filters.empresa) return false;
       if (filters.nome && t.name !== filters.nome) return false;
       if (filters.status) {
         const want = filters.status === 'ativo';
@@ -97,8 +94,8 @@ export const TrailList = forwardRef<TrailListHandle, TrailListProps>(function Tr
       <table className="list-table list-table--equal">
         <thead>
           <tr>
-            <th>Empresa</th>
             <th>Nome</th>
+            <th>Descrição</th>
             <th>Ações</th>
             <th>Status</th>
             <th></th>
@@ -107,8 +104,8 @@ export const TrailList = forwardRef<TrailListHandle, TrailListProps>(function Tr
         <tbody>
           {filteredTrails.map((t) => (
             <tr key={t.id}>
-              <td>{getCompanyName(t.companyId)}</td>
               <td>{t.name}</td>
+              <td>{t.description?.trim() || '—'}</td>
               <td>
                 {t.steps.length} {t.steps.length === 1 ? 'ação' : 'ações'}
               </td>

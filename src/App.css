@@ -7207,6 +7207,39 @@ body.cr-fullscreen-modal-open .app-content {
   justify-content: center;
 }
 
+.tratativa-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.tratativa-header__timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 156, 44, 0.2);
+  background: rgba(226, 156, 44, 0.1);
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #e29c2c;
+  white-space: nowrap;
+}
+
+.tratativa-header__divider {
+  width: 1px;
+  height: 1.5rem;
+  background: #d0d5dd;
+  flex-shrink: 0;
+}
+
 .central-validacao-tabs {
   display: flex;
   gap: 0;
@@ -8077,7 +8110,7 @@ body.cr-fullscreen-modal-open .app-content {
   flex-shrink: 0;
 }
 
-/* Campos superiores da aba Tratativa (duas linhas independentes). */
+/* Campos superiores da aba Tratativa (uma linha). */
 .tratativa-fields {
   display: flex;
   flex-direction: column;
@@ -8091,13 +8124,8 @@ body.cr-fullscreen-modal-open .app-content {
   align-items: start;
 }
 
-.tratativa-fields-row--policy {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-/* Gravidade | Tratativa | Tempo de tratativa ? mesma linha, espa?amento uniforme. */
-.tratativa-fields-row--meta {
-  grid-template-columns: minmax(6.25rem, 0.9fr) minmax(0, 1.55fr) minmax(6.75rem, 0.75fr);
+.tratativa-fields-row--summary {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 1fr) minmax(6.25rem, 0.75fr);
   gap: 1rem 1.25rem;
 }
 
@@ -8241,8 +8269,18 @@ body.cr-fullscreen-modal-open .app-content {
   border-style: dashed;
 }
 
+.tratativa-action--active {
+  background: rgba(22, 158, 255, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  opacity: 1;
+}
+
 .tratativa-action--done {
   opacity: 0.7;
+}
+
+.tratativa-action--done.tratativa-action--focused {
+  opacity: 1;
 }
 
 .tratativa-action[role="button"] {
@@ -8260,6 +8298,11 @@ body.cr-fullscreen-modal-open .app-content {
   border-color: #169eff;
   box-shadow: 0 0 0 1px #169eff inset;
   opacity: 1;
+}
+
+.tratativa-action--active.tratativa-action--selected {
+  border-color: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 
 .tratativa-action__heading {
@@ -8286,27 +8329,61 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 .tratativa-action__default-message {
-  margin-top: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  background: #f5f6f8;
-  border: 1px solid #e4e7ec;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
 }
 
 .tratativa-action__default-message-label {
   display: block;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 400;
   color: #667085;
-  margin-bottom: 0.25rem;
+}
+
+.tratativa-action__default-message-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
 }
 
 .tratativa-action__default-message-text {
   margin: 0;
-  font-size: 0.875rem;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
   line-height: 1.4;
-  color: #344054;
+  color: #2f2f2f;
   white-space: pre-wrap;
+}
+
+.tratativa-action__copy-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tratativa-action__copy-btn:hover {
+  background: rgba(22, 158, 255, 0.1);
+}
+
+.tratativa-action__copy-btn:focus-visible {
+  outline: 2px solid #169eff;
+  outline-offset: 2px;
 }
 
 .tratativa-action__textarea {
@@ -8372,7 +8449,7 @@ body.cr-fullscreen-modal-open .app-content {
 
 .tratativa-contact {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 0.875rem;
   padding: 0.5rem 0.25rem;
@@ -8397,19 +8474,111 @@ body.cr-fullscreen-modal-open .app-content {
   color: #667085;
 }
 
+.tratativa-contact__channel,
 .tratativa-contact__phone {
   font-size: 0.875rem;
   color: #344054;
+}
+
+.tratativa-contact__menu-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.tratativa-contact__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.tratativa-contact__more svg {
+  display: block;
+}
+
+.tratativa-contact__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 220px;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(16, 24, 40, 0.12);
+  padding: 6px 8px;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.tratativa-contact__menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin: 2px 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 14px;
+  font-family: var(--font-noto-sans);
+  color: #344054;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.tratativa-contact__menu-item:hover {
+  background-color: #169eff;
+  color: #fff;
+}
+
+.tratativa-contact-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.875rem 1rem;
+}
+
+.tratativa-contact-detail .tratativa-field--full {
+  grid-column: 1 / -1;
+}
+
+.cr-modal:has(.tratativa-contact-detail-modal) {
+  width: min(520px, calc(100vw - 48px));
+}
+
+.cr-modal:has(.tratativa-contact-detail-modal) .cr-modal__body {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.cr-modal:has(.tratativa-contact-detail-modal) .tratativa-field__value {
+  min-height: 2.25rem;
+  padding: 0.4375rem 0.625rem;
+  font-size: 0.8125rem;
 }
 
 .tratativa-contact__call {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 26px;
+  height: 26px;
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.tratativa-contact__call svg {
+  display: block;
 }
 
 .tratativa-empty {

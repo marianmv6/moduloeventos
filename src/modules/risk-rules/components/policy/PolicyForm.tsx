@@ -80,10 +80,9 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   onDirtyChange,
 }) => {
   const currentUser = useCurrentUser();
-  const isClient = currentUser.kind === 'client';
   const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
+  const companyId = initialData?.companyId ?? defaultCompanyId;
 
-  const [companyId, setCompanyId] = useState(initialData?.companyId ?? defaultCompanyId);
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [tipoAcompanhamento, setTipoAcompanhamento] = useState<PolicyTrackingType>(
@@ -304,20 +303,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
 
   return (
     <form id={id} className="policy-form form-card" onSubmit={handleSubmit}>
-      <div className="form-group">
-        <div className="form-group__label-row">
-          <label htmlFor="policy-company">Empresa</label>
-        </div>
-        <ModalSelect
-          id="policy-company"
-          options={currentUser.availableCompanies}
-          value={companyId}
-          onChange={(v) => setCompanyId(v)}
-          placeholder="Selecione a empresa"
-          disabled={isClient}
-          className="modal-select--no-pill"
-        />
-      </div>
       <div className="policy-form-row policy-form-row--name-tracking">
         <div className={`form-group ${fieldErrors.name ? 'has-error' : ''}`}>
           <div className="form-group__label-row">

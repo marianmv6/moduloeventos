@@ -1,4 +1,5 @@
 import type { CentralOccurrenceSeverity } from './operacoesCentral.types';
+import type { ContactPreference } from '../../risk-rules/types/risk.types';
 
 /** Tipo da política aplicada (afeta o título do card lateral). */
 export type TratativaPolicyKind = 'veiculo' | 'motorista';
@@ -10,6 +11,14 @@ export interface TratativaContact {
   shiftLabel: string;
   shiftRange: string;
   phone: string;
+  email?: string;
+  description?: string;
+  /** Preferência de contato que define o ícone de ação exibido. */
+  contactPreference?: ContactPreference;
+  /** Preferências completas exibidas na modal "Ver tudo". */
+  contactPreferences?: ContactPreference[];
+  /** Aceita contato fora do horário cadastrado. */
+  acceptContactOutsideHours?: boolean;
 }
 
 /** Resolução registrada em uma ação da trilha. */

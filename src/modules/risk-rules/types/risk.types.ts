@@ -145,6 +145,7 @@ export interface TrailStep {
 export interface Trail {
   id: string;
   name: string;
+  description?: string;
   /** Empresa proprietária da regra de tratativa */
   companyId?: string;
   trackingType: TrailTrackingType;

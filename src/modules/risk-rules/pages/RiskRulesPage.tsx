@@ -496,6 +496,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
         { ...trailEditing, ...data },
         [
           { key: 'name', label: 'Nome' },
+          { key: 'description', label: 'Descrição' },
           { key: 'trackingType', label: 'Tipo de acompanhamento', format: formatTrackingType },
           { key: 'mode', label: 'Modo', format: formatMode },
           { key: 'active', label: 'Status', format: formatActive },

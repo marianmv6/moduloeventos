@@ -3,7 +3,6 @@ import type { Policy, ScoreRule } from '../../types/risk.types';
 import { EVENT_TYPE_LABELS } from '../../constants/eventTypes';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
-import { getCompanyName } from '../../constants/companies';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 function getEventosText(policy: Policy, scores: ScoreRule[]): string {
@@ -43,14 +42,13 @@ export const PolicyList = forwardRef<PolicyListHandle, PolicyListProps>(function
   const currentUser = useCurrentUser();
   const isClient = currentUser.kind === 'client';
 
-  const EMPTY_FILTERS = { empresa: '', nome: '', status: '' };
-  const [filters, setFilters] = useState<{ empresa: string; nome: string; status: string }>(
+  const EMPTY_FILTERS = { nome: '', status: '' };
+  const [filters, setFilters] = useState<{ nome: string; status: string }>(
     EMPTY_FILTERS,
   );
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const filterFields: AdvancedFilterField<{ empresa: string; nome: string; status: string }>[] = [
-    { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+  const filterFields: AdvancedFilterField<{ nome: string; status: string }>[] = [
     {
       key: 'nome',
       label: 'Nome da política',
@@ -85,7 +83,6 @@ export const PolicyList = forwardRef<PolicyListHandle, PolicyListProps>(function
       ? policies.filter((p) => p.companyId === currentUser.companyId)
       : policies;
     return baseList.filter((p) => {
-      if (filters.empresa && p.companyId !== filters.empresa) return false;
       if (filters.nome && p.name !== filters.nome) return false;
       if (filters.status) {
         const want = filters.status === 'ativo';
@@ -110,7 +107,6 @@ export const PolicyList = forwardRef<PolicyListHandle, PolicyListProps>(function
       <table className="list-table list-table--equal">
         <thead>
           <tr>
-            <th>Empresa</th>
             <th>Nome</th>
             <th>Tipo</th>
             <th>Eventos</th>
@@ -121,7 +117,6 @@ export const PolicyList = forwardRef<PolicyListHandle, PolicyListProps>(function
         <tbody>
           {filteredPolicies.map((policy) => (
             <tr key={policy.id}>
-              <td>{getCompanyName(policy.companyId)}</td>
               <td>
                 {policy.name}
                 {policy.description && (

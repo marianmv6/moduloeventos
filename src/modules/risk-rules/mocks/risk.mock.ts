@@ -129,6 +129,7 @@ export const mockTrails: Trail[] = [
   {
     id: 'trail-1',
     name: 'Trilha por pontos',
+    description: 'Sequência padrão para contato com gestor e supervisores',
     companyId: 'creare',
     trackingType: 'motorista',
     mode: 'points',
