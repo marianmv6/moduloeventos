@@ -160,6 +160,18 @@ function contactOutsideHoursLabel(contact: TratativaContact): string {
   return contact.acceptContactOutsideHours ? 'Sim' : 'Não';
 }
 
+function contactTimeStartLabel(contact: TratativaContact): string {
+  if (contact.timeStart) return contact.timeStart;
+  const parts = contact.shiftRange?.split('-').map((part) => part.trim());
+  return parts?.[0] || '—';
+}
+
+function contactTimeEndLabel(contact: TratativaContact): string {
+  if (contact.timeEnd) return contact.timeEnd;
+  const parts = contact.shiftRange?.split('-').map((part) => part.trim());
+  return parts?.[1] || '—';
+}
+
 function ContactPreferenceActionIcon({ preference }: { preference: ContactPreference }) {
   switch (preference) {
     case 'email':
@@ -480,13 +492,18 @@ const ContactDetailModal: React.FC<{
         <ReadOnlyField label="Telefone" value={contact.phone || '—'} />
         <ReadOnlyField label="E-mail" value={contact.email || '—'} />
         <ReadOnlyField label="Turno" value={contact.shiftLabel || '—'} />
-        <ReadOnlyField label="Horário" value={contact.shiftRange || '—'} />
+        <ReadOnlyField label="Horário início" value={contactTimeStartLabel(contact)} />
+        <ReadOnlyField label="Horário fim" value={contactTimeEndLabel(contact)} />
         <ReadOnlyField label="Preferência de contato" value={contactPreferencesLabel(contact)} />
         <ReadOnlyField
           label="Aceita contato fora do horário?"
           value={contactOutsideHoursLabel(contact)}
         />
-        <ReadOnlyField label="Descrição" value={contact.description || '—'} />
+        <ReadOnlyField
+          label="Descrição"
+          value={contact.description || '—'}
+          className="tratativa-field--full"
+        />
       </div>
     </div>
   </CrModal>

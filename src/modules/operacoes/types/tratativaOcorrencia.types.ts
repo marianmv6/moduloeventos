@@ -10,6 +10,10 @@ export interface TratativaContact {
   name: string;
   shiftLabel: string;
   shiftRange: string;
+  /** Horário início (ex.: "08:00") — exibido separadamente na modal de detalhes. */
+  timeStart?: string;
+  /** Horário fim (ex.: "12:00") — exibido separadamente na modal de detalhes. */
+  timeEnd?: string;
   phone: string;
   email?: string;
   description?: string;
