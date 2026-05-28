@@ -182,3 +182,65 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
     },
   ],
 };
+
+/** Cenário occ-3: ocorrência já validada — abre direto na tratativa (Sonolência N2). */
+const mockTratativaOcorrenciaOcc3: TratativaOcorrenciaData = {
+  occurrenceId: 'occ-3',
+  policyKind: 'veiculo',
+  parameterTitle: 'IQP2A01 / SCN118',
+  eventsCount: 1,
+  severity: 'critical',
+
+  policyName: 'Política alta criticidade',
+  policyTypeLabel: 'Por veículo',
+  eventTypeLabel: 'Sonolência N2',
+  gravityLabel: 'Alto',
+
+  trailLabel: 'Trilha por pontos',
+  actions: mockTratativaOcorrencia.actions,
+  contacts: mockTratativaOcorrencia.contacts,
+
+  company: { name: 'Bracell' },
+
+  driverOptions: [
+    {
+      id: 'd-occ3',
+      name: 'Douglas Almeida',
+      organizationGroups: ORG_GROUPS,
+    },
+  ],
+  selectedDriverId: 'd-occ3',
+
+  vehicleOptions: [
+    {
+      id: 'v-occ3',
+      placa: 'IQP2A01',
+      prefixo: 'SCN118',
+      tipo: 'Caminhão madeireiro',
+      marca: 'Volvo',
+      modelo: 'FH 540 6x4',
+      anoModelo: '2022 / 2022',
+      combustivel: 'Diesel',
+      organizationGroups: ORG_GROUPS,
+    },
+  ],
+  selectedVehicleId: 'v-occ3',
+
+  validatedEvents: [
+    {
+      id: 'val-occ3-1',
+      sequence: 1,
+      time: '09:18:00',
+      validatedAs: 'Sonolência N2',
+      vehicleId: 'v-occ3',
+      driverId: 'd-occ3',
+      occurredAt: '23/05/06 09:18:00',
+      location: 'Canoas / RS',
+    },
+  ],
+};
+
+export function getTratativaOcorrenciaForOccurrence(occurrenceId: string): TratativaOcorrenciaData {
+  if (occurrenceId === 'occ-3') return mockTratativaOcorrenciaOcc3;
+  return { ...mockTratativaOcorrencia, occurrenceId };
+}

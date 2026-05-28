@@ -219,6 +219,11 @@ const DEFAULT_EVENT_LOCATION = {
   speedKmh: 0,
 };
 
+/** Mesmo texto exibido em "Localização aproximada" no detalhe do evento. */
+export function getEventApproximateLocation(placa: string): string {
+  return (EVENT_LOCATION_BY_PLACA[placa] ?? DEFAULT_EVENT_LOCATION).location;
+}
+
 export function buildOperacoesEventDetail(event: OperacoesEventRow): OperacoesEventDetailView {
   const vehicleBase = VEHICLE_BY_PLACA[event.placa] ?? DEFAULT_VEHICLE;
   const vehicle: OperacoesEventVehicleDetail = {

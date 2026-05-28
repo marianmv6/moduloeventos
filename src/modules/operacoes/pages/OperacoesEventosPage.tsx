@@ -11,9 +11,10 @@ import {
 } from '../constants/operacoesFilterOptions';
 import { IconView } from '../../risk-rules/components/shared/Icons';
 import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
+import { OperacoesDateTimeCell } from '../components/OperacoesDateTimeCell';
 import { mockOperacoesEvents } from '../mocks/operacoes.mock';
 import type { OperacoesEventRow } from '../types/operacoes.types';
-import { getCompanyName } from '../../risk-rules/constants/companies';
+import { getEventApproximateLocation } from '../utils/operacoesEventDetail';
 
 const EVENT_FILTER_OPTIONS = [
   { value: 'all', label: 'Todos os eventos' },
@@ -60,7 +61,6 @@ function applyAdvancedFilters(
   filters: OperacoesAdvancedFilters,
 ) {
   return rows.filter((row) => {
-    if (filters.empresa && row.companyId !== filters.empresa) return false;
     if (filters.placa && row.placa !== filters.placa) return false;
     if (filters.motorista && row.driverName !== filters.motorista) return false;
     if (filters.tipoEvento && row.eventType !== filters.tipoEvento) return false;
@@ -283,29 +283,27 @@ export const OperacoesEventosPage: React.FC = () => {
             <div className="operacoes-eventos-table-wrap">
               <table className={`list-table operacoes-eventos-table${tableLayoutClass}`}>
                 <colgroup>
-                  <col className="operacoes-col-empresa" />
+                  <col className="operacoes-col-datetime" />
                   <col className="operacoes-col-evento" />
                   <col className="operacoes-col-placa" />
                   <col className="operacoes-col-motorista" />
-                  <col className="operacoes-col-datetime" />
+                  <col className="operacoes-col-localizacao" />
                   <col className="operacoes-col-acoes" />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="operacoes-col-data">Empresa</th>
+                    <th className="operacoes-col-data">Data / hora</th>
                     <th className="operacoes-col-evento-header">Tipo de evento</th>
                     <th className="operacoes-col-data">Placa/ prefixo</th>
                     <th className="operacoes-col-data">Motorista</th>
-                    <th className="operacoes-col-data">Data / hora</th>
+                    <th className="operacoes-col-data">Localização aproximada</th>
                     <th className="list-cell-actions operacoes-col-acoes-header" aria-label="Ações" />
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRows.map((row) => (
                     <tr key={row.id}>
-                      <td className="operacoes-col-data">
-                        <TruncatedTextTooltip text={getCompanyName(row.companyId)} />
-                      </td>
+                      <OperacoesDateTimeCell occurredAtIso={row.occurredAt} seed={row.id} />
                       <td className="operacoes-col-evento-cell">
                         <TruncatedTextTooltip
                           text={row.eventType}
@@ -318,8 +316,8 @@ export const OperacoesEventosPage: React.FC = () => {
                       <td className="operacoes-col-data operacoes-col-motorista-cell">
                         <TruncatedTextTooltip text={row.driverName ?? '—'} />
                       </td>
-                      <td className="operacoes-col-data operacoes-time">
-                        <TruncatedTextTooltip text={row.relativeTime} />
+                      <td className="operacoes-col-data operacoes-col-localizacao-cell">
+                        <TruncatedTextTooltip text={getEventApproximateLocation(row.placa)} />
                       </td>
                       <td className="list-cell-actions">
                         <div className="list-actions">

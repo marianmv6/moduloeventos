@@ -2,7 +2,7 @@ import React from 'react';
 import { ModalSelect } from '../../risk-rules/components/shared/ModalSelect';
 import type { CentralControleFilters } from '../constants/centralControleFilterOptions';
 import {
-  getCentralEmpresaOptions,
+  getCentralEtapaOptions,
   getCentralGravidadeOptions,
   getCentralMotoristaOptions,
   getCentralPlacaPrefixoOptions,
@@ -46,16 +46,6 @@ export const CentralControleFilterPanel: React.FC<CentralControleFilterPanelProp
             placeholder="(Preencha ou selecione)"
           />
           <ModalSelect
-            id="central-filtro-empresa"
-            className="modal-select--no-pill"
-            mutedPlaceholder
-            label="Empresa"
-            value={filters.empresa}
-            onChange={(empresa) => patch({ empresa })}
-            options={getCentralEmpresaOptions()}
-            placeholder="(Preencha ou selecione)"
-          />
-          <ModalSelect
             id="central-filtro-placa"
             className="modal-select--no-pill"
             mutedPlaceholder
@@ -77,6 +67,16 @@ export const CentralControleFilterPanel: React.FC<CentralControleFilterPanelProp
           />
         </div>
         <div className="central-controle-filter-panel__row central-controle-filter-panel__row--secondary">
+          <ModalSelect
+            id="central-filtro-etapa"
+            className="modal-select--no-pill"
+            mutedPlaceholder
+            label="Etapa"
+            value={filters.etapa}
+            onChange={(etapa) => patch({ etapa })}
+            options={getCentralEtapaOptions()}
+            placeholder="(Preencha ou selecione)"
+          />
           <ModalSelect
             id="central-filtro-gravidade"
             className="modal-select--no-pill"

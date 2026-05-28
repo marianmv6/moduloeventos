@@ -1,8 +1,6 @@
 import type { OperacoesAdvancedFilters } from '../constants/operacoesFilterOptions';
-import { getCompanyName } from '../../risk-rules/constants/companies';
 
 const FILTER_PARAM_LABELS: Partial<Record<keyof OperacoesAdvancedFilters, string>> = {
-  empresa: 'empresa',
   placa: 'placa ou prefixo',
   motorista: 'motorista',
   tipoEvento: 'tipo de evento',
@@ -38,7 +36,7 @@ export function getAppliedFilterEntries(
     entries.push({
       key,
       paramLabel: FILTER_PARAM_LABELS[key]!,
-      value: key === 'empresa' ? getCompanyName(value) : value,
+      value,
     });
   });
 

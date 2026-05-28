@@ -1,0 +1,30 @@
+import type { CentralOccurrenceListEntry } from '../mocks/operacoesCentral.mock';
+import type { CentralOccurrence, CentralOccurrenceSummaryRow } from '../types/operacoesCentral.types';
+
+/** Próximo passo ao clicar no botão play na Central de tratativas. */
+export type CentralPlayMode = 'validation' | 'treatment';
+
+export const CENTRAL_ETAPA_VALIDACAO = 'Pendentes de validação';
+export const CENTRAL_ETAPA_TRATATIVA = 'Pendentes de tratativa';
+export function getPlayActionTooltip(mode: CentralPlayMode): string {
+  return mode === 'treatment' ? 'Iniciar tratativa' : 'Iniciar validação';
+}
+
+/** Ocorrência expandida: validação enquanto houver evento aguardando (inclui o atual). */
+export function getGroupOccurrencePlayMode(occurrence: CentralOccurrence): CentralPlayMode {
+  const hasPendingValidation = occurrence.events.some((event) => {
+    if (event.isCurrent) return true;
+    const status = event.validationStatus ?? 'aguardando';
+    return status !== 'validado';
+  });
+  return hasPendingValidation ? 'validation' : 'treatment';
+}
+
+export function getSummaryRowPlayMode(row: CentralOccurrenceSummaryRow): CentralPlayMode {
+  return row.playMode ?? 'validation';
+}
+
+export function getEntryPlayMode(entry: CentralOccurrenceListEntry): CentralPlayMode {
+  if (entry.kind === 'group') return getGroupOccurrencePlayMode(entry.occurrence);
+  return getSummaryRowPlayMode(entry.row);
+}

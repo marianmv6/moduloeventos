@@ -85,17 +85,21 @@ export const mockCentralOccurrenceGroups: CentralOccurrence[] = [
 
 /** Ocorrências sem expansão (linha única) */
 export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
+  /** Ocorrência 3: Sonolência N2 — eventos já validados; só falta tratativa. */
   {
     id: 'occ-3',
     totalPoints: 40,
     severity: 'critical',
     datetime: '23/05, 09:18',
-    eventType: 'Sem cinto de segurança',
-    eventPoints: 15,
+    eventType: 'Sonolência N2',
+    eventPoints: 40,
     placa: 'IQP2A01',
     prefixo: 'SCN118',
     driverName: 'Douglas Almeida',
-    actions: { kind: 'with-monitor', monitorType: 'ai' },
+    actions: { kind: 'none' },
+    validationStatus: 'validado',
+    validatedBy: 'Júlia',
+    playMode: 'treatment',
   },
   {
     id: 'occ-4',
@@ -186,11 +190,11 @@ export function computeCentralStatusSummary(
  *   um evento por item, classificando como "tratado" os de
  *   `validationStatus === 'validado'` e como "pendente" os demais
  *   (`aguardando`, `isCurrent` ou sem status).
- * - Ocorrências do tipo "summary" (linha única) contribuem com um
- *   evento pendente — ainda estão na fila da Central de Tratativas.
+ * - Ocorrências do tipo "summary" (linha única) contam como um evento:
+ *   validado se `validationStatus === 'validado'`, senão pendente.
  *
  * Exemplo: filtrando as 3 ocorrências críticas (occ-1, occ-2, occ-3)
- * o total é 6 eventos, sendo 1 tratado.
+ * o total é 6 eventos, sendo 2 tratados (1 em occ-1 + occ-3 validada).
  */
 export function computeCentralTreatedSummary(
   entries: CentralOccurrenceListEntry[],
@@ -203,6 +207,8 @@ export function computeCentralTreatedSummary(
         if (event.validationStatus === 'validado') treated += 1;
         else pending += 1;
       });
+    } else if (entry.row.validationStatus === 'validado') {
+      treated += 1;
     } else {
       pending += 1;
     }
@@ -272,10 +278,15 @@ export function getCentralValidationEventsForOccurrence(
   }
 }
 
-/** Nome do condutor no cabeçalho do modal de validação. */
+function findSummaryRow(occurrenceId: string): CentralOccurrenceSummaryRow | undefined {
+  return mockCentralOccurrenceSummaries.find((row) => row.id === occurrenceId);
+}
+
+/** Nome do condutor no cabeçalho do modal de validação ou tratativa. */
 export function getValidationDriverNameForOccurrence(occurrenceId: string): string {
   const occurrence = mockCentralOccurrenceGroups.find((o) => o.id === occurrenceId);
-  return occurrence?.driverName ?? 'Condutor não identificado';
+  if (occurrence) return occurrence.driverName;
+  return findSummaryRow(occurrenceId)?.driverName ?? 'Condutor não identificado';
 }
 
 /** @deprecated Use getValidationDriverNameForOccurrence */

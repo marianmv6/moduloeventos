@@ -28,6 +28,12 @@ const TRACKING_OPTIONS: ModalSelectOption[] = [
   { value: 'veiculo', label: 'Por veículo' },
 ];
 
+const POLICY_EVENTOS_CONFIG_INFO =
+  'Selecione os eventos desta política e defina pontuação e duração ativa para cada um. Cada evento só pode ser associado a uma única política de tratativa, não sendo permitido duplicá-lo em outras políticas.';
+
+const POLICY_USUARIOS_INFO =
+  'Escolha se a política será acessível a todos os usuários ou somente a usuários específicos. Garanta que os usuários tenham permissão para acessar a central de tratativas. Administradores sempre terão acesso.';
+
 const DURACAO_ATIVA_OPTIONS: ModalSelectOption[] = [
   { value: '15min', label: '15 min' },
   { value: '30min', label: '30 min' },
@@ -368,7 +374,10 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       <div className={`form-group ${fieldErrors.configEventos ? 'has-error' : ''}`}>
         <div className="policy-form-eventos-section">
           <div className="trail-form-etapas-header policy-form-gatilhos-header policy-form-eventos-header">
-            <label className="policy-form-gatilhos-title">Configuração por evento</label>
+            <span className="policy-form-gatilhos-title-with-info">
+              <span className="policy-form-gatilhos-title">Configuração por evento</span>
+              <InfoTooltip text={POLICY_EVENTOS_CONFIG_INFO} />
+            </span>
             <div
               className={`policy-form-eventos-search-expand ${eventSearchExpanded ? 'is-expanded' : ''}`}
               onMouseLeave={() => setEventSearchExpanded(false)}
@@ -403,9 +412,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
                 <FieldErrorIcon />
               </span>
             )}
-            <p className="form-hint policy-form-eventos-section-hint">
-              Selecione os eventos desta política e defina pontuação e duração ativa para cada um
-            </p>
             <div className="policy-form-eventos-config-table-wrap">
               <table className="list-table policy-form-eventos-config">
                 <thead>
@@ -495,7 +501,10 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       <div className={`form-group ${fieldErrors.gatilhos ? 'has-error' : ''}`}>
         <div className="policy-form-gatilhos-section">
           <div className="trail-form-etapas-header policy-form-gatilhos-header">
-            <label className="policy-form-gatilhos-title">Ocorrências (1 a {MAX_GATILHOS})</label>
+            <span className="policy-form-gatilhos-title-with-info">
+              <span className="policy-form-gatilhos-title">Ocorrências (1 a {MAX_GATILHOS})</span>
+              <InfoTooltip text="Determine quantos pontos são necessários para que uma tratativa seja aplicada e classifique sua gravidade de acordo com o nível de risco." />
+            </span>
             {gatilhos.length < MAX_GATILHOS && (
               <button type="button" className="btn btn-sm btn-primary" onClick={addGatilho}>
                 + Adicionar ocorrência
@@ -584,16 +593,16 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
               </div>
             </div>
           </div>
-          <p className="form-hint policy-form-gatilhos-hint">
-            A partir de X pontos (soma dos eventos ativos), solicitar a tratativa selecionada. Ordem crescente.
-          </p>
         </div>
       </div>
 
       <div className={`form-group ${fieldErrors.usuarios ? 'has-error' : ''}`}>
         <div className="policy-form-usuarios-section">
           <div className="trail-form-etapas-header policy-form-gatilhos-header">
-            <label className="policy-form-gatilhos-title">Usuários atribuídos</label>
+            <span className="policy-form-gatilhos-title-with-info">
+              <span className="policy-form-gatilhos-title">Usuários atribuídos</span>
+              <InfoTooltip text={POLICY_USUARIOS_INFO} />
+            </span>
           </div>
           <div className="policy-form-usuarios-section__content">
             {fieldErrors.usuarios && (

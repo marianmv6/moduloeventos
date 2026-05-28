@@ -27,9 +27,16 @@ import {
   getCentralValidationEventsForOccurrence,
   getValidationDriverNameForOccurrence,
 } from '../mocks/operacoesCentral.mock';
-import { mockTratativaOcorrencia } from '../mocks/tratativaOcorrencia.mock';
+import { getTratativaOcorrenciaForOccurrence } from '../mocks/tratativaOcorrencia.mock';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
 import { countCentralAppliedFilters } from '../utils/centralControleFilterSummary';
+import {
+  getGroupOccurrencePlayMode,
+  getPlayActionTooltip,
+  getSummaryRowPlayMode,
+  type CentralPlayMode,
+} from '../utils/centralOccurrenceWorkflow';
+import { formatLocalTimeTooltip } from '../utils/operacoesDateTimeDisplay';
 import type {
   CentralEventValidationStatus,
   CentralOccurrence,
@@ -54,68 +61,6 @@ const GRAVITY_SEGMENTS: {
   { key: 'medium', label: 'Médio', modifier: 'medium' },
   { key: 'low', label: 'Baixo', modifier: 'low' },
 ];
-
-/**
- * Conjunto de offsets UTC plausíveis para os horários exibidos. Usamos uma
- * seleção pseudo-aleatória estável (baseada em hash do id do evento) para
- * que cada linha mantenha o mesmo fuso entre renderizações, mas a lista
- * pareça heterogênea para o analista.
- */
-const UTC_OFFSETS_HOURS = [-5, -4, -3, -2, 0, 1, 2, 3] as const;
-
-/** Fuso da matriz (Creare/BR) — referência usada nas colunas da listagem. */
-const MATRIX_UTC_OFFSET_HOURS = -3;
-
-function pickUtcOffsetHours(seed: string): number {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i += 1) {
-    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  }
-  return UTC_OFFSETS_HOURS[hash % UTC_OFFSETS_HOURS.length];
-}
-
-function formatOffsetLabel(hours: number): string {
-  const sign = hours >= 0 ? '+' : '-';
-  return `${sign}${String(Math.abs(hours)).padStart(2, '0')}`;
-}
-
-/**
- * Converte um datetime no formato "DD/MM, HH:MM" (referencial da matriz,
- * UTC-3) para o fuso local indicado por `offsetHours`, gerando uma string
- * no padrão "DD/MM HH:MM (±OO)".
- *
- * A diferença em horas aplicada é `offsetHours - MATRIX_UTC_OFFSET_HOURS`,
- * ou seja, um veículo em UTC+0 (3 h à frente da matriz) que apareça como
- * "23/05 10:05" na coluna é convertido para "23/05 13:05 (+00)" na tooltip.
- */
-function formatLocalTimeTooltip(datetime: string, seed: string): string {
-  const offsetHours = pickUtcOffsetHours(seed);
-  const diffMinutes = (offsetHours - MATRIX_UTC_OFFSET_HOURS) * 60;
-  const offsetLabel = formatOffsetLabel(offsetHours);
-
-  const match = datetime.match(/^(\d{1,2})\/(\d{1,2})[,\s]+(\d{1,2}):(\d{2})/);
-  if (!match) {
-    const cleaned = datetime.replace(',', '').replace(/\s+/g, ' ').trim();
-    return `${cleaned} (${offsetLabel})`;
-  }
-
-  const day = Number(match[1]);
-  const month = Number(match[2]);
-  const hour = Number(match[3]);
-  const minute = Number(match[4]);
-
-  // Usamos um ano arbitrário (2025) só para tirar proveito do `Date` na
-  // hora de propagar overflow/underflow de dia/mês de forma robusta.
-  const base = new Date(Date.UTC(2025, month - 1, day, hour, minute));
-  base.setUTCMinutes(base.getUTCMinutes() + diffMinutes);
-
-  const dd = String(base.getUTCDate()).padStart(2, '0');
-  const mm = String(base.getUTCMonth() + 1).padStart(2, '0');
-  const hh = String(base.getUTCHours()).padStart(2, '0');
-  const mi = String(base.getUTCMinutes()).padStart(2, '0');
-
-  return `${dd}/${mm} ${hh}:${mi} (${offsetLabel})`;
-}
 
 function DateTimeCell({ value, seed }: { value: string; seed: string }) {
   return (
@@ -316,6 +261,7 @@ function EventRowActions({
   showAnalyst,
   showMonitorAi,
   severity,
+  playMode,
   onPlay,
 }: {
   expanded: boolean;
@@ -324,8 +270,10 @@ function EventRowActions({
   showAnalyst: boolean;
   showMonitorAi?: boolean;
   severity: CentralOccurrenceSeverity;
+  playMode: CentralPlayMode;
   onPlay?: () => void;
 }) {
+  const playTooltip = getPlayActionTooltip(playMode);
   return (
     <div className="central-controle-row__actions-inner">
       {showAnalyst && analystName ? (
@@ -344,11 +292,11 @@ function EventRowActions({
           </span>
         </LevelTooltip>
       ) : null}
-      <LevelTooltip text="Iniciar tratativa" topLayer nowrap>
+      <LevelTooltip text={playTooltip} topLayer nowrap>
         <button
           type="button"
           className="central-controle-open-btn"
-          aria-label="Iniciar tratativa"
+          aria-label={playTooltip}
           onClick={onPlay}
         >
           <IconOpenOccurrence severity={severity} />
@@ -367,7 +315,16 @@ function EventRowActions({
   );
 }
 
-function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
+function SummaryRowActions({
+  row,
+  playMode,
+  onPlay,
+}: {
+  row: CentralOccurrenceSummaryRow;
+  playMode: CentralPlayMode;
+  onPlay: () => void;
+}) {
+  const playTooltip = getPlayActionTooltip(playMode);
   return (
     <div className="central-controle-row__actions-inner">
       {row.actions.kind === 'opened-by-analyst' ? (
@@ -395,8 +352,13 @@ function SummaryRowActions({ row }: { row: CentralOccurrenceSummaryRow }) {
           </span>
         </LevelTooltip>
       ) : null}
-      <LevelTooltip text="Iniciar tratativa" topLayer nowrap>
-        <button type="button" className="central-controle-open-btn" aria-label="Iniciar tratativa">
+      <LevelTooltip text={playTooltip} topLayer nowrap>
+        <button
+          type="button"
+          className="central-controle-open-btn"
+          aria-label={playTooltip}
+          onClick={onPlay}
+        >
           <IconOpenOccurrence severity={row.severity} />
         </button>
       </LevelTooltip>
@@ -409,11 +371,13 @@ function ExpandedOccurrenceGroup({
   occurrence,
   expanded,
   onToggle,
+  playMode,
   onPlay,
 }: {
   occurrence: CentralOccurrence;
   expanded: boolean;
   onToggle: () => void;
+  playMode: CentralPlayMode;
   onPlay: () => void;
 }) {
   if (!expanded) {
@@ -441,6 +405,7 @@ function ExpandedOccurrenceGroup({
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
             showMonitorAi={occurrence.validatedByAi}
             severity={occurrence.severity}
+            playMode={playMode}
             onPlay={onPlay}
           />
         </td>
@@ -458,6 +423,7 @@ function ExpandedOccurrenceGroup({
           index={index}
           totalEvents={occurrence.events.length}
           onToggle={onToggle}
+          playMode={playMode}
           onPlay={onPlay}
         />
       ))}
@@ -471,6 +437,7 @@ function EventOccurrenceRow({
   index,
   totalEvents,
   onToggle,
+  playMode,
   onPlay,
 }: {
   event: CentralOccurrenceEvent;
@@ -478,6 +445,7 @@ function EventOccurrenceRow({
   index: number;
   totalEvents: number;
   onToggle: () => void;
+  playMode: CentralPlayMode;
   onPlay: () => void;
 }) {
   const isCurrent = Boolean(event.isCurrent);
@@ -517,6 +485,7 @@ function EventOccurrenceRow({
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
             showMonitorAi={occurrence.validatedByAi}
             severity={occurrence.severity}
+            playMode={playMode}
             onPlay={onPlay}
           />
         )}
@@ -525,25 +494,33 @@ function EventOccurrenceRow({
   );
 }
 
-function CollapsedSummaryRow({ row }: { row: CentralOccurrenceSummaryRow }) {
-  /** Linhas-resumo representam ocorrencias PENDENTES na Central de
-   *  Tratativas — o "evento" exibido aqui e o ultimo/mais recente da
-   *  ocorrencia, que por definicao ainda esta aguardando validacao. */
+function CollapsedSummaryRow({
+  row,
+  playMode,
+  onPlay,
+}: {
+  row: CentralOccurrenceSummaryRow;
+  playMode: CentralPlayMode;
+  onPlay: () => void;
+}) {
+  const status: CentralEventValidationStatus = row.validationStatus ?? 'aguardando';
   return (
     <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${row.severity}`}>
       <PointsCell points={row.totalPoints} severity={row.severity} />
       <DateTimeCell value={row.datetime} seed={row.id} />
       <EventTypeCell
-        status="aguardando"
+        status={status}
         eventType={row.eventType}
         eventPoints={row.eventPoints}
+        validatedBy={row.validatedBy}
+        validatedByAi={row.validatedByAi}
       />
       <td className="central-controle-row__vehicle">
         {row.placa} / {row.prefixo}
       </td>
       <td className="central-controle-row__driver">{row.driverName}</td>
       <td className="central-controle-row__actions">
-        <SummaryRowActions row={row} />
+        <SummaryRowActions row={row} playMode={playMode} onPlay={onPlay} />
       </td>
     </tr>
   );
@@ -562,6 +539,9 @@ export const OperacoesCentralPage: React.FC = () => {
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [validationOccurrenceId, setValidationOccurrenceId] = useState<string | null>(null);
   const [tratativaModalOpen, setTratativaModalOpen] = useState(false);
+  const [tratativaOccurrenceId, setTratativaOccurrenceId] = useState<string>(
+    mockCentralOccurrenceExpanded.id,
+  );
   const [treatmentDurationByOccurrence, setTreatmentDurationByOccurrence] = useState<
     Record<string, string>
   >({});
@@ -588,13 +568,34 @@ export const OperacoesCentralPage: React.FC = () => {
   };
   const closeValidationModal = () => setValidationModalOpen(false);
 
-  /** Substitui o modal de validação pelo modal de tratativa quando o
-   *  analista finaliza a validação clicando em "Enviar e tratar". */
-  const handleStartTratativa = () => {
-    setValidationModalOpen(false);
+  const openTratativaModal = (occurrenceId: string) => {
+    setTratativaOccurrenceId(occurrenceId);
     setTratativaModalOpen(true);
   };
   const closeTratativaModal = () => setTratativaModalOpen(false);
+
+  const handleOccurrencePlay = (
+    occurrenceId: string,
+    playMode: CentralPlayMode,
+  ) => {
+    if (playMode === 'treatment') {
+      openTratativaModal(occurrenceId);
+      return;
+    }
+    openValidationModal(occurrenceId);
+  };
+
+  /** Substitui o modal de validação pelo modal de tratativa ao concluir validação. */
+  const handleStartTratativaFromValidation = () => {
+    const id = validationOccurrenceId ?? mockCentralOccurrenceExpanded.id;
+    setValidationModalOpen(false);
+    openTratativaModal(id);
+  };
+
+  const tratativaData = useMemo(
+    () => getTratativaOcorrenciaForOccurrence(tratativaOccurrenceId),
+    [tratativaOccurrenceId],
+  );
 
   const allOccurrences = useMemo(() => buildCentralOccurrenceList(), []);
   const appliedFilterCount = useMemo(
@@ -766,10 +767,23 @@ export const OperacoesCentralPage: React.FC = () => {
                       occurrence={entry.occurrence}
                       expanded={expandedId === entry.occurrence.id}
                       onToggle={() => toggleExpanded(entry.occurrence.id)}
-                      onPlay={() => openValidationModal(entry.occurrence.id)}
+                      playMode={getGroupOccurrencePlayMode(entry.occurrence)}
+                      onPlay={() =>
+                        handleOccurrencePlay(
+                          entry.occurrence.id,
+                          getGroupOccurrencePlayMode(entry.occurrence),
+                        )
+                      }
                     />
                   ) : (
-                    <CollapsedSummaryRow key={entry.row.id} row={entry.row} />
+                    <CollapsedSummaryRow
+                      key={entry.row.id}
+                      row={entry.row}
+                      playMode={getSummaryRowPlayMode(entry.row)}
+                      onPlay={() =>
+                        handleOccurrencePlay(entry.row.id, getSummaryRowPlayMode(entry.row))
+                      }
+                    />
                   ),
                 )}
               </tbody>
@@ -786,15 +800,15 @@ export const OperacoesCentralPage: React.FC = () => {
         onReturn={closeValidationModal}
         onConfirmClose={closeValidationModal}
         onConfirmNext={() => undefined}
-        onConfirmTreat={handleStartTratativa}
+        onConfirmTreat={handleStartTratativaFromValidation}
       />
 
       <TratativaOcorrenciaModal
         open={tratativaModalOpen}
         data={{
-          ...mockTratativaOcorrencia,
+          ...tratativaData,
           treatmentDurationLabel:
-            treatmentDurationByOccurrence[mockTratativaOcorrencia.occurrenceId] ?? '0:00',
+            treatmentDurationByOccurrence[tratativaData.occurrenceId] ?? '0:00',
         }}
         onClose={closeTratativaModal}
         onReturn={closeTratativaModal}
@@ -804,7 +818,7 @@ export const OperacoesCentralPage: React.FC = () => {
           const label = `${minutes}:${String(seconds).padStart(2, '0')}`;
           setTreatmentDurationByOccurrence((prev) => ({
             ...prev,
-            [mockTratativaOcorrencia.occurrenceId]: label,
+            [tratativaData.occurrenceId]: label,
           }));
           closeTratativaModal();
         }}

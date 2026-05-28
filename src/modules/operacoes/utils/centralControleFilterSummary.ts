@@ -4,8 +4,8 @@ const FILTER_PARAM_LABELS: Record<
   Exclude<keyof CentralControleFilters, 'periodoHoraInicio' | 'periodoHoraFim'>,
   string
 > = {
+  etapa: 'etapa',
   tipoEvento: 'tipo de evento',
-  empresa: 'empresa',
   placaPrefixo: 'placa ou prefixo',
   motorista: 'motorista',
   gravidade: 'nível de gravidade',
@@ -41,7 +41,7 @@ export function getCentralAppliedFilterEntries(
 ): CentralAppliedFilterEntry[] {
   const entries: CentralAppliedFilterEntry[] = [];
 
-  (['tipoEvento', 'empresa', 'placaPrefixo', 'motorista', 'gravidade', 'politicaTratativa'] as const).forEach(
+  (['etapa', 'tipoEvento', 'placaPrefixo', 'motorista', 'gravidade', 'politicaTratativa'] as const).forEach(
     (key) => {
       if (filters[key].trim()) {
         entries.push({
@@ -70,8 +70,8 @@ export function countCentralAppliedFilters(filters: CentralControleFilters): num
 
 export function hasCentralDraftFilters(filters: CentralControleFilters): boolean {
   return (
+    filters.etapa.trim() !== '' ||
     filters.tipoEvento.trim() !== '' ||
-    filters.empresa.trim() !== '' ||
     filters.placaPrefixo.trim() !== '' ||
     filters.motorista.trim() !== '' ||
     filters.gravidade.trim() !== '' ||

@@ -83,4 +83,10 @@ export interface CentralOccurrenceSummaryRow {
   prefixo: string;
   driverName: string;
   actions: CentralOccurrenceActions;
+  /** Status do evento exibido na linha-resumo (padrão: aguardando validação). */
+  validationStatus?: CentralEventValidationStatus;
+  validatedBy?: string;
+  validatedByAi?: boolean;
+  /** Próximo passo ao clicar em play; padrão: validação. */
+  playMode?: 'validation' | 'treatment';
 }

@@ -1,11 +1,8 @@
 import type { ModalSelectOption } from '../../risk-rules/components/shared/ModalSelect';
-import { COMPANY_OPTIONS } from '../../risk-rules/constants/companies';
 import { mockAuditoriaRows } from '../mocks/operacoesAuditoria.mock';
 
 const toOptions = (values: string[]): ModalSelectOption[] =>
   values.map((v) => ({ value: v, label: v }));
-
-export const getAuditoriaEmpresaOptions = (): ModalSelectOption[] => COMPANY_OPTIONS;
 
 export const getAuditoriaTratadoPorOptions = (): ModalSelectOption[] =>
   toOptions([...new Set(mockAuditoriaRows.map((r) => r.treatedBy))].sort());
@@ -20,7 +17,6 @@ export const getAuditoriaMotoristaOptions = (): ModalSelectOption[] =>
  *  utilizado no filtro de Eventos para reaproveitar o
  *  CentralControlePeriodPicker (com hora de início e fim). */
 export interface AuditoriaAdvancedFilters {
-  empresa: string;
   tratadoPor: string;
   placa: string;
   motorista: string;
@@ -31,7 +27,6 @@ export interface AuditoriaAdvancedFilters {
 }
 
 export const EMPTY_AUDITORIA_FILTERS: AuditoriaAdvancedFilters = {
-  empresa: '',
   tratadoPor: '',
   placa: '',
   motorista: '',

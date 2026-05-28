@@ -1,8 +1,6 @@
 import type { AuditoriaAdvancedFilters } from '../constants/operacoesAuditoriaFilterOptions';
-import { getCompanyName } from '../../risk-rules/constants/companies';
 
 const FILTER_PARAM_LABELS: Partial<Record<keyof AuditoriaAdvancedFilters, string>> = {
-  empresa: 'empresa',
   tratadoPor: 'tratado por',
   placa: 'placa ou prefixo',
   motorista: 'motorista',
@@ -40,7 +38,7 @@ export function getAppliedAuditoriaFilterEntries(
     entries.push({
       key,
       paramLabel: FILTER_PARAM_LABELS[key]!,
-      value: key === 'empresa' ? getCompanyName(value) : value,
+      value,
     });
   });
 

@@ -12,8 +12,6 @@ import {
   type AuditoriaAdvancedFilters,
 } from '../constants/operacoesAuditoriaFilterOptions';
 import { countAppliedAuditoriaFilters } from '../utils/operacoesAuditoriaFilterSummary';
-import { getCompanyName } from '../../risk-rules/constants/companies';
-
 /** Filtra uma linha de auditoria pelos campos do filtro avançado.
  *  O período compara apenas a parte da data (YYYY-MM-DD) extraída de
  *  `treatedAtIso` contra os valores do picker. */
@@ -22,7 +20,6 @@ function applyAuditoriaFilters(
   filters: AuditoriaAdvancedFilters,
 ): AuditoriaRow[] {
   return rows.filter((row) => {
-    if (filters.empresa && row.companyId !== filters.empresa) return false;
     if (filters.tratadoPor && row.treatedBy !== filters.tratadoPor) return false;
     if (filters.placa && row.vehicleId !== filters.placa) return false;
     if (filters.motorista && row.driverName !== filters.motorista) return false;
@@ -119,7 +116,6 @@ export const OperacoesAuditoriaPage: React.FC = () => {
           <table className="list-table operacoes-eventos-table">
             <thead>
               <tr>
-                <th className="operacoes-col-data">Empresa</th>
                 <th className="operacoes-col-data">Data / hora da tratativa</th>
                 <th className="operacoes-col-data">Tratado por</th>
                 <th className="operacoes-col-data">Placa / prefixo</th>
@@ -130,9 +126,6 @@ export const OperacoesAuditoriaPage: React.FC = () => {
             <tbody>
               {filteredRows.map((row) => (
                 <tr key={row.id}>
-                  <td className="operacoes-col-data">
-                    <TruncatedTextTooltip text={getCompanyName(row.companyId)} />
-                  </td>
                   <td className="operacoes-col-data">
                     <TruncatedTextTooltip text={row.treatedAt} />
                   </td>

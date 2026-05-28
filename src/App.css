@@ -1180,15 +1180,14 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Larguras em % para 7 colunas: Empresa, Nome, Tipo, Eventos, N?vel de gravidade, Status, A??es.
-   Distribui??o mais equilibrada para evitar texto cortado mantendo A??es fixa e estreita. */
+/* Larguras em % para 6 colunas: Empresa, Nome, Tipo, Eventos, Status, A??es. */
 .policy-list .list-table th:first-child,
 .policy-list .list-table td:first-child {
   width: 14%;
 }
 .policy-list .list-table th:nth-child(2),
 .policy-list .list-table td:nth-child(2) {
-  width: 22%;
+  width: 26%;
 }
 .policy-list .list-table th:nth-child(3),
 .policy-list .list-table td:nth-child(3) {
@@ -1196,15 +1195,11 @@ html, body {
 }
 .policy-list .list-table th:nth-child(4),
 .policy-list .list-table td:nth-child(4) {
-  width: 22%;
+  width: 28%;
 }
 .policy-list .list-table th:nth-child(5),
 .policy-list .list-table td:nth-child(5) {
-  width: 14%;
-}
-.policy-list .list-table th:nth-child(6),
-.policy-list .list-table td:nth-child(6) {
-  width: 10%;
+  width: 12%;
 }
 .policy-list .list-table th:last-child,
 .policy-list .list-table td:last-child {
@@ -1277,9 +1272,7 @@ html, body {
 .policy-list .list-table th:nth-child(4),
 .policy-list .list-table td:nth-child(4),
 .policy-list .list-table th:nth-child(5),
-.policy-list .list-table td:nth-child(5),
-.policy-list .list-table th:nth-child(6),
-.policy-list .list-table td:nth-child(6) {
+.policy-list .list-table td:nth-child(5) {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
@@ -4000,8 +3993,8 @@ body.cr-fullscreen-modal-open .app-content {
   gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
-.policy-form-eventos-header .policy-form-gatilhos-title {
-  margin: 0;
+.policy-form-eventos-header .policy-form-gatilhos-title-with-info {
+  flex-shrink: 0;
 }
 .policy-form-eventos-search-expand {
   display: inline-flex;
@@ -4118,19 +4111,6 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: 600;
   color: #344054;
   margin: 0;
-}
-.policy-form-eventos-section-hint {
-  font-size: 0.6875rem;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  margin: 0 0 0.5rem 0;
-}
-/* Reduzir dist?ncia entre t?tulo "Configura??o por evento" e "Selecione os eventos..." em 1rem */
-.policy-form-eventos-section .policy-form-eventos-header {
-  margin-bottom: -0.25rem;
-}
-.cr-modal__body .policy-form .policy-form-eventos-section-hint {
-  font-size: 0.6875rem;
 }
 .policy-form-eventos-section__content {
   position: relative;
@@ -4421,6 +4401,22 @@ body.cr-fullscreen-modal-open .app-content {
 }
 .policy-form-gatilhos-header {
   margin-bottom: 0.75rem;
+}
+/* T?tulo "Ocorr?ncias" + ?cone: mesmo alinhamento inline que Pontos / Dura??o ativa */
+.policy-form-gatilhos-header .policy-form-gatilhos-title-with-info {
+  display: inline;
+  line-height: 1.25;
+}
+.policy-form-gatilhos-header .policy-form-gatilhos-title-with-info .policy-form-gatilhos-title {
+  display: inline;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #344054;
+}
+.policy-form-gatilhos-header .policy-form-gatilhos-title-with-info .policy-form-header-info-wrap {
+  margin-left: 0.35rem;
+  vertical-align: middle;
 }
 .policy-form-gatilhos-title {
   font-size: 0.875rem;
@@ -5109,46 +5105,47 @@ body.cr-fullscreen-modal-open .app-content {
   table-layout: fixed;
 }
 
-.operacoes-eventos-table .operacoes-col-empresa {
-  width: 16%;
-  min-width: 8rem;
+.operacoes-eventos-table .operacoes-col-datetime {
+  width: 14%;
+  min-width: 7.5rem;
 }
 
 .operacoes-eventos-table .operacoes-col-evento {
+  width: 20%;
+  min-width: 9rem;
+}
+
+.operacoes-eventos-table .operacoes-col-placa {
+  width: 11%;
+}
+
+.operacoes-eventos-table .operacoes-col-motorista {
+  width: 18%;
+}
+
+.operacoes-eventos-table .operacoes-col-localizacao {
   width: 28%;
   min-width: 11rem;
 }
 
-.operacoes-eventos-table .operacoes-col-placa {
-  width: 12%;
-}
-
-.operacoes-eventos-table .operacoes-col-motorista {
-  width: 22%;
-}
-
-.operacoes-eventos-table .operacoes-col-datetime {
-  width: 16%;
-}
-
-.operacoes-eventos-table--map-visible .operacoes-col-empresa {
-  width: 18%;
+.operacoes-eventos-table--map-visible .operacoes-col-datetime {
+  width: 15%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-evento {
-  width: 32%;
+  width: 22%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-placa {
-  width: 13%;
+  width: 12%;
 }
 
 .operacoes-eventos-table--map-visible .operacoes-col-motorista {
-  width: 23%;
+  width: 18%;
 }
 
-.operacoes-eventos-table--map-visible .operacoes-col-datetime {
-  width: 18%;
+.operacoes-eventos-table--map-visible .operacoes-col-localizacao {
+  width: 28%;
 }
 
 .operacoes-eventos-table .operacoes-col-acoes {
@@ -5365,8 +5362,8 @@ body.cr-fullscreen-modal-open .app-content {
 
 .operacoes-eventos-filter-panel__fields {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
   margin-bottom: 1.25rem;
 }
 
@@ -5437,12 +5434,18 @@ body.cr-fullscreen-modal-open .app-content {
   margin-bottom: 1.25rem;
 }
 
-/* Linhas em grid de 4 colunas iguais (Figma): primary preenche 4, secondary 3 + 1 vazia. */
 .central-controle-filter-panel__row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1rem 1.25rem;
   width: 100%;
+}
+
+.central-controle-filter-panel__row--primary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.central-controle-filter-panel__row--secondary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .central-controle-filter-panel__row > .modal-select,

@@ -1,7 +1,6 @@
 import React from 'react';
 import { ModalSelect } from '../../risk-rules/components/shared/ModalSelect';
 import {
-  getAuditoriaEmpresaOptions,
   getAuditoriaMotoristaOptions,
   getAuditoriaPlacaOptions,
   getAuditoriaTratadoPorOptions,
@@ -19,7 +18,6 @@ interface OperacoesAuditoriaFilterPanelProps {
 export const OperacoesAuditoriaFilterPanel: React.FC<
   OperacoesAuditoriaFilterPanelProps
 > = ({ filters, onChange, onClose, onSearch }) => {
-  const empresaOptions = getAuditoriaEmpresaOptions();
   const tratadoPorOptions = getAuditoriaTratadoPorOptions();
   const placaOptions = getAuditoriaPlacaOptions();
   const motoristaOptions = getAuditoriaMotoristaOptions();
@@ -34,16 +32,6 @@ export const OperacoesAuditoriaFilterPanel: React.FC<
       aria-label="Filtros de auditoria"
     >
       <div className="operacoes-eventos-filter-panel__fields">
-        <ModalSelect
-          id="filtro-aud-empresa"
-          className="modal-select--no-pill"
-          mutedPlaceholder
-          label="Empresa"
-          value={filters.empresa}
-          onChange={(empresa) => patch({ empresa })}
-          options={empresaOptions}
-          placeholder="(Preencha ou selecione)"
-        />
         <CentralControlePeriodPicker
           id="filtro-aud-periodo"
           label="Período"

@@ -1,6 +1,11 @@
 import type { CentralOccurrenceListEntry } from '../mocks/operacoesCentral.mock';
 import type { CentralControleFilters } from '../constants/centralControleFilterOptions';
 import { severityFromGravidadeLabel } from '../constants/centralControleFilterOptions';
+import {
+  CENTRAL_ETAPA_TRATATIVA,
+  CENTRAL_ETAPA_VALIDACAO,
+  getEntryPlayMode,
+} from './centralOccurrenceWorkflow';
 
 function parseCentralDatetime(str: string): Date | null {
   const match = str.match(/(\d{2})\/(\d{2}),\s*(\d{2}):(\d{2})/);
@@ -64,12 +69,15 @@ export function matchesCentralControleFilters(
   entry: CentralOccurrenceListEntry,
   filters: CentralControleFilters,
 ): boolean {
+  if (filters.etapa) {
+    const playMode = getEntryPlayMode(entry);
+    if (filters.etapa === CENTRAL_ETAPA_VALIDACAO && playMode !== 'validation') return false;
+    if (filters.etapa === CENTRAL_ETAPA_TRATATIVA && playMode !== 'treatment') return false;
+  }
+
   if (filters.tipoEvento && getEntryEventType(entry) !== filters.tipoEvento) return false;
   if (filters.placaPrefixo && getEntryPlacaPrefixo(entry) !== filters.placaPrefixo) return false;
   if (filters.motorista && getEntryMotorista(entry) !== filters.motorista) return false;
-  // O mock atual da Central não possui empresa por linha; o filtro existe na UI
-  // mas não restringe linhas até que o backend exponha esse vínculo.
-  void filters.empresa;
 
   if (filters.gravidade) {
     const severity = severityFromGravidadeLabel(filters.gravidade);

@@ -1,7 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
-import type { Policy, PolicyTriggerNivelRisco, ScoreRule } from '../../types/risk.types';
+import type { Policy, ScoreRule } from '../../types/risk.types';
 import { EVENT_TYPE_LABELS } from '../../constants/eventTypes';
-import { GRAVITY_FIELD_LABEL, GRAVITY_LABELS } from '../../constants/gravityConstants';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
 import { getCompanyName } from '../../constants/companies';
@@ -15,15 +14,6 @@ function getEventosText(policy: Policy, scores: ScoreRule[]): string {
     if (score) types.add(EVENT_TYPE_LABELS[score.eventType]);
   });
   return [...types].sort().join(', ') || '—';
-}
-
-function getNivelRiscoText(policy: Policy): string {
-  const levels = (policy.gatilhos ?? [])
-    .map((g) => g.nivelRisco)
-    .filter((v): v is PolicyTriggerNivelRisco => !!v)
-    .map((v) => GRAVITY_LABELS[v]);
-  const unique = [...new Set(levels)];
-  return unique.join(', ') || '—';
 }
 
 const STATUS_OPTIONS = [
@@ -124,7 +114,6 @@ export const PolicyList = forwardRef<PolicyListHandle, PolicyListProps>(function
             <th>Nome</th>
             <th>Tipo</th>
             <th>Eventos</th>
-            <th>{GRAVITY_FIELD_LABEL}</th>
             <th>Status</th>
             <th></th>
           </tr>
@@ -141,7 +130,6 @@ export const PolicyList = forwardRef<PolicyListHandle, PolicyListProps>(function
               </td>
               <td>{policy.tipoAcompanhamento === 'motorista' ? 'Por motorista' : 'Por veículo'}</td>
               <td>{getEventosText(policy, scores)}</td>
-              <td>{getNivelRiscoText(policy)}</td>
               <td>
                 <span className={`badge badge-rounded ${policy.active ? 'badge-active' : 'badge-inactive'}`}>
                   {policy.active ? 'Ativo' : 'Inativo'}
