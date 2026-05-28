@@ -13,7 +13,7 @@ const actionLabels: Record<HistoryEntry['action'], string> = {
 
 /** Tipo do que foi modificado para exibição na coluna Tipo */
 const entityLabels: Record<HistoryEntry['entityType'], string> = {
-  policy: 'Políticas de tratativas',
+  policy: 'Políticas de tratativa',
   score: 'Pontuação',
   treatment: 'Tratativa',
   contact: 'Contato',

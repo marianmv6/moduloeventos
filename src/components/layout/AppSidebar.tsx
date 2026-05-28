@@ -30,8 +30,8 @@ interface FlyoutItem {
 }
 
 const CONFIG_FLYOUT_ITEMS: FlyoutItem[] = [
-  { route: 'tratativas', label: 'Regras de tratativas' },
-  { route: 'regras-tratativa', label: 'Políticas de tratativas' },
+  { route: 'tratativas', label: 'Regras de tratativa' },
+  { route: 'regras-tratativa', label: 'Políticas de tratativa' },
 ];
 
 const CADASTROS_FLYOUT_ITEMS: FlyoutItem[] = [

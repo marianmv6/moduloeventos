@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AppTooltipBubble } from '../../risk-rules/components/shared/AppTooltipBubble';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
@@ -22,6 +24,54 @@ const ALERT_TYPE_OPTIONS: { value: CentralAlertType; label: string }[] = [
 ];
 
 const ALERT_SECTION_BREAKS: number[] = [4, 8];
+
+const TIMELINE_MARKER_TOOLTIP_OFFSET_Y = -8;
+
+/** Bolinha vermelha da timeline com área de hover ampla e tooltip em portal. */
+const TimelineEventMarker: React.FC<{ leftPercent: number }> = ({ leftPercent }) => {
+  const [visible, setVisible] = useState(false);
+  const hitRef = useRef<HTMLSpanElement>(null);
+  const tooltipRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    if (!visible || !tooltipRef.current || !hitRef.current) return;
+    const rect = hitRef.current.getBoundingClientRect();
+    const tip = tooltipRef.current;
+    tip.style.left = `${rect.left + rect.width / 2}px`;
+    tip.style.top = `${rect.top}px`;
+    tip.style.transform = `translate(-50%, -100%) translateY(${TIMELINE_MARKER_TOOLTIP_OFFSET_Y}px)`;
+  }, [visible]);
+
+  return (
+    <>
+      <span
+        ref={hitRef}
+        className="central-validacao-timeline__event-marker-hit"
+        style={{ left: `${leftPercent}%` }}
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onFocus={() => setVisible(true)}
+        onBlur={() => setVisible(false)}
+        role="img"
+        aria-label="Evento gerado"
+        tabIndex={0}
+      >
+        <span className="central-validacao-timeline__event-marker" aria-hidden />
+      </span>
+      {visible &&
+        createPortal(
+          <span ref={tooltipRef} style={{ position: 'fixed', left: 0, top: 0, zIndex: 99999 }}>
+            <AppTooltipBubble
+              text="Evento gerado"
+              className="policy-form-header-info-tooltip"
+              nowrap
+            />
+          </span>,
+          document.body,
+        )}
+    </>
+  );
+};
 
 const ALERT_LABELS: Record<CentralAlertType, string> = ALERT_TYPE_OPTIONS.reduce(
   (acc, opt) => {
@@ -1007,28 +1057,12 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               // instante exato do alerta — sempre no centro da janela.
               const { labels, markerPercent } = buildEventTimelineLabels(activeEvent.time);
               return (
-                <div className="central-validacao-timeline" aria-hidden>
+                <div className="central-validacao-timeline">
                   <div className="central-validacao-timeline__bar">
-                    <div className="central-validacao-timeline__marker" />
-                    <LevelTooltip
-                      text="Evento gerado"
-                      topLayer
-                      nowrap
-                      style={{
-                        position: 'absolute',
-                        left: `${markerPercent}%`,
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        lineHeight: 0,
-                      }}
-                    >
-                      <span
-                        className="central-validacao-timeline__event-marker"
-                        aria-label="Evento gerado"
-                      />
-                    </LevelTooltip>
+                    <div className="central-validacao-timeline__marker" aria-hidden />
+                    <TimelineEventMarker leftPercent={markerPercent} />
                   </div>
-                  <div className="central-validacao-timeline__labels">
+                  <div className="central-validacao-timeline__labels" aria-hidden>
                     {labels.map((label, index) => (
                       <span key={index}>{label}</span>
                     ))}

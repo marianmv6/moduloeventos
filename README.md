@@ -13,13 +13,15 @@ Você pode usar este projeto em:
 
 ## Como rodar
 
-```bash
-cd "Modulo de eventos"
+```powershell
+cd "modulo-eventos-novo"
 npm install
 npm run dev
 ```
 
-Acesse: **http://localhost:4001**
+Acesse: **http://localhost:4001** (a porta padrão deste projeto é **4001**, não 5173).
+
+Se a página não abrir: confirme que o terminal está na pasta `modulo-eventos-novo` (não na pasta `DHC` pai) e que `npm install` terminou sem erros.
 
 ## Estrutura
 
