@@ -56,7 +56,6 @@ export const mockCentralOccurrenceSonolenciaN1: CentralOccurrence = {
   placa: 'FAL0M70',
   prefixo: 'VOL204',
   driverName: 'José Raimundo de Oliveira',
-  validatedByAi: true,
   events: [
     {
       id: 'ev-2a',
@@ -106,11 +105,12 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     totalPoints: 35,
     severity: 'high',
     datetime: '23/05, 08:55',
-    eventType: 'Excesso de velocidade por cerca remota',
+    eventType: 'Sonolência N2',
     eventPoints: 10,
     placa: 'HQH5986',
     prefixo: 'MBR205',
     driverName: 'Juan Valencia',
+    validatedByAi: true,
     actions: { kind: 'with-monitor', monitorType: 'ai' },
   },
   {
@@ -147,6 +147,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'TYU8H21',
     prefixo: 'SCN412',
     driverName: 'Marcos Antônio Pereira',
+    validationStatus: 'aguardando',
     actions: { kind: 'with-monitor', monitorType: 'ai' },
   },
 ];

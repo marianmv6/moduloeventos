@@ -261,7 +261,6 @@ function EventRowActions({
   onToggle,
   analystName,
   showAnalyst,
-  showMonitorAi,
   severity,
   playMode,
   onPlay,
@@ -270,7 +269,6 @@ function EventRowActions({
   onToggle: () => void;
   analystName?: string;
   showAnalyst: boolean;
-  showMonitorAi?: boolean;
   severity: CentralOccurrenceSeverity;
   playMode: CentralPlayMode;
   onPlay?: () => void;
@@ -285,12 +283,6 @@ function EventRowActions({
             aria-label={`Aberto por ${analystName}`}
           >
             <IconAnalystHeadset />
-          </span>
-        </LevelTooltip>
-      ) : showMonitorAi ? (
-        <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
-            IA
           </span>
         </LevelTooltip>
       ) : null}
@@ -347,12 +339,6 @@ function SummaryRowActions({
             <IconAnalystHeadset />
           </span>
         </LevelTooltip>
-      ) : row.actions.kind === 'with-monitor' && row.actions.monitorType === 'ai' ? (
-        <LevelTooltip text="Validado pela IA" topLayer nowrap>
-          <span className="central-validacao-ia-badge" aria-label="Validado pela IA">
-            IA
-          </span>
-        </LevelTooltip>
       ) : null}
       <LevelTooltip text={playTooltip} topLayer nowrap>
         <button
@@ -394,6 +380,7 @@ function ExpandedOccurrenceGroup({
           status="aguardando"
           eventType={current.eventType}
           eventPoints={current.eventPoints}
+          validatedByAi={current.validatedByAi}
         />
         <td className="central-controle-row__vehicle">
           {occurrence.placa} / {occurrence.prefixo}
@@ -405,7 +392,6 @@ function ExpandedOccurrenceGroup({
             onToggle={onToggle}
             analystName={occurrence.openedByAnalyst}
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
-            showMonitorAi={occurrence.validatedByAi}
             severity={occurrence.severity}
             playMode={playMode}
             onPlay={onPlay}
@@ -485,7 +471,6 @@ function EventOccurrenceRow({
             onToggle={onToggle}
             analystName={occurrence.openedByAnalyst}
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
-            showMonitorAi={occurrence.validatedByAi}
             severity={occurrence.severity}
             playMode={playMode}
             onPlay={onPlay}
