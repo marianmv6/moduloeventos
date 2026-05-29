@@ -24,10 +24,12 @@ import {
   computeCentralStatusSummary,
   computeCentralTreatedSummary,
   mockCentralOccurrenceExpanded,
-  getCentralValidationEventsForOccurrence,
-  getValidationDriverNameForOccurrence,
 } from '../mocks/operacoesCentral.mock';
 import { getTratativaOcorrenciaForOccurrence } from '../mocks/tratativaOcorrencia.mock';
+import {
+  buildCentralValidationEventsForOccurrence,
+  getCentralDriverNameForOccurrence,
+} from '../utils/centralOccurrenceBridge';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
 import { countCentralAppliedFilters } from '../utils/centralControleFilterSummary';
 import {
@@ -549,7 +551,7 @@ export const OperacoesCentralPage: React.FC = () => {
   const validationEvents = useMemo(
     () =>
       validationOccurrenceId
-        ? getCentralValidationEventsForOccurrence(validationOccurrenceId)
+        ? buildCentralValidationEventsForOccurrence(validationOccurrenceId)
         : [],
     [validationOccurrenceId],
   );
@@ -557,7 +559,7 @@ export const OperacoesCentralPage: React.FC = () => {
   const validationDriverName = useMemo(
     () =>
       validationOccurrenceId
-        ? getValidationDriverNameForOccurrence(validationOccurrenceId)
+        ? getCentralDriverNameForOccurrence(validationOccurrenceId)
         : '',
     [validationOccurrenceId],
   );

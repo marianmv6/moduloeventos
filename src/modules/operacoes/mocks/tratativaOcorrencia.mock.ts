@@ -1,4 +1,5 @@
 import type { TratativaOcorrenciaData } from '../types/tratativaOcorrencia.types';
+import { buildTratativaOcorrenciaFromCentral } from '../utils/centralOccurrenceBridge';
 
 const ORG_GROUPS = [
   { id: 'g1', label: 'Branco' },
@@ -15,14 +16,14 @@ const ORG_GROUPS = [
 export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
   occurrenceId: 'occ-1',
   policyKind: 'veiculo',
-  parameterTitle: 'ABW5F22 / MBB122',
+  parameterTitle: 'ABC1D23 / MBB102',
   eventsCount: 3,
   severity: 'critical',
 
   policyName: 'Política alta criticidade',
   policyTypeLabel: 'Por veículo',
-  eventTypeLabel: 'Sonolência N1',
-  gravityLabel: 'Alto',
+  eventTypeLabel: 'Sonolência N2',
+  gravityLabel: 'Crítico',
 
   trailLabel: 'Trilha por pontos',
   actions: [
@@ -126,44 +127,18 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
 
   driverOptions: [
     {
-      id: 'd1',
-      name: 'João das Dores',
-      organizationGroups: ORG_GROUPS,
-    },
-    {
-      id: 'd2',
-      name: 'Carlos Fujimoto do Prado',
-      organizationGroups: ORG_GROUPS,
-    },
-    {
-      id: 'd3',
-      name: 'Pedro Ramos de Paula',
-      organizationGroups: ORG_GROUPS,
-    },
-    {
-      id: 'd4',
-      name: 'Ana Cristina dos Santos',
+      id: 'd-occ-1',
+      name: 'Paulo Roberto Moreira Pestana',
       organizationGroups: ORG_GROUPS,
     },
   ],
-  selectedDriverId: 'd1',
+  selectedDriverId: 'd-occ-1',
 
   vehicleOptions: [
     {
-      id: 'v1',
-      placa: 'SLE3P56',
-      prefixo: 'MBB121',
-      tipo: 'Caminhão madeireiro',
-      marca: 'Mercedes-Benz',
-      modelo: 'AXOR 3344 S 6x4 2P',
-      anoModelo: '2023 / 2023',
-      combustivel: 'Diesel',
-      organizationGroups: ORG_GROUPS,
-    },
-    {
-      id: 'v2',
-      placa: 'ABW5F22',
-      prefixo: 'MBB122',
+      id: 'v-occ-1',
+      placa: 'ABC1D23',
+      prefixo: 'MBB102',
       tipo: 'Caminhão madeireiro',
       marca: 'Volvo',
       modelo: 'FH 540 6x4',
@@ -171,112 +146,52 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       combustivel: 'Diesel',
       organizationGroups: ORG_GROUPS,
     },
-    {
-      id: 'v3',
-      placa: 'ANB1K52',
-      prefixo: 'VOL204',
-      tipo: 'Caminhão tanque',
-      marca: 'Scania',
-      modelo: 'R 450 6x4',
-      anoModelo: '2024 / 2024',
-      combustivel: 'Diesel',
-      organizationGroups: ORG_GROUPS,
-    },
   ],
-  selectedVehicleId: 'v1',
+  selectedVehicleId: 'v-occ-1',
 
   validatedEvents: [
     {
-      id: 'val-1',
+      id: 'val-occ-1-ev-1c',
       sequence: 1,
       time: '08:30:00',
       validatedAs: 'Sonolência N1',
-      vehicleId: 'v1',
-      driverId: 'd1',
+      vehicleId: 'v-occ-1',
+      driverId: 'd-occ-1',
       occurredAt: '23/05/06 08:30:00',
       location: 'Canoas / RS',
     },
     {
-      id: 'val-2',
+      id: 'val-occ-1-ev-1a',
       sequence: 2,
       time: '10:05:00',
       validatedAs: 'Sonolência N2',
-      vehicleId: 'v1',
-      driverId: 'd1',
+      vehicleId: 'v-occ-1',
+      driverId: 'd-occ-1',
       occurredAt: '23/05/06 10:05:00',
       location: 'Canoas / RS',
     },
     {
-      id: 'val-3',
+      id: 'val-occ-1-ev-1b',
       sequence: 3,
       time: '10:05:00',
       validatedAs: 'Sonolência N2',
-      vehicleId: 'v1',
-      driverId: 'd1',
+      vehicleId: 'v-occ-1',
+      driverId: 'd-occ-1',
       occurredAt: '23/05/06 10:05:00',
       location: 'Canoas / RS',
     },
   ],
 };
 
-/** Cenário occ-3: ocorrência já validada — abre direto na tratativa (Sonolência N2). */
-const mockTratativaOcorrenciaOcc3: TratativaOcorrenciaData = {
-  occurrenceId: 'occ-3',
-  policyKind: 'veiculo',
-  parameterTitle: 'IQP2A01 / SCN118',
-  eventsCount: 1,
-  severity: 'critical',
-
-  policyName: 'Política alta criticidade',
-  policyTypeLabel: 'Por veículo',
-  eventTypeLabel: 'Sonolência N2',
-  gravityLabel: 'Alto',
-
-  trailLabel: 'Trilha por pontos',
+const TRATATIVA_SHARED_TEMPLATE = {
+  policyName: mockTratativaOcorrencia.policyName,
+  policyTypeLabel: mockTratativaOcorrencia.policyTypeLabel,
+  trailLabel: mockTratativaOcorrencia.trailLabel,
   actions: mockTratativaOcorrencia.actions,
   contacts: mockTratativaOcorrencia.contacts,
-
-  company: { name: 'Bracell' },
-
-  driverOptions: [
-    {
-      id: 'd-occ3',
-      name: 'Douglas Almeida',
-      organizationGroups: ORG_GROUPS,
-    },
-  ],
-  selectedDriverId: 'd-occ3',
-
-  vehicleOptions: [
-    {
-      id: 'v-occ3',
-      placa: 'IQP2A01',
-      prefixo: 'SCN118',
-      tipo: 'Caminhão madeireiro',
-      marca: 'Volvo',
-      modelo: 'FH 540 6x4',
-      anoModelo: '2022 / 2022',
-      combustivel: 'Diesel',
-      organizationGroups: ORG_GROUPS,
-    },
-  ],
-  selectedVehicleId: 'v-occ3',
-
-  validatedEvents: [
-    {
-      id: 'val-occ3-1',
-      sequence: 1,
-      time: '09:18:00',
-      validatedAs: 'Sonolência N2',
-      vehicleId: 'v-occ3',
-      driverId: 'd-occ3',
-      occurredAt: '23/05/06 09:18:00',
-      location: 'Canoas / RS',
-    },
-  ],
+  company: mockTratativaOcorrencia.company,
 };
 
 export function getTratativaOcorrenciaForOccurrence(occurrenceId: string): TratativaOcorrenciaData {
-  if (occurrenceId === 'occ-3') return mockTratativaOcorrenciaOcc3;
-  return { ...mockTratativaOcorrencia, occurrenceId };
+  return buildTratativaOcorrenciaFromCentral(occurrenceId, TRATATIVA_SHARED_TEMPLATE);
 }

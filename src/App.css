@@ -7272,6 +7272,14 @@ body.cr-fullscreen-modal-open .app-content {
   min-height: 0;
 }
 
+.central-validacao-body--map-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.central-validacao-body--map-only .central-validacao-map {
+  min-height: 320px;
+}
+
 .central-validacao-videos {
   display: grid;
   grid-template-columns: 1fr 1fr;

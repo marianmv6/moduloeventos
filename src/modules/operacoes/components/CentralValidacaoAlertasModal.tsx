@@ -5,6 +5,9 @@ import { AppTooltipBubble } from '../../risk-rules/components/shared/AppTooltipB
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
+import {
+  EVENTOS_EFICIENCIA,
+} from '../../risk-rules/constants/eventTypes';
 import type {
   CentralAlertType,
   CentralValidationEvent,
@@ -25,6 +28,23 @@ const ALERT_TYPE_OPTIONS: { value: CentralAlertType; label: string }[] = [
 ];
 
 const ALERT_SECTION_BREAKS: number[] = [4, 8];
+
+/** Valor exibido quando telemetria/eficiência não configura alerta na validação. */
+const POLICY_EVENT_NAO_E_ALERTA = 'Não é um alerta';
+
+function getValidationEventLabel(
+  event: CentralValidationEvent,
+  alertTypes: Record<string, CentralAlertType>,
+  policyEventTypes: Record<string, string>,
+): string {
+  if (event.eventCategory === 'video') {
+    const alert = alertTypes[event.id] ?? event.suggestedAlert;
+    return alert ? ALERT_LABELS[alert] : '—';
+  }
+  const policyType = policyEventTypes[event.id] ?? event.suggestedEventType;
+  if (policyType === POLICY_EVENT_NAO_E_ALERTA) return POLICY_EVENT_NAO_E_ALERTA;
+  return policyType ?? '—';
+}
 
 const TIMELINE_MARKER_TOOLTIP_OFFSET_Y = -8;
 
@@ -361,6 +381,87 @@ const AlertTypeSelect: React.FC<AlertTypeSelectProps> = ({
                   <div className="central-validacao-select__divider" aria-hidden />
                 )}
               </React.Fragment>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface PolicyEventTypeSelectProps {
+  id: string;
+  value: string;
+  options: readonly string[];
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+const PolicyEventTypeSelect: React.FC<PolicyEventTypeSelectProps> = ({
+  id,
+  value,
+  options,
+  onChange,
+  placeholder,
+  disabled,
+}) => {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [open]);
+
+  const display = value || (placeholder ?? 'Selecionar');
+
+  return (
+    <div
+      ref={containerRef}
+      className={`central-validacao-select central-validacao-select--dropup${open ? ' central-validacao-select--open' : ''}`}
+      id={id}
+    >
+      <button
+        type="button"
+        className="central-validacao-select__trigger"
+        onClick={() => !disabled && setOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={disabled}
+      >
+        <span
+          className={`central-validacao-select__value${value ? '' : ' central-validacao-select__value--placeholder'}`}
+        >
+          {display}
+        </span>
+        <span className="central-validacao-select__chevron" aria-hidden>
+          <IconCaretDown />
+        </span>
+      </button>
+      {open && (
+        <div className="central-validacao-select__dropdown" role="listbox">
+          {options.map((option) => {
+            const selected = option === value;
+            return (
+              <button
+                key={option}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`central-validacao-select__option${selected ? ' central-validacao-select__option--selected' : ''}`}
+                onClick={() => {
+                  onChange(option);
+                  setOpen(false);
+                }}
+              >
+                <span>{option}</span>
+              </button>
             );
           })}
         </div>
@@ -743,7 +844,18 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   const [alertTypes, setAlertTypes] = useState<Record<string, CentralAlertType>>(() => {
     const map: Record<string, CentralAlertType> = {};
     events.forEach((event) => {
-      map[event.id] = event.suggestedAlert;
+      if (event.eventCategory === 'video' && event.suggestedAlert) {
+        map[event.id] = event.suggestedAlert;
+      }
+    });
+    return map;
+  });
+  const [policyEventTypes, setPolicyEventTypes] = useState<Record<string, string>>(() => {
+    const map: Record<string, string> = {};
+    events.forEach((event) => {
+      if (event.eventCategory !== 'video' && event.suggestedEventType) {
+        map[event.id] = event.suggestedEventType;
+      }
     });
     return map;
   });
@@ -761,11 +873,17 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   const initialSnapshot = useMemo(() => {
     const validatedIds = new Set<string>();
     const initialAlertTypes: Record<string, CentralAlertType> = {};
+    const initialPolicyEventTypes: Record<string, string> = {};
     events.forEach((event) => {
       if (event.validated) validatedIds.add(event.id);
-      initialAlertTypes[event.id] = event.suggestedAlert;
+      if (event.eventCategory === 'video' && event.suggestedAlert) {
+        initialAlertTypes[event.id] = event.suggestedAlert;
+      }
+      if (event.eventCategory !== 'video' && event.suggestedEventType) {
+        initialPolicyEventTypes[event.id] = event.suggestedEventType;
+      }
     });
-    return { validatedIds, initialAlertTypes };
+    return { validatedIds, initialAlertTypes, initialPolicyEventTypes };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -795,12 +913,19 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
     setFrontierIndex(startIdx);
     const ids = new Set<string>();
     const initialAlerts: Record<string, CentralAlertType> = {};
+    const initialPolicyTypes: Record<string, string> = {};
     events.forEach((event) => {
       if (event.validated) ids.add(event.id);
-      initialAlerts[event.id] = event.suggestedAlert;
+      if (event.eventCategory === 'video' && event.suggestedAlert) {
+        initialAlerts[event.id] = event.suggestedAlert;
+      }
+      if (event.eventCategory !== 'video' && event.suggestedEventType) {
+        initialPolicyTypes[event.id] = event.suggestedEventType;
+      }
     });
     setConfirmedIds(ids);
     setAlertTypes(initialAlerts);
+    setPolicyEventTypes(initialPolicyTypes);
     setOtherAnnotations({});
     setSelectedDriver('');
     setExpandedVideo(null);
@@ -813,10 +938,28 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
 
   const isLastEvent = activeIndex === totalEvents - 1;
   const isCurrentConfirmed = activeEvent ? confirmedIds.has(activeEvent.id) : false;
+  const isVideoEvent = activeEvent?.eventCategory === 'video';
+  const isTelemetriaEvent = activeEvent?.eventCategory === 'telemetria';
+  const telemetriaValidationOptions = useMemo(() => {
+    if (!activeEvent || activeEvent.eventCategory !== 'telemetria') return [];
+    const options: string[] = [];
+    if (activeEvent.suggestedEventType) options.push(activeEvent.suggestedEventType);
+    options.push(POLICY_EVENT_NAO_E_ALERTA);
+    return options;
+  }, [activeEvent]);
+  const policyEventOptions =
+    activeEvent?.eventCategory === 'eficiencia'
+      ? EVENTOS_EFICIENCIA
+      : [];
 
   const setActiveAlertType = (value: CentralAlertType) => {
     if (!activeEvent) return;
     setAlertTypes((prev) => ({ ...prev, [activeEvent.id]: value }));
+  };
+
+  const setActivePolicyEventType = (value: string) => {
+    if (!activeEvent) return;
+    setPolicyEventTypes((prev) => ({ ...prev, [activeEvent.id]: value }));
   };
 
   const setActiveOtherAnnotations = (values: string[]) => {
@@ -874,12 +1017,15 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
       const initialType = initialSnapshot.initialAlertTypes[event.id];
       const currentType = alertTypes[event.id];
       if (initialType !== currentType) return true;
+      const initialPolicyType = initialSnapshot.initialPolicyEventTypes[event.id];
+      const currentPolicyType = policyEventTypes[event.id];
+      if (initialPolicyType !== currentPolicyType) return true;
       const annotations = otherAnnotations[event.id];
       if (annotations && annotations.length > 0) return true;
     }
     if (selectedDriver) return true;
     return false;
-  }, [events, confirmedIds, alertTypes, otherAnnotations, selectedDriver, initialSnapshot]);
+  }, [events, confirmedIds, alertTypes, policyEventTypes, otherAnnotations, selectedDriver, initialSnapshot]);
 
   /** Fecha o modal pedindo confirmação caso haja alterações não salvas. */
   const requestClose = () => {
@@ -938,7 +1084,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                       <span
                         className={`central-validacao-event__alert${!isActive && isConfirmed ? ' central-validacao-event__alert--muted' : ''}`}
                       >
-                        {ALERT_LABELS[alertTypes[event.id] ?? event.suggestedAlert]}
+                        {getValidationEventLabel(event, alertTypes, policyEventTypes)}
                       </span>
                     )}
                   </div>
@@ -989,60 +1135,96 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
 
         {activeTab === 'detalhes' ? (
           <>
-            <div className="central-validacao-body">
-              <div
-                className={`central-validacao-videos${expandedVideo ? ' has-expanded' : ''}`}
-                role="group"
-                aria-label="Câmeras"
-              >
-                {(
-                  [
-                    { id: 'canal-1', label: 'Canal 1', placeholder: 'Canal 1' },
-                    { id: 'canal-2', label: 'Canal 2', placeholder: 'Canal 2' },
-                    { id: 'canal-3', label: 'Canal 3', placeholder: 'Canal 3' },
-                    { id: 'canal-4', label: 'Canal 4', placeholder: 'Canal 4' },
-                  ] as const
-                ).map((cam) => (
-                  <VideoTile
-                    key={cam.id}
-                    label={cam.label}
-                    placeholder={cam.placeholder}
-                    expanded={expandedVideo === cam.id}
-                    onToggleExpand={() =>
-                      setExpandedVideo((prev) => (prev === cam.id ? null : cam.id))
-                    }
-                  />
-                ))}
-              </div>
+            <div
+              className={`central-validacao-body${isVideoEvent ? '' : ' central-validacao-body--map-only'}`}
+            >
+              {isVideoEvent && (
+                <div
+                  className={`central-validacao-videos${expandedVideo ? ' has-expanded' : ''}`}
+                  role="group"
+                  aria-label="Câmeras"
+                >
+                  {(
+                    [
+                      { id: 'canal-1', label: 'Canal 1', placeholder: 'Canal 1' },
+                      { id: 'canal-2', label: 'Canal 2', placeholder: 'Canal 2' },
+                      { id: 'canal-3', label: 'Canal 3', placeholder: 'Canal 3' },
+                      { id: 'canal-4', label: 'Canal 4', placeholder: 'Canal 4' },
+                    ] as const
+                  ).map((cam) => (
+                    <VideoTile
+                      key={cam.id}
+                      label={cam.label}
+                      placeholder={cam.placeholder}
+                      expanded={expandedVideo === cam.id}
+                      onToggleExpand={() =>
+                        setExpandedVideo((prev) => (prev === cam.id ? null : cam.id))
+                      }
+                    />
+                  ))}
+                </div>
+              )}
 
               <MapPanel />
             </div>
 
             <div className="central-validacao-controls">
-              <button type="button" className="central-validacao-play" aria-label="Reproduzir">
-                <IconPlay />
-              </button>
+              {isVideoEvent && (
+                <button type="button" className="central-validacao-play" aria-label="Reproduzir">
+                  <IconPlay />
+                </button>
+              )}
 
-              <AlertTypeSelect
-                id={`alert-type-${activeEvent.id}`}
-                value={alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert}
-                onChange={(value) => {
-                  setActiveAlertType(value);
-                  resetActiveConfirmed();
-                }}
-                fromAi={activeEvent.fromAi}
-                aiSuggestedAlert={activeEvent.suggestedAlert}
-              />
+              {isVideoEvent ? (
+                <AlertTypeSelect
+                  id={`alert-type-${activeEvent.id}`}
+                  value={alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert ?? 'desatencao'}
+                  onChange={(value) => {
+                    setActiveAlertType(value);
+                    resetActiveConfirmed();
+                  }}
+                  fromAi={activeEvent.fromAi}
+                  aiSuggestedAlert={activeEvent.suggestedAlert}
+                />
+              ) : isTelemetriaEvent ? (
+                <PolicyEventTypeSelect
+                  id={`policy-event-type-${activeEvent.id}`}
+                  value={
+                    policyEventTypes[activeEvent.id] ?? activeEvent.suggestedEventType ?? ''
+                  }
+                  options={telemetriaValidationOptions}
+                  onChange={(value) => {
+                    setActivePolicyEventType(value);
+                    resetActiveConfirmed();
+                  }}
+                  placeholder="Tipo de evento"
+                />
+              ) : (
+                <PolicyEventTypeSelect
+                  id={`policy-event-type-${activeEvent.id}`}
+                  value={
+                    policyEventTypes[activeEvent.id] ?? activeEvent.suggestedEventType ?? ''
+                  }
+                  options={policyEventOptions}
+                  onChange={(value) => {
+                    setActivePolicyEventType(value);
+                    resetActiveConfirmed();
+                  }}
+                  placeholder="Tipo de evento"
+                />
+              )}
 
-              <OutrosApontamentosSelect
-                id={`other-annotation-${activeEvent.id}`}
-                values={otherAnnotations[activeEvent.id] ?? []}
-                onChange={(values) => {
-                  setActiveOtherAnnotations(values);
-                  resetActiveConfirmed();
-                }}
-                placeholder="Outros apontamentos"
-              />
+              {isVideoEvent && (
+                <OutrosApontamentosSelect
+                  id={`other-annotation-${activeEvent.id}`}
+                  values={otherAnnotations[activeEvent.id] ?? []}
+                  onChange={(values) => {
+                    setActiveOtherAnnotations(values);
+                    resetActiveConfirmed();
+                  }}
+                  placeholder="Outros apontamentos"
+                />
+              )}
 
               <button
                 type="button"
@@ -1081,9 +1263,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
             driverUnidentified={driverUnidentified}
             selectedDriver={selectedDriver}
             onChangeDriver={setSelectedDriver}
-            eventTypeLabel={
-              ALERT_LABELS[alertTypes[activeEvent.id] ?? activeEvent.suggestedAlert]
-            }
+            eventTypeLabel={getValidationEventLabel(activeEvent, alertTypes, policyEventTypes)}
           />
         )}
 

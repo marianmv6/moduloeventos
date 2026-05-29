@@ -21,7 +21,8 @@ export function getGroupOccurrencePlayMode(occurrence: CentralOccurrence): Centr
 }
 
 export function getSummaryRowPlayMode(row: CentralOccurrenceSummaryRow): CentralPlayMode {
-  return row.playMode ?? 'validation';
+  if (row.playMode) return row.playMode;
+  return row.validationStatus === 'validado' ? 'treatment' : 'validation';
 }
 
 export function getEntryPlayMode(entry: CentralOccurrenceListEntry): CentralPlayMode {

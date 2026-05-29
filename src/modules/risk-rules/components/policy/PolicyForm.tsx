@@ -29,7 +29,7 @@ const TRACKING_OPTIONS: ModalSelectOption[] = [
 ];
 
 const POLICY_EVENTOS_CONFIG_INFO =
-  'Selecione os eventos desta política e defina pontuação e duração ativa para cada um. Cada evento só pode ser associado a uma única política de tratativa, não sendo permitido duplicá-lo em outras políticas.';
+  'Selecione os eventos desta política e defina pontuação e duração ativa para cada um. O mesmo evento pode ser configurado em mais de uma política, com pontuação e duração independentes.';
 
 const POLICY_USUARIOS_INFO =
   'Escolha se a política será acessível a todos os usuários ou somente a usuários específicos. Garanta que os usuários tenham permissão para acessar a central de tratativas. Administradores sempre terão acesso.';

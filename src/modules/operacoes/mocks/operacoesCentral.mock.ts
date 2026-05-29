@@ -106,7 +106,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     totalPoints: 35,
     severity: 'high',
     datetime: '23/05, 08:55',
-    eventType: 'Entrada / saída de cerca',
+    eventType: 'Excesso de velocidade por cerca remota',
     eventPoints: 10,
     placa: 'HQH5986',
     prefixo: 'MBR205',
@@ -118,7 +118,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     totalPoints: 25,
     severity: 'high',
     datetime: '23/05, 08:30',
-    eventType: 'Operação de carregamento',
+    eventType: 'Tempo de parada com motor ligado',
     eventPoints: 5,
     placa: 'BKR5I96',
     prefixo: 'VW128',
@@ -130,7 +130,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     totalPoints: 18,
     severity: 'medium',
     datetime: '23/05, 08:05',
-    eventType: 'Velocidade acima do permitido',
+    eventType: 'Excesso de velocidade',
     eventPoints: 8,
     placa: 'QWE4R55',
     prefixo: 'FRT089',
@@ -142,7 +142,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     totalPoints: 12,
     severity: 'low',
     datetime: '23/05, 07:42',
-    eventType: 'Parada não autorizada',
+    eventType: 'Desligamento do tablet',
     eventPoints: 4,
     placa: 'TYU8H21',
     prefixo: 'SCN412',
@@ -223,22 +223,25 @@ export const mockCentralStatusSummary = computeCentralStatusSummary(mockCentralO
 /** Ocorrência 1 — 3 eventos; o primeiro (mais antigo) já validado. */
 export const mockCentralValidationEventsOcc1: CentralValidationEvent[] = [
   {
-    id: 'val-1-oldest',
+    id: 'val-occ-1-ev-1c',
     time: '08:30:00',
     plate: 'ABC1D23',
+    eventCategory: 'video',
     suggestedAlert: 'sonolencia-n1',
     validated: true,
   },
   {
-    id: 'val-1-mid',
+    id: 'val-occ-1-ev-1a',
     time: '10:05:00',
     plate: 'ABC1D23',
+    eventCategory: 'video',
     suggestedAlert: 'sonolencia-n2',
   },
   {
-    id: 'val-1-current',
+    id: 'val-occ-1-ev-1b',
     time: '10:05:00',
     plate: 'ABC1D23',
+    eventCategory: 'video',
     suggestedAlert: 'sonolencia-n2',
   },
 ];
@@ -246,47 +249,32 @@ export const mockCentralValidationEventsOcc1: CentralValidationEvent[] = [
 /** Ocorrência 2 — 2 eventos para validação. */
 export const mockCentralValidationEventsOcc2: CentralValidationEvent[] = [
   {
-    id: 'val-2-older',
+    id: 'val-occ-2-ev-2b',
     time: '09:45:00',
     plate: 'FAL0M70',
+    eventCategory: 'video',
     suggestedAlert: 'sonolencia-n2',
     fromAi: true,
   },
   {
-    id: 'val-2-current',
+    id: 'val-occ-2-ev-2a',
     time: '09:58:00',
     plate: 'FAL0M70',
+    eventCategory: 'video',
     suggestedAlert: 'sonolencia-n1',
     fromAi: true,
   },
 ];
 
-/** @deprecated Use getCentralValidationEventsForOccurrence */
+/** @deprecated Use buildCentralValidationEventsForOccurrence */
 export const mockCentralValidationEvents = mockCentralValidationEventsOcc1;
-
-/** Eventos do modal de validação conforme a ocorrência da Central. */
-export function getCentralValidationEventsForOccurrence(
-  occurrenceId: string,
-): CentralValidationEvent[] {
-  switch (occurrenceId) {
-    case 'occ-1':
-      return mockCentralValidationEventsOcc1;
-    case 'occ-2':
-      return mockCentralValidationEventsOcc2;
-    default:
-      return mockCentralValidationEventsOcc1;
-  }
-}
-
-function findSummaryRow(occurrenceId: string): CentralOccurrenceSummaryRow | undefined {
-  return mockCentralOccurrenceSummaries.find((row) => row.id === occurrenceId);
-}
 
 /** Nome do condutor no cabeçalho do modal de validação ou tratativa. */
 export function getValidationDriverNameForOccurrence(occurrenceId: string): string {
   const occurrence = mockCentralOccurrenceGroups.find((o) => o.id === occurrenceId);
   if (occurrence) return occurrence.driverName;
-  return findSummaryRow(occurrenceId)?.driverName ?? 'Condutor não identificado';
+  return mockCentralOccurrenceSummaries.find((row) => row.id === occurrenceId)?.driverName
+    ?? 'Condutor não identificado';
 }
 
 /** @deprecated Use getValidationDriverNameForOccurrence */

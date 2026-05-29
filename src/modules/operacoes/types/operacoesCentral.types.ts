@@ -16,15 +16,22 @@ export type CentralAlertType =
   | 'desatencao'
   | 'nao-e-alerta';
 
+/** Categoria do evento na validação — define layout e opções de seleção. */
+export type CentralValidationEventCategory = 'video' | 'telemetria' | 'eficiencia';
+
 export interface CentralValidationEvent {
   id: string;
   /** Hora do evento, formato HH:MM:SS — exibido na lateral esquerda */
   time: string;
   /** Placa/identificador exibido sob a hora */
   plate: string;
-  /** Tipo de alerta sugerido (geralmente pela IA) */
-  suggestedAlert: CentralAlertType;
-  /** Indica que a sugestão veio da IA (badge "IA") */
+  /** Categoria do evento — define layout (vídeos vs mapa) e opções de seleção. */
+  eventCategory: CentralValidationEventCategory;
+  /** Tipo de alerta sugerido para eventos de vídeo. */
+  suggestedAlert?: CentralAlertType;
+  /** Tipo de evento sugerido para telemetria/eficiência (label da política). */
+  suggestedEventType?: string;
+  /** Indica que a sugestão veio da IA (somente vídeo). */
   fromAi?: boolean;
   /** Já validado pelo analista nesta sessão */
   validated?: boolean;
