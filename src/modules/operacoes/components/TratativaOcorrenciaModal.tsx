@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SystemFullscreenPortal } from '../../../components/layout/SystemFullscreenPortal';
 import type {
   TratativaOcorrenciaData,
@@ -9,12 +9,14 @@ import type {
 } from '../types/tratativaOcorrencia.types';
 import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
+import { SuccessToast } from '../../risk-rules/components/shared/SuccessToast';
 import { CrModal } from '../../risk-rules/components/shared/CrModal';
 import {
   CONTACT_PREFERENCE_OPTIONS,
 } from '../../risk-rules/constants/contactDisplay';
 import type { ContactPreference } from '../../risk-rules/types/risk.types';
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
+import { TratativaBehaviorEvolutionPanel } from './TratativaBehaviorEvolutionPanel';
 
 interface TratativaOcorrenciaModalProps {
   open: boolean;
@@ -23,13 +25,16 @@ interface TratativaOcorrenciaModalProps {
   onReturn?: () => void;
   onConclude?: (durationMs: number) => void;
   /** "tratativa" (padrão) = fluxo ativo; "auditoria" = visualização
-   *  somente-leitura, com aba adicional "Histórico" e sem footer. */
-  mode?: 'tratativa' | 'auditoria';
+   *  somente-leitura, com aba adicional "Histórico" e sem footer;
+   *  "visualizacao" = somente-leitura sem edição (ex.: ocorrência aberta por outro analista). */
+  mode?: 'tratativa' | 'auditoria' | 'visualizacao';
   /** Histórico exibido na aba "Histórico" quando mode === "auditoria". */
   history?: TratativaHistoryEntry[];
 }
 
-type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'historico';
+type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'evolucao' | 'historico';
+
+const COPY_SUCCESS_TOAST = 'Copiado para a área de transferência.';
 
 const SEVERITY_DOT_CLASS: Record<string, string> = {
   critical: 'tratativa-card__dot--critical',
@@ -336,8 +341,12 @@ interface ActionCardProps {
   selected?: boolean;
   /** Ação em foco no painel — mantém opacidade total mesmo após resolução. */
   focused?: boolean;
+  /** Exibe corpo completo (mensagem, observação, resolução). */
+  expanded?: boolean;
   /** Callback disparado ao clicar em qualquer ponto do card. */
   onSelect?: () => void;
+  /** Disparado após copiar a mensagem padrão com sucesso. */
+  onCopySuccess?: () => void;
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({
@@ -350,7 +359,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
   readOnly = false,
   selected = false,
   focused = false,
+  expanded = true,
   onSelect,
+  onCopySuccess,
 }) => {
   const handleCopyDefaultMessage = async (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -359,18 +370,25 @@ const ActionCard: React.FC<ActionCardProps> = ({
     event.stopPropagation();
     try {
       await copyTextToClipboard(text);
+      onCopySuccess?.();
     } catch {
       /* clipboard indisponível */
     }
   };
 
-  if (status === 'pending' && !readOnly) {
+  const collapsedStatusClass =
+    status === 'pending'
+      ? ' tratativa-action--pending'
+      : status === 'done'
+        ? ' tratativa-action--done'
+        : ' tratativa-action--active';
+
+  if (!readOnly && !expanded) {
     return (
       <div
-        className={`tratativa-action tratativa-action--pending${
+        className={`tratativa-action tratativa-action--collapsed${collapsedStatusClass}${
           selected ? ' tratativa-action--selected' : ''
         }${focused ? ' tratativa-action--focused' : ''}`}
-        aria-disabled="true"
         role={onSelect ? 'button' : undefined}
         tabIndex={onSelect ? 0 : undefined}
         onClick={onSelect}
@@ -379,9 +397,11 @@ const ActionCard: React.FC<ActionCardProps> = ({
           <span className="tratativa-action__title">
             {action.sequence}. {action.title}
           </span>
-          <span className="tratativa-action__hourglass" aria-hidden>
-            <IconHourglassPending />
-          </span>
+          {status === 'pending' && (
+            <span className="tratativa-action__hourglass" aria-hidden>
+              <IconHourglassPending />
+            </span>
+          )}
         </div>
       </div>
     );
@@ -604,6 +624,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   history = [],
 }) => {
   const isAuditoria = mode === 'auditoria';
+  const isReadOnly = mode === 'auditoria' || mode === 'visualizacao';
   const [activeTab, setActiveTab] = useState<ActiveTab>('tratativa');
   const [observations, setObservations] = useState<Record<string, string>>({});
   const [actionResolutions, setActionResolutions] = useState<
@@ -627,8 +648,16 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   const [selectedActionId, setSelectedActionId] = useState<string>(
     data.actions[0]?.id ?? '',
   );
+  /** Ação com corpo expandido — apenas uma aberta por vez no fluxo de tratativa. */
+  const [expandedActionId, setExpandedActionId] = useState<string>(
+    data.actions[0]?.id ?? '',
+  );
   /** Vídeo expandido na aba Eventos (mesma mecânica do modal de validação). */
   const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
+  const [copyToastVisible, setCopyToastVisible] = useState(false);
+
+  const showCopyToast = useCallback(() => setCopyToastVisible(true), []);
+  const dismissCopyToast = useCallback(() => setCopyToastVisible(false), []);
 
   const startedAtRef = useRef<number | null>(null);
 
@@ -640,9 +669,9 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     startedAtRef.current = Date.now();
   }, [open]);
 
-  /** Cronômetro em tempo real — somente no modo tratativa (auditoria permanece fixo). */
+  /** Cronômetro em tempo real — somente no modo tratativa ativo. */
   useEffect(() => {
-    if (!open || isAuditoria || savedTreatmentMs > 0) return;
+    if (!open || mode !== 'tratativa' || savedTreatmentMs > 0) return;
     const tick = () => {
       if (startedAtRef.current !== null) {
         setElapsedMs(Date.now() - startedAtRef.current);
@@ -651,7 +680,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     tick();
     const intervalId = window.setInterval(tick, 1000);
     return () => window.clearInterval(intervalId);
-  }, [open, isAuditoria, savedTreatmentMs]);
+  }, [open, mode, savedTreatmentMs]);
 
   useEffect(() => {
     if (open) {
@@ -670,21 +699,22 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     if (!open) return;
     setActiveTab('tratativa');
     setObservations({});
-    const auditResolutions: Record<string, ActionResolution> = isAuditoria
+    const auditResolutions: Record<string, ActionResolution> = isReadOnly
       ? (data.auditActionResolutions as Record<string, ActionResolution> | undefined) ?? {}
       : {};
-    setActionResolutions(isAuditoria ? auditResolutions : {});
+    setActionResolutions(isReadOnly ? auditResolutions : {});
     setSavedTreatmentMs(0);
     setElapsedMs(0);
     setFrontierIndex(
-      isAuditoria ? computeFrontierIndex(data.actions, auditResolutions) : 0,
+      isReadOnly ? computeFrontierIndex(data.actions, auditResolutions) : 0,
     );
     setSelectedDriverId(data.selectedDriverId);
     setSelectedVehicleId(data.selectedVehicleId);
     setSelectedEventId(data.validatedEvents[0]?.id ?? '');
     setSelectedActionId(data.actions[0]?.id ?? '');
+    setExpandedActionId(data.actions[0]?.id ?? '');
     setExpandedVideo(null);
-  }, [open, data, isAuditoria]);
+  }, [open, data, isReadOnly]);
 
   /** Concluir liberado se alguma ação for "Resolvido" ou se a última
    *  ação da trilha for marcada como "Não resolvido" (fim da trilha). */
@@ -701,7 +731,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     const currentIdx = data.actions.findIndex((a) => a.id === actionId);
     if (currentIdx === -1) return;
 
-    if (isAuditoria) {
+    if (isReadOnly) {
       setActionResolutions((prev) => ({ ...prev, [actionId]: resolution }));
       setSelectedActionId(actionId);
       return;
@@ -727,7 +757,13 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
 
     setActionResolutions(nextResolutions);
     setFrontierIndex(nextFrontier);
-    setSelectedActionId(findWorkflowActionId(data.actions, nextFrontier, nextResolutions));
+    const nextSelectedId = findWorkflowActionId(data.actions, nextFrontier, nextResolutions);
+    setSelectedActionId(nextSelectedId);
+    if (resolution === 'nao_resolvido') {
+      setExpandedActionId(nextSelectedId);
+    } else {
+      setExpandedActionId('');
+    }
   };
 
   const handleObservationChange = (actionId: string, value: string) => {
@@ -742,9 +778,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     onConclude?.(durationMs);
   };
 
-  const treatmentTimeLabel = isAuditoria
-    ? (data.treatmentDurationLabel ?? '5:47')
-    : formatTreatmentClock(savedTreatmentMs > 0 ? savedTreatmentMs : elapsedMs);
+  const treatmentTimeLabel =
+    mode === 'auditoria'
+      ? (data.treatmentDurationLabel ?? '5:47')
+      : mode === 'visualizacao'
+        ? (data.treatmentDurationLabel ?? '0:00')
+        : formatTreatmentClock(savedTreatmentMs > 0 ? savedTreatmentMs : elapsedMs);
 
   const selectedDriver = data.driverOptions.find((d) => d.id === selectedDriverId);
   const selectedVehicle = data.vehicleOptions.find((v) => v.id === selectedVehicleId);
@@ -849,6 +888,17 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           >
             Eventos
           </button>
+          {data.behaviorEvolution && (
+            <button
+              type="button"
+              className={`central-validacao-tab${
+                activeTab === 'evolucao' ? ' central-validacao-tab--active' : ''
+              }`}
+              onClick={() => setActiveTab('evolucao')}
+            >
+              Evolução do comportamento
+            </button>
+          )}
           {isAuditoria && (
             <button
               type="button"
@@ -882,9 +932,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                     /** Em auditoria, todas concluídas. Em tratativa: pending
                      *  após a fronteira; active na ação atual sem resolução;
                      *  done quando já tem resolução (resolvido ou não resolvido). */
-                    const status: ActionCardProps['status'] = isAuditoria
-                      ? 'done'
-                      : index > frontierIndex
+                    const status: ActionCardProps['status'] =
+                      isAuditoria || mode === 'visualizacao'
+                        ? 'done'
+                        : index > frontierIndex
                         ? 'pending'
                         : resolution
                           ? 'done'
@@ -893,7 +944,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                             : 'pending';
                     /** Cards selecionáveis: na auditoria todas; em
                      *  tratativa apenas até a fronteira da trilha. */
-                    const canSelect = isAuditoria || index <= frontierIndex;
+                    const canSelect = isReadOnly || index <= frontierIndex;
                     return (
                       <ActionCard
                         key={action.id}
@@ -905,12 +956,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                         }
                         resolution={resolution}
                         onSetResolution={(value) => handleSetResolution(action.id, value)}
-                        readOnly={isAuditoria}
+                        readOnly={isReadOnly}
                         selected={selectedActionId === action.id && !resolution}
                         focused={selectedActionId === action.id}
+                        expanded={isAuditoria || expandedActionId === action.id}
                         onSelect={
-                          canSelect ? () => setSelectedActionId(action.id) : undefined
+                          canSelect
+                            ? () => {
+                                setSelectedActionId(action.id);
+                                setExpandedActionId(action.id);
+                              }
+                            : undefined
                         }
+                        onCopySuccess={showCopyToast}
                       />
                     );
                   })}
@@ -1107,6 +1165,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           </div>
         )}
 
+        {activeTab === 'evolucao' && data.behaviorEvolution && (
+          <div className="tratativa-body tratativa-behavior-evolution-tab">
+            <TratativaBehaviorEvolutionPanel data={data.behaviorEvolution} />
+          </div>
+        )}
+
         {activeTab === 'historico' && isAuditoria && (
           <div className="tratativa-body tratativa-historico">
             {history.length === 0 ? (
@@ -1127,7 +1191,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           </div>
         )}
 
-        {!isAuditoria && (
+        {!isReadOnly && (
           <footer className="tratativa-footer">
             <button
               type="button"
@@ -1149,6 +1213,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
         )}
       </section>
     </div>
+    <SuccessToast
+      message={COPY_SUCCESS_TOAST}
+      visible={copyToastVisible}
+      onClose={dismissCopyToast}
+      duration={4000}
+    />
     </SystemFullscreenPortal>
   );
 };

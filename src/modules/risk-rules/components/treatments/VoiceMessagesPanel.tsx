@@ -19,13 +19,8 @@ const LANGUAGE_OPTIONS: ModalSelectOption[] = [
   { value: 'es', label: 'Espanhol' },
 ];
 
-const DEVICE_OPTIONS: ModalSelectOption[] = [
-  { value: 'K1 Plus', label: 'K1 Plus' },
-  { value: 'G5 Plus', label: 'G5 Plus' },
-];
-
-const MESSAGE_MAX_LENGTH_DEVICE = 200;
-const MESSAGE_MAX_LENGTH_DEFAULT = 70;
+const MESSAGE_MAX_LENGTH = 200;
+const DEFAULT_DEVICE: VoiceMessageDevice = 'K1 Plus';
 
 export interface VoiceMessagesPanelHandle {
   openNew: () => void;
@@ -53,13 +48,12 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
   const [companyId, setCompanyId] = useState(defaultCompanyId);
   const [identification, setIdentification] = useState('');
   const [language, setLanguage] = useState<VoiceMessageLanguage>('pt');
-  const [device, setDevice] = useState<VoiceMessageDevice>('K1 Plus');
   const [message, setMessage] = useState('');
   const [active, setActive] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<{ identification?: boolean; message?: boolean }>({});
 
-  const EMPTY_FILTERS = { empresa: '', dispositivo: '', status: '' };
-  const [filters, setFilters] = useState<{ empresa: string; dispositivo: string; status: string }>(
+  const EMPTY_FILTERS = { empresa: '', status: '' };
+  const [filters, setFilters] = useState<{ empresa: string; status: string }>(
     EMPTY_FILTERS,
   );
   const [filterOpen, setFilterOpen] = useState(false);
@@ -73,9 +67,8 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     onFilterStateChange?.({ open: filterOpen, appliedCount });
   }, [filterOpen, appliedCount, onFilterStateChange]);
 
-  const filterFields: AdvancedFilterField<{ empresa: string; dispositivo: string; status: string }>[] = [
+  const filterFields: AdvancedFilterField<{ empresa: string; status: string }>[] = [
     { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
-    { key: 'dispositivo', label: 'Dispositivo', options: DEVICE_OPTIONS },
     { key: 'status', label: 'Status', options: STATUS_OPTIONS },
   ];
 
@@ -85,7 +78,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
       : voiceMessages;
     return baseList.filter((m) => {
       if (filters.empresa && m.companyId !== filters.empresa) return false;
-      if (filters.dispositivo && m.device !== filters.dispositivo) return false;
       if (filters.status) {
         const want = filters.status === 'ativo';
         if (m.active !== want) return false;
@@ -94,11 +86,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     });
   }, [voiceMessages, filters, isClient, currentUser.companyId]);
 
-  const messageMaxLength = device === 'K1 Plus' || device === 'G5 Plus' ? MESSAGE_MAX_LENGTH_DEVICE : MESSAGE_MAX_LENGTH_DEFAULT;
-  const formatFromDevice: 'WAV' | 'MP3' = device === 'G5 Plus' ? 'MP3' : 'WAV';
-  const formatLabel = device === 'K1 Plus' ? 'WAV' : device === 'G5 Plus' ? 'MP3' : '';
-
-  /** Apenas letras, números e espaços (sem caracteres especiais), até máx. conforme dispositivo. */
+  /** Apenas letras, números e espaços (sem caracteres especiais). */
   const sanitizeMessage = (val: string, max: number) =>
     val.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').slice(0, max);
 
@@ -107,7 +95,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     setCompanyId(defaultCompanyId);
     setIdentification('');
     setLanguage('pt');
-    setDevice('K1 Plus');
     setMessage('');
     setActive(true);
     setFieldErrors({});
@@ -130,8 +117,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     setCompanyId(m.companyId ?? defaultCompanyId);
     setIdentification(m.identification);
     setLanguage((m.language ?? 'pt') as VoiceMessageLanguage);
-    setDevice((m.device ?? 'K1 Plus') as VoiceMessageDevice);
-    setMessage(sanitizeMessage(m.message, m.device === 'K1 Plus' || m.device === 'G5 Plus' ? MESSAGE_MAX_LENGTH_DEVICE : MESSAGE_MAX_LENGTH_DEFAULT));
+    setMessage(sanitizeMessage(m.message, MESSAGE_MAX_LENGTH));
     setActive(m.active);
     setFieldErrors({});
     setModalOpen(true);
@@ -143,7 +129,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
   };
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(sanitizeMessage(e.target.value, messageMaxLength));
+    setMessage(sanitizeMessage(e.target.value, MESSAGE_MAX_LENGTH));
     if (fieldErrors.message) setFieldErrors((err) => ({ ...err, message: false }));
   };
 
@@ -160,8 +146,8 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
       identification: idTrimmed,
       language,
       message: msgTrimmed,
-      device,
-      format: formatFromDevice,
+      device: editing?.device ?? DEFAULT_DEVICE,
+      format: editing?.format ?? 'WAV',
       active,
     });
     closeModal();
@@ -193,7 +179,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
               <th>Empresa</th>
               <th>Identificação</th>
               <th>Mensagem</th>
-              <th>Dispositivo</th>
               <th>Status</th>
               <th></th>
             </tr>
@@ -201,7 +186,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
           <tbody>
             {filteredMessages.length === 0 ? (
               <tr>
-                <td colSpan={6} className="list-empty">
+                <td colSpan={5} className="list-empty">
                   Nenhuma mensagem de voz cadastrada.
                 </td>
               </tr>
@@ -211,7 +196,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
                   <td>{getCompanyName(m.companyId)}</td>
                   <td>{m.identification}</td>
                   <td className="cell-message">{m.message}</td>
-                  <td>{m.device ?? '-'}</td>
                   <td>
                     <span className={`badge badge-rounded ${m.active ? 'badge-active' : 'badge-inactive'}`}>
                       {m.active ? 'Ativo' : 'Inativo'}
@@ -297,10 +281,10 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
               <textarea
                 id="voice-message"
                 rows={3}
-                maxLength={messageMaxLength}
+                maxLength={MESSAGE_MAX_LENGTH}
                 value={message}
                 onChange={handleMessageChange}
-                placeholder={`Texto para ser reproduzido (apenas letras e números, máx. ${messageMaxLength} caracteres)`}
+                placeholder={`Texto para ser reproduzido (apenas letras e números, máx. ${MESSAGE_MAX_LENGTH} caracteres)`}
                 className={`voice-message-textarea ${fieldErrors.message ? 'input-error' : ''}`}
                 aria-invalid={fieldErrors.message}
               />
@@ -331,22 +315,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
                 options={STATUS_OPTIONS}
                 placeholder="Selecione o status"
               />
-            </div>
-          </div>
-          <div className="voice-message-form__row">
-            <div className="form-group">
-              <ModalSelect
-                id="voice-device"
-                label="Dispositivo"
-                value={device}
-                onChange={(v) => setDevice(v as VoiceMessageDevice)}
-                options={DEVICE_OPTIONS}
-                placeholder="Selecione"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Formato</label>
-              <div className="form-readonly-value">{formatLabel}</div>
             </div>
           </div>
           <p className="form-hint">Mensagens inativas não aparecem na seleção da criação/edição de tratativas.</p>

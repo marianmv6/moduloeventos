@@ -493,6 +493,11 @@ export const TrailForm: React.FC<TrailFormProps> = ({
                   />
                 </div>
               </div>
+              {step.action === 'mensagem_voz' && (
+                <p className="trail-step-voice-notice" role="note">
+                  O envio de mensagem de voz depende da disponibilidade do dispositivo.
+                </p>
+              )}
               {step.action === 'email_automatico' && (
                 <div className="trail-step-config">
                   {emailTemplates.length > 0 && (

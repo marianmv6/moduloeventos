@@ -18,7 +18,6 @@ export const mockCentralOccurrenceExpanded: CentralOccurrence = {
   placa: 'ABC1D23',
   prefixo: 'MBB102',
   driverName: 'Paulo Roberto Moreira Pestana',
-  openedByAnalyst: 'Júlia',
   events: [
     {
       id: 'ev-1a',
@@ -56,6 +55,7 @@ export const mockCentralOccurrenceSonolenciaN1: CentralOccurrence = {
   placa: 'FAL0M70',
   prefixo: 'VOL204',
   driverName: 'José Raimundo de Oliveira',
+  openedByAnalyst: 'Júlia',
   events: [
     {
       id: 'ev-2a',
@@ -124,6 +124,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     prefixo: 'VW128',
     driverName: 'Rogério da Silva',
     actions: { kind: 'with-monitor', monitorType: 'human', analystName: 'Renato' },
+    validationStatus: 'validado',
+    validatedBy: 'Renato',
   },
   {
     id: 'occ-6',

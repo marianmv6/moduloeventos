@@ -85,6 +85,57 @@ export interface TratativaValidatedEvent {
   location?: string;
 }
 
+/** Nível de risco acumulado no momento do evento (cor do ponto no gráfico). */
+export type TratativaBehaviorRiskLevel = 'low' | 'medium' | 'high' | 'critical';
+
+/** Tratativa registrada no gráfico — ponto independente na linha de evolução. */
+export interface TratativaBehaviorTreatmentMarker {
+  treatedBy: string;
+  actionTitle: string;
+  startedAt: string;
+  endedAt: string;
+}
+
+/** Ponto de evento (alerta) no gráfico de evolução do comportamento. */
+export interface TratativaBehaviorEventPoint {
+  id: string;
+  /** Horário exibido no eixo X (HH:mm). */
+  journeyTime: string;
+  /** Minutos desde o início da janela de 12 h. */
+  minutesFromStart: number;
+  /** Pontuação acumulada após o evento. */
+  cumulativeScore: number;
+  /** Pontos somados por este evento. */
+  eventPoints: number;
+  riskLevel: TratativaBehaviorRiskLevel;
+  eventType: string;
+  location: string;
+  occurredAtLabel: string;
+}
+
+/** Ponto de tratativa — ícone de headset sobre a linha, no horário/pontuação da intervenção. */
+export interface TratativaBehaviorTreatmentPoint {
+  id: string;
+  journeyTime: string;
+  minutesFromStart: number;
+  /** Pontuação acumulada no momento da tratativa (posição na linha). */
+  cumulativeScore: number;
+  treatment: TratativaBehaviorTreatmentMarker;
+}
+
+export type TratativaBehaviorChartPoint =
+  | ({ kind: 'event' } & TratativaBehaviorEventPoint)
+  | ({ kind: 'treatment' } & TratativaBehaviorTreatmentPoint);
+
+/** Dados do gráfico "Evolução do comportamento". */
+export interface TratativaBehaviorEvolutionData {
+  windowStartLabel: string;
+  windowEndLabel: string;
+  windowMinutes: number;
+  maxScore: number;
+  points: TratativaBehaviorChartPoint[];
+}
+
 /** Entrada do histórico de auditoria — exibida na aba "Histórico"
  *  do AuditoriaOcorrenciaModal. */
 export interface TratativaHistoryEntry {
@@ -130,6 +181,8 @@ export interface TratativaOcorrenciaData {
 
   /** Eventos validados anteriormente — alimentam o select da aba "Eventos". */
   validatedEvents: TratativaValidatedEvent[];
+  /** Série temporal para a aba "Evolução do comportamento". */
+  behaviorEvolution?: TratativaBehaviorEvolutionData;
   /** Resoluções da trilha no modo auditoria (ex.: não resolvido → resolvido). */
   auditActionResolutions?: Partial<Record<string, TratativaActionResolution>>;
 }

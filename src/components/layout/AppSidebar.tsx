@@ -79,14 +79,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   };
 
   useEffect(() => {
-    if (CONFIG_ROUTES.includes(activeRoute)) {
-      setOpenFlyout('configuracoes');
-    } else if (CADASTRO_ROUTES.includes(activeRoute)) {
-      setOpenFlyout('cadastros');
-    }
-  }, [activeRoute]);
-
-  useEffect(() => {
     if (menuLevel !== 'operacoes') {
       setOpenFlyout(null);
     }
@@ -136,8 +128,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             role="menuitem"
             className={`nav-flyout__item${activeRoute === item.route ? ' nav-flyout__item--active' : ''}`}
             onClick={() => {
+              setOpenFlyout(null);
               onRouteChange(item.route);
-              setOpenFlyout(flyoutId);
             }}
           >
             {item.label}

@@ -1,5 +1,6 @@
 import type { TratativaOcorrenciaData } from '../types/tratativaOcorrencia.types';
 import { buildTratativaOcorrenciaFromCentral } from '../utils/centralOccurrenceBridge';
+import { getBehaviorEvolutionForOccurrence } from './tratativaBehaviorEvolution.mock';
 
 const ORG_GROUPS = [
   { id: 'g1', label: 'Branco' },
@@ -193,5 +194,8 @@ const TRATATIVA_SHARED_TEMPLATE = {
 };
 
 export function getTratativaOcorrenciaForOccurrence(occurrenceId: string): TratativaOcorrenciaData {
-  return buildTratativaOcorrenciaFromCentral(occurrenceId, TRATATIVA_SHARED_TEMPLATE);
+  return {
+    ...buildTratativaOcorrenciaFromCentral(occurrenceId, TRATATIVA_SHARED_TEMPLATE),
+    behaviorEvolution: getBehaviorEvolutionForOccurrence(occurrenceId),
+  };
 }

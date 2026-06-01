@@ -6,6 +6,7 @@ import { CentralControleFilterPanel } from '../components/CentralControleFilterP
 import { CentralControleToolbarSearch } from '../components/CentralControleToolbarSearch';
 import { CentralValidacaoAlertasModal } from '../components/CentralValidacaoAlertasModal';
 import { TratativaOcorrenciaModal } from '../components/TratativaOcorrenciaModal';
+import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
 import {
   IconAnalystHeadset,
   IconOnlineStatus,
@@ -13,6 +14,7 @@ import {
   IconRowChevron,
   IconStatusValidated,
   IconStatusWaitingValidation,
+  IconViewOccurrence,
 } from '../components/CentralControleIcons';
 import { IconFilterBars } from '../components/IconFilterBars';
 import {
@@ -36,6 +38,9 @@ import {
   getGroupOccurrencePlayMode,
   getPlayActionTooltip,
   getSummaryRowPlayMode,
+  getViewActionTooltip,
+  isOccurrenceOpenedByAnotherAnalyst,
+  isSummaryRowOpenedByAnotherAnalyst,
   type CentralPlayMode,
 } from '../utils/centralOccurrenceWorkflow';
 import { formatLocalTimeTooltip } from '../utils/operacoesDateTimeDisplay';
@@ -263,6 +268,7 @@ function EventRowActions({
   showAnalyst,
   severity,
   playMode,
+  viewOnly,
   onPlay,
 }: {
   expanded: boolean;
@@ -271,9 +277,12 @@ function EventRowActions({
   showAnalyst: boolean;
   severity: CentralOccurrenceSeverity;
   playMode: CentralPlayMode;
+  viewOnly: boolean;
   onPlay?: () => void;
 }) {
-  const playTooltip = getPlayActionTooltip(playMode);
+  const actionTooltip = viewOnly
+    ? getViewActionTooltip(playMode)
+    : getPlayActionTooltip(playMode);
   return (
     <div className="central-controle-row__actions-inner">
       {showAnalyst && analystName ? (
@@ -286,14 +295,18 @@ function EventRowActions({
           </span>
         </LevelTooltip>
       ) : null}
-      <LevelTooltip text={playTooltip} topLayer nowrap>
+      <LevelTooltip text={actionTooltip} topLayer nowrap>
         <button
           type="button"
           className="central-controle-open-btn"
-          aria-label={playTooltip}
+          aria-label={actionTooltip}
           onClick={onPlay}
         >
-          <IconOpenOccurrence severity={severity} />
+          {viewOnly ? (
+            <IconViewOccurrence severity={severity} />
+          ) : (
+            <IconOpenOccurrence severity={severity} />
+          )}
         </button>
       </LevelTooltip>
       <button
@@ -312,13 +325,17 @@ function EventRowActions({
 function SummaryRowActions({
   row,
   playMode,
+  viewOnly,
   onPlay,
 }: {
   row: CentralOccurrenceSummaryRow;
   playMode: CentralPlayMode;
+  viewOnly: boolean;
   onPlay: () => void;
 }) {
-  const playTooltip = getPlayActionTooltip(playMode);
+  const actionTooltip = viewOnly
+    ? getViewActionTooltip(playMode)
+    : getPlayActionTooltip(playMode);
   return (
     <div className="central-controle-row__actions-inner">
       {row.actions.kind === 'opened-by-analyst' ? (
@@ -340,14 +357,18 @@ function SummaryRowActions({
           </span>
         </LevelTooltip>
       ) : null}
-      <LevelTooltip text={playTooltip} topLayer nowrap>
+      <LevelTooltip text={actionTooltip} topLayer nowrap>
         <button
           type="button"
           className="central-controle-open-btn"
-          aria-label={playTooltip}
+          aria-label={actionTooltip}
           onClick={onPlay}
         >
-          <IconOpenOccurrence severity={row.severity} />
+          {viewOnly ? (
+            <IconViewOccurrence severity={row.severity} />
+          ) : (
+            <IconOpenOccurrence severity={row.severity} />
+          )}
         </button>
       </LevelTooltip>
       <span className="central-controle-row__expand-spacer" aria-hidden />
@@ -360,12 +381,14 @@ function ExpandedOccurrenceGroup({
   expanded,
   onToggle,
   playMode,
+  viewOnly,
   onPlay,
 }: {
   occurrence: CentralOccurrence;
   expanded: boolean;
   onToggle: () => void;
   playMode: CentralPlayMode;
+  viewOnly: boolean;
   onPlay: () => void;
 }) {
   if (!expanded) {
@@ -394,6 +417,7 @@ function ExpandedOccurrenceGroup({
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
             severity={occurrence.severity}
             playMode={playMode}
+            viewOnly={viewOnly}
             onPlay={onPlay}
           />
         </td>
@@ -412,6 +436,7 @@ function ExpandedOccurrenceGroup({
           totalEvents={occurrence.events.length}
           onToggle={onToggle}
           playMode={playMode}
+          viewOnly={viewOnly}
           onPlay={onPlay}
         />
       ))}
@@ -426,6 +451,7 @@ function EventOccurrenceRow({
   totalEvents,
   onToggle,
   playMode,
+  viewOnly,
   onPlay,
 }: {
   event: CentralOccurrenceEvent;
@@ -434,6 +460,7 @@ function EventOccurrenceRow({
   totalEvents: number;
   onToggle: () => void;
   playMode: CentralPlayMode;
+  viewOnly: boolean;
   onPlay: () => void;
 }) {
   const isCurrent = Boolean(event.isCurrent);
@@ -473,6 +500,7 @@ function EventOccurrenceRow({
             showAnalyst={Boolean(occurrence.openedByAnalyst)}
             severity={occurrence.severity}
             playMode={playMode}
+            viewOnly={viewOnly}
             onPlay={onPlay}
           />
         )}
@@ -484,10 +512,12 @@ function EventOccurrenceRow({
 function CollapsedSummaryRow({
   row,
   playMode,
+  viewOnly,
   onPlay,
 }: {
   row: CentralOccurrenceSummaryRow;
   playMode: CentralPlayMode;
+  viewOnly: boolean;
   onPlay: () => void;
 }) {
   const status: CentralEventValidationStatus = row.validationStatus ?? 'aguardando';
@@ -507,7 +537,7 @@ function CollapsedSummaryRow({
       </td>
       <td className="central-controle-row__driver">{row.driverName}</td>
       <td className="central-controle-row__actions">
-        <SummaryRowActions row={row} playMode={playMode} onPlay={onPlay} />
+        <SummaryRowActions row={row} playMode={playMode} viewOnly={viewOnly} onPlay={onPlay} />
       </td>
     </tr>
   );
@@ -525,10 +555,17 @@ export const OperacoesCentralPage: React.FC = () => {
   );
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [validationOccurrenceId, setValidationOccurrenceId] = useState<string | null>(null);
+  const [validationViewOnly, setValidationViewOnly] = useState(false);
   const [tratativaModalOpen, setTratativaModalOpen] = useState(false);
   const [tratativaOccurrenceId, setTratativaOccurrenceId] = useState<string>(
     mockCentralOccurrenceExpanded.id,
   );
+  const [tratativaViewOnly, setTratativaViewOnly] = useState(false);
+  const [viewOnlyNoticeOpen, setViewOnlyNoticeOpen] = useState(false);
+  const [pendingViewAction, setPendingViewAction] = useState<{
+    occurrenceId: string;
+    playMode: CentralPlayMode;
+  } | null>(null);
   const [treatmentDurationByOccurrence, setTreatmentDurationByOccurrence] = useState<
     Record<string, string>
   >({});
@@ -553,22 +590,56 @@ export const OperacoesCentralPage: React.FC = () => {
     setValidationOccurrenceId(occurrenceId);
     setValidationModalOpen(true);
   };
-  const closeValidationModal = () => setValidationModalOpen(false);
+  const closeValidationModal = () => {
+    setValidationModalOpen(false);
+    setValidationViewOnly(false);
+  };
 
   const openTratativaModal = (occurrenceId: string) => {
     setTratativaOccurrenceId(occurrenceId);
     setTratativaModalOpen(true);
   };
-  const closeTratativaModal = () => setTratativaModalOpen(false);
+  const closeTratativaModal = () => {
+    setTratativaModalOpen(false);
+    setTratativaViewOnly(false);
+  };
 
   const handleOccurrencePlay = (
     occurrenceId: string,
     playMode: CentralPlayMode,
+    viewOnly = false,
   ) => {
+    if (viewOnly) {
+      setPendingViewAction({ occurrenceId, playMode });
+      setViewOnlyNoticeOpen(true);
+      return;
+    }
     if (playMode === 'treatment') {
       openTratativaModal(occurrenceId);
       return;
     }
+    openValidationModal(occurrenceId);
+  };
+
+  const cancelViewOnlyNotice = () => {
+    setViewOnlyNoticeOpen(false);
+    setPendingViewAction(null);
+  };
+
+  const confirmViewOnlyNotice = () => {
+    if (!pendingViewAction) {
+      setViewOnlyNoticeOpen(false);
+      return;
+    }
+    const { occurrenceId, playMode } = pendingViewAction;
+    setViewOnlyNoticeOpen(false);
+    setPendingViewAction(null);
+    if (playMode === 'treatment') {
+      setTratativaViewOnly(true);
+      openTratativaModal(occurrenceId);
+      return;
+    }
+    setValidationViewOnly(true);
     openValidationModal(occurrenceId);
   };
 
@@ -755,10 +826,12 @@ export const OperacoesCentralPage: React.FC = () => {
                       expanded={expandedId === entry.occurrence.id}
                       onToggle={() => toggleExpanded(entry.occurrence.id)}
                       playMode={getGroupOccurrencePlayMode(entry.occurrence)}
+                      viewOnly={isOccurrenceOpenedByAnotherAnalyst(entry.occurrence)}
                       onPlay={() =>
                         handleOccurrencePlay(
                           entry.occurrence.id,
                           getGroupOccurrencePlayMode(entry.occurrence),
+                          isOccurrenceOpenedByAnotherAnalyst(entry.occurrence),
                         )
                       }
                     />
@@ -767,8 +840,13 @@ export const OperacoesCentralPage: React.FC = () => {
                       key={entry.row.id}
                       row={entry.row}
                       playMode={getSummaryRowPlayMode(entry.row)}
+                      viewOnly={isSummaryRowOpenedByAnotherAnalyst(entry.row)}
                       onPlay={() =>
-                        handleOccurrencePlay(entry.row.id, getSummaryRowPlayMode(entry.row))
+                        handleOccurrencePlay(
+                          entry.row.id,
+                          getSummaryRowPlayMode(entry.row),
+                          isSummaryRowOpenedByAnotherAnalyst(entry.row),
+                        )
                       }
                     />
                   ),
@@ -779,10 +857,21 @@ export const OperacoesCentralPage: React.FC = () => {
         </section>
       </div>
 
+      <UnsavedConfirmModal
+        open={viewOnlyNoticeOpen}
+        title="Informação"
+        message={'Já existe alguém analisando esta ocorrência.\nVocê poderá somente visualizar.'}
+        discardLabel="Cancelar"
+        saveLabel="Visualizar"
+        onDiscard={cancelViewOnlyNotice}
+        onSave={confirmViewOnlyNotice}
+      />
+
       <CentralValidacaoAlertasModal
         open={validationModalOpen}
         events={validationEvents}
         driverName={validationDriverName}
+        readOnly={validationViewOnly}
         onClose={closeValidationModal}
         onReturn={closeValidationModal}
         onConfirmClose={closeValidationModal}
@@ -792,6 +881,7 @@ export const OperacoesCentralPage: React.FC = () => {
 
       <TratativaOcorrenciaModal
         open={tratativaModalOpen}
+        mode={tratativaViewOnly ? 'visualizacao' : 'tratativa'}
         data={{
           ...tratativaData,
           treatmentDurationLabel:

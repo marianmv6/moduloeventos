@@ -122,6 +122,8 @@ interface CentralValidacaoAlertasModalProps {
   driverName: string;
   /** Quando true, o condutor não está identificado e o campo abre para seleção na aba Informações */
   driverUnidentified?: boolean;
+  /** Somente visualização — navegação livre pela lateral, sem ações de validação. */
+  readOnly?: boolean;
   onClose: () => void;
   onReturn: () => void;
   onConfirmClose: () => void;
@@ -749,6 +751,7 @@ interface InfoTabProps {
   driverUnidentified?: boolean;
   selectedDriver: string;
   onChangeDriver: (value: string) => void;
+  readOnly?: boolean;
   /** Tipo de evento selecionado na 1ª aba — exibido como campo readonly
    *  ("Tipo de evento") em "Dados do evento". Reflete em tempo real a
    *  escolha do analista no AlertTypeSelect. */
@@ -760,6 +763,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
   driverUnidentified,
   selectedDriver,
   onChangeDriver,
+  readOnly = false,
   eventTypeLabel,
 }) => (
   <div className="central-validacao-info">
@@ -770,7 +774,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
       </div>
       <div className="central-validacao-info__grid central-validacao-info__grid--2col">
         <InfoField label="Placa / Prefixo" value="ANB1K52" />
-        {driverUnidentified ? (
+        {driverUnidentified && !readOnly ? (
           <DriverSelect value={selectedDriver} onChange={onChangeDriver} />
         ) : (
           <InfoField label="Condutor" value={driverName} />
@@ -813,6 +817,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
   events,
   driverName,
   driverUnidentified = false,
+  readOnly = false,
   onClose,
   onReturn,
   onConfirmClose,
@@ -1029,6 +1034,10 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
 
   /** Fecha o modal pedindo confirmação caso haja alterações não salvas. */
   const requestClose = () => {
+    if (readOnly) {
+      onClose();
+      return;
+    }
     if (isDirty) {
       setUnsavedConfirmOpen(true);
       return;
@@ -1060,7 +1069,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
           {events.map((event, index) => {
             const isActive = index === activeIndex;
             const isConfirmed = confirmedIds.has(event.id);
-            const canNavigate = index <= frontierIndex;
+            const canNavigate = readOnly || index <= frontierIndex;
             return (
               <li
                 key={event.id}
@@ -1168,6 +1177,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
               <MapPanel />
             </div>
 
+            {!readOnly && (
             <div className="central-validacao-controls">
               {isVideoEvent && (
                 <button type="button" className="central-validacao-play" aria-label="Reproduzir">
@@ -1236,6 +1246,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                 {isCurrentConfirmed ? 'Confirmado' : 'Confirmar'}
               </button>
             </div>
+            )}
 
             {(() => {
               // Timeline absoluta centrada no horário do evento ativo
@@ -1263,10 +1274,12 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
             driverUnidentified={driverUnidentified}
             selectedDriver={selectedDriver}
             onChangeDriver={setSelectedDriver}
+            readOnly={readOnly}
             eventTypeLabel={getValidationEventLabel(activeEvent, alertTypes, policyEventTypes)}
           />
         )}
 
+        {!readOnly && (
         <footer className="central-validacao-footer">
           <button
             type="button"
@@ -1339,6 +1352,7 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
             </LevelTooltip>
           )}
         </footer>
+        )}
       </section>
 
       <UnsavedConfirmModal

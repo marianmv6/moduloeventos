@@ -313,7 +313,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
               id="policy-name"
               type="text"
               value={name}
-              maxLength={30}
+              maxLength={40}
               onChange={(e) => {
                 setName(e.target.value);
                 if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));

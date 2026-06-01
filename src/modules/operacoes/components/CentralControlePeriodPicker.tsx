@@ -17,6 +17,30 @@ const MONTHS_PT = [
 ];
 
 const WEEKDAYS_PT = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+const PERIOD_EMPTY_PLACEHOLDER = 'dd/mm/aa - dd/mm/aa (hh:mm - hh:mm)';
+
+function formatTimePart(time: string): string {
+  return time && /^\d{2}:\d{2}$/.test(time) ? time : 'hh:mm';
+}
+
+function buildPeriodDisplay(value: CentralControlePeriodValue): { text: string; isPlaceholder: boolean } {
+  const startDate = parseIsoDate(value.periodoInicio);
+  const endDate = parseIsoDate(value.periodoFim);
+
+  if (!startDate && !endDate) {
+    return { text: PERIOD_EMPTY_PLACEHOLDER, isPlaceholder: true };
+  }
+
+  const startDateLabel = startDate ? formatDisplayDate(value.periodoInicio) : 'dd/mm/aa';
+  const endDateLabel = endDate ? formatDisplayDate(value.periodoFim) : 'dd/mm/aa';
+  const startTimeLabel = formatTimePart(value.periodoHoraInicio);
+  const endTimeLabel = formatTimePart(value.periodoHoraFim);
+
+  return {
+    text: `${startDateLabel} - ${endDateLabel} (${startTimeLabel} - ${endTimeLabel})`,
+    isPlaceholder: false,
+  };
+}
 
 export interface CentralControlePeriodValue {
   periodoInicio: string;
@@ -111,13 +135,10 @@ export const CentralControlePeriodPicker: React.FC<CentralControlePeriodPickerPr
   const startDate = parseIsoDate(value.periodoInicio);
   const endDate = parseIsoDate(value.periodoFim);
 
-  const displayValue = useMemo(() => {
-    if (!startDate && !endDate) return '';
-    if (startDate && !endDate) {
-      return `${formatDisplayDate(value.periodoInicio)} - dd/mm/aa`;
-    }
-    return `${formatDisplayDate(value.periodoInicio)} - ${formatDisplayDate(value.periodoFim)}`;
-  }, [startDate, endDate, value.periodoInicio, value.periodoFim]);
+  const displayValue = useMemo(
+    () => buildPeriodDisplay(value),
+    [value],
+  );
 
   useEffect(() => {
     const onOutside = (event: MouseEvent) => {
@@ -230,9 +251,9 @@ export const CentralControlePeriodPicker: React.FC<CentralControlePeriodPickerPr
         aria-expanded={open}
       >
         <span
-          className={`central-controle-period-picker__display${displayValue ? '' : ' central-controle-period-picker__display--placeholder'}`}
+          className={`central-controle-period-picker__display${displayValue.isPlaceholder ? ' central-controle-period-picker__display--placeholder' : ''}`}
         >
-          {displayValue || 'dd/mm/aa - dd/mm/aa'}
+          {displayValue.text}
         </span>
         <span className="central-controle-period-picker__calendar-icon" aria-hidden>
           <IconCalendar />
