@@ -4,22 +4,34 @@ Este projeto publica a **mesma versão** em dois endereços:
 
 | URL | Repositório GitHub | Uso |
 |-----|-------------------|-----|
-| https://regrasdetratativas.vercel.app | `marianmv6/regrasdetratativas` | Produção principal |
-| https://moduloeventos.vercel.app | `marianmv6/moduloeventos` | Mesmo app (substitui a versão antiga “Regras de risco”) |
+| https://regrasdetratativas.vercel.app | `marianmv6/regrasdetratativas` | Produção legada (sem novas features) |
+| https://moduloeventos.vercel.app | `marianmv6/moduloeventos` | **Ambiente ativo** — novas alterações |
 
-## Atualizar os dois de uma vez
+## Ambiente local (= moduloeventos)
 
-Na pasta `modulo-eventos-novo`, após commit:
+Desenvolvimento e testes locais devem usar **somente** a pasta `modulo-eventos-novo`:
 
 ```powershell
-git push origin main
-git push moduloeventos main
+Set-Location "...\DHC\modulo-eventos-novo"
+npm run dev
 ```
 
-Ou use o script:
+Abra **http://localhost:4001/** — equivale ao deploy de https://moduloeventos.vercel.app.
+
+> Não use `npm run dev` na pasta raiz `DHC` (porta 4000): é outro projeto.
+
+## Deploy
+
+**Padrão (apenas moduloeventos):**
 
 ```powershell
-.\push-ambos-repos.ps1
+.\push-moduloeventos.ps1 "mensagem do commit"
+```
+
+**Sincronizar os dois repositários** (quando necessário):
+
+```powershell
+.\push-ambos-repos.ps1 "mensagem do commit"
 ```
 
 A Vercel faz deploy automático em cada repositório conectado.

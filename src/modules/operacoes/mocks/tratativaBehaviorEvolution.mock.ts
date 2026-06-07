@@ -1,10 +1,10 @@
 import type { TratativaBehaviorEvolutionData } from '../types/tratativaOcorrencia.types';
 
-/** Mock alinhado ao Figma (imagem de referência): janela 08:00–17:00. */
+/** Mock alinhado ao Figma (imagem de referência): janela 08:00–20:00. */
 export const mockTratativaBehaviorEvolution: TratativaBehaviorEvolutionData = {
   windowStartLabel: '08:00',
-  windowEndLabel: '17:00',
-  windowMinutes: 9 * 60,
+  windowEndLabel: '20:00',
+  windowMinutes: 12 * 60,
   maxScore: 300,
   points: [
     {
@@ -202,6 +202,19 @@ export const mockTratativaBehaviorEvolution: TratativaBehaviorEvolutionData = {
       eventType: 'Sonolência N2',
       location: 'BR-290, km 92 — Eldorado do Sul - RS',
       occurredAtLabel: '22/05, 16:45 (22/05, 23:45 +1)',
+    },
+    {
+      kind: 'treatment',
+      id: 'beh-t-current',
+      journeyTime: '19:30',
+      minutesFromStart: 690,
+      cumulativeScore: 195,
+      treatment: {
+        treatedBy: 'Júlia Luz Campos',
+        actionTitle: 'Contato gestor imediato',
+        startedAt: '19:28',
+        endedAt: '19:45',
+      },
     },
   ],
 };

@@ -1167,7 +1167,10 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
 
         {activeTab === 'evolucao' && data.behaviorEvolution && (
           <div className="tratativa-body tratativa-behavior-evolution-tab">
-            <TratativaBehaviorEvolutionPanel data={data.behaviorEvolution} />
+            <TratativaBehaviorEvolutionPanel
+              data={data.behaviorEvolution}
+              markLastTreatmentAsOpen={isAuditoria}
+            />
           </div>
         )}
 

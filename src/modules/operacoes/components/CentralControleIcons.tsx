@@ -67,6 +67,28 @@ export const IconAnalystHeadset: React.FC<React.SVGProps<SVGSVGElement>> = (prop
   </svg>
 );
 
+/** Tratativa em aberto na linha do tempo — headset com selo verde de check. */
+export const IconTreatmentOpenCheck: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg width="30" height="27" viewBox="0 0 24 22" fill="none" aria-hidden {...props}>
+    <path
+      d="M3.5 7.25C3.5 4.73 5.48 2.75 8 2.75H16C18.52 2.75 20.5 4.73 20.5 7.25V14.25C20.5 16.77 18.52 18.75 16 18.75H10.75L7.25 21.25V18.75H8C5.48 18.75 3.5 16.77 3.5 14.25V7.25Z"
+      fill="#FFFFFF"
+    />
+    <path d="M10.75 1.25L12.75 3.25H10.75V1.25Z" fill="#FFFFFF" />
+    <g transform="translate(1.75, 3.25)">
+      <path d={ANALYST_HEADSET_PATH} fill="#2F2F2F" fillOpacity="0.5" />
+    </g>
+    <circle cx="19" cy="17" r="4.5" fill="#22C55E" />
+    <path
+      d="M17.1 17.05L18.35 18.45L20.95 15.15"
+      stroke="#FFFFFF"
+      strokeWidth="1.35"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /** Monitoramento por IA */
 export const IconMonitorBot: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg width="19" height="19" viewBox="0 0 19 19" fill="none" aria-hidden {...props}>

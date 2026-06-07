@@ -182,6 +182,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       location: 'Canoas / RS',
     },
   ],
+  behaviorEvolution: getBehaviorEvolutionForOccurrence('occ-1'),
 };
 
 const TRATATIVA_SHARED_TEMPLATE = {

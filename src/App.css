@@ -9072,6 +9072,18 @@ body.cr-fullscreen-modal-open .app-content {
   fill-opacity: 0.5;
 }
 
+.tratativa-behavior-evolution__treatment-marker-check-bg {
+  fill: #22c55e;
+}
+
+.tratativa-behavior-evolution__treatment-marker-check-icon {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .tratativa-behavior-evolution__treatment-hit-area {
   cursor: pointer;
   pointer-events: all;

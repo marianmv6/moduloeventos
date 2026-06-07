@@ -29,6 +29,9 @@ const X_AXIS_TITLE_Y = CHART_HEIGHT - 6;
 const EVENT_DOT_RADIUS = 4;
 const TREATMENT_ICON_W = 21;
 const TREATMENT_ICON_H = 19;
+/** Mesmo peso visual do headset (21×19); viewBox 24×22 inclui balão e check. */
+const TREATMENT_OPEN_ICON_W = 30;
+const TREATMENT_OPEN_ICON_H = 27;
 const TREATMENT_HIT_RADIUS = 10;
 const TREATMENT_ICON_PAD = 2;
 const TOOLTIP_LEG_HEIGHT = 8;
@@ -36,6 +39,8 @@ const TOOLTIP_GAP = 4;
 
 interface TratativaBehaviorEvolutionPanelProps {
   data: TratativaBehaviorEvolutionData;
+  /** Na auditoria, a última tratativa da linha do tempo usa o ícone com check verde. */
+  markLastTreatmentAsOpen?: boolean;
 }
 
 type HoverTarget =
@@ -157,6 +162,7 @@ function TreatmentTimelineNode({
   point,
   scaleX,
   scaleY,
+  isOpenTreatment = false,
   onShowTooltip,
   onHideTooltip,
 }: {
@@ -165,36 +171,75 @@ function TreatmentTimelineNode({
   point: TratativaBehaviorTreatmentPoint;
   scaleX: number;
   scaleY: number;
+  isOpenTreatment?: boolean;
   onShowTooltip: (target: HoverTarget, element: Element) => void;
   onHideTooltip: () => void;
 }) {
-  const iconX = cx - TREATMENT_ICON_W / 2;
-  const iconY = cy - TREATMENT_ICON_H / 2;
+  const iconW = isOpenTreatment ? TREATMENT_OPEN_ICON_W : TREATMENT_ICON_W;
+  const iconH = isOpenTreatment ? TREATMENT_OPEN_ICON_H : TREATMENT_ICON_H;
+  const iconX = cx - iconW / 2;
+  const iconY = cy - iconH / 2;
 
   return (
     <g
-      className="tratativa-behavior-evolution__treatment-node"
+      className={`tratativa-behavior-evolution__treatment-node${
+        isOpenTreatment ? ' tratativa-behavior-evolution__treatment-node--open' : ''
+      }`}
       transform={markerCounterScaleTransform(cx, cy, scaleX, scaleY)}
     >
       <rect
         x={iconX - TREATMENT_ICON_PAD}
         y={iconY - TREATMENT_ICON_PAD}
-        width={TREATMENT_ICON_W + TREATMENT_ICON_PAD * 2}
-        height={TREATMENT_ICON_H + TREATMENT_ICON_PAD * 2}
+        width={iconW + TREATMENT_ICON_PAD * 2}
+        height={iconH + TREATMENT_ICON_PAD * 2}
         className="tratativa-behavior-evolution__treatment-marker-bg"
         pointerEvents="none"
       />
-      <svg
-        x={iconX}
-        y={iconY}
-        width={TREATMENT_ICON_W}
-        height={TREATMENT_ICON_H}
-        viewBox="0 0 21 19"
-        aria-hidden
-        pointerEvents="none"
-      >
-        <path d={ANALYST_HEADSET_PATH} className="tratativa-behavior-evolution__treatment-marker-icon" />
-      </svg>
+      {isOpenTreatment ? (
+        <svg
+          x={iconX}
+          y={iconY}
+          width={iconW}
+          height={iconH}
+          viewBox="0 0 24 22"
+          aria-hidden
+          pointerEvents="none"
+        >
+          <path
+            d="M3.5 7.25C3.5 4.73 5.48 2.75 8 2.75H16C18.52 2.75 20.5 4.73 20.5 7.25V14.25C20.5 16.77 18.52 18.75 16 18.75H10.75L7.25 21.25V18.75H8C5.48 18.75 3.5 16.77 3.5 14.25V7.25Z"
+            className="tratativa-behavior-evolution__treatment-marker-bg"
+          />
+          <path
+            d="M10.75 1.25L12.75 3.25H10.75V1.25Z"
+            className="tratativa-behavior-evolution__treatment-marker-bg"
+          />
+          <g transform="translate(1.75, 3.25)">
+            <path d={ANALYST_HEADSET_PATH} className="tratativa-behavior-evolution__treatment-marker-icon" />
+          </g>
+          <circle
+            cx="19"
+            cy="17"
+            r="4.5"
+            className="tratativa-behavior-evolution__treatment-marker-check-bg"
+          />
+          <path
+            d="M17.1 17.05L18.35 18.45L20.95 15.15"
+            className="tratativa-behavior-evolution__treatment-marker-check-icon"
+          />
+        </svg>
+      ) : (
+        <svg
+          x={iconX}
+          y={iconY}
+          width={iconW}
+          height={iconH}
+          viewBox="0 0 21 19"
+          aria-hidden
+          pointerEvents="none"
+        >
+          <path d={ANALYST_HEADSET_PATH} className="tratativa-behavior-evolution__treatment-marker-icon" />
+        </svg>
+      )}
       <circle
         cx={cx}
         cy={cy}
@@ -215,6 +260,7 @@ function TreatmentTimelineNode({
 
 export const TratativaBehaviorEvolutionPanel: React.FC<TratativaBehaviorEvolutionPanelProps> = ({
   data,
+  markLastTreatmentAsOpen = false,
 }) => {
   const [hoverTarget, setHoverTarget] = useState<HoverTarget | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
@@ -244,6 +290,13 @@ export const TratativaBehaviorEvolutionPanel: React.FC<TratativaBehaviorEvolutio
   }, [viewBoxWidth]);
 
   const sortedPoints = useMemo(() => sortChartPoints(data.points), [data.points]);
+  const openTreatmentId = useMemo(() => {
+    if (!markLastTreatmentAsOpen) return null;
+    const treatments = sortedPoints.filter(
+      (point): point is TratativaBehaviorTreatmentPoint => point.kind === 'treatment',
+    );
+    return treatments[treatments.length - 1]?.id ?? null;
+  }, [markLastTreatmentAsOpen, sortedPoints]);
 
   const xTicks = useMemo(
     () => buildXTicks(data.windowStartLabel, data.windowEndLabel),
@@ -381,6 +434,7 @@ export const TratativaBehaviorEvolutionPanel: React.FC<TratativaBehaviorEvolutio
                   point={point}
                   scaleX={svgScale.x}
                   scaleY={svgScale.y}
+                  isOpenTreatment={point.id === openTreatmentId}
                   onShowTooltip={showTooltip}
                   onHideTooltip={hideTooltip}
                 />
