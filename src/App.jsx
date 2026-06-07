@@ -5,6 +5,7 @@ import {
   OperacoesEventosPage,
   OperacoesCentralPage,
   OperacoesAuditoriaPage,
+  MonitorRiscoPage,
 } from './modules/operacoes';
 import { AppSidebar } from './components/layout/AppSidebar';
 import './App.css';
@@ -16,7 +17,12 @@ function App() {
   const handleRouteChange = (route) => {
     requestRiskRulesNavigation(() => {
       setActiveRoute(route);
-      const operacoesRoutes = ['operacoes-eventos', 'central-operacoes', 'operacoes-auditoria'];
+      const operacoesRoutes = [
+        'operacoes-eventos',
+        'central-operacoes',
+        'monitor-risco',
+        'operacoes-auditoria',
+      ];
       if (operacoesRoutes.includes(route)) {
         setMenuLevel('operacoes');
       }
@@ -32,6 +38,9 @@ function App() {
     }
     if (activeRoute === 'operacoes-auditoria') {
       return <OperacoesAuditoriaPage />;
+    }
+    if (activeRoute === 'monitor-risco') {
+      return <MonitorRiscoPage />;
     }
     return <RiskRulesPage appRoute={activeRoute} />;
   };

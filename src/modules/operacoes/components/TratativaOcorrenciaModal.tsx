@@ -6,6 +6,7 @@ import type {
   TratativaAction,
   TratativaHistoryEntry,
   TratativaActionResolution,
+  TratativaAttachment,
 } from '../types/tratativaOcorrencia.types';
 import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
@@ -17,6 +18,7 @@ import {
 import type { ContactPreference } from '../../risk-rules/types/risk.types';
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
 import { TratativaBehaviorEvolutionPanel } from './TratativaBehaviorEvolutionPanel';
+import { TratativaAnexosPanel } from './TratativaAnexosPanel';
 
 interface TratativaOcorrenciaModalProps {
   open: boolean;
@@ -32,7 +34,7 @@ interface TratativaOcorrenciaModalProps {
   history?: TratativaHistoryEntry[];
 }
 
-type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'evolucao' | 'historico';
+type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'anexos' | 'evolucao' | 'historico';
 
 const COPY_SUCCESS_TOAST = 'Copiado para a área de transferência.';
 
@@ -654,7 +656,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   );
   /** Vídeo expandido na aba Eventos (mesma mecânica do modal de validação). */
   const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<TratativaAttachment[]>(data.attachments ?? []);
   const [copyToastVisible, setCopyToastVisible] = useState(false);
+  const [anexoToast, setAnexoToast] = useState<{ message: string; visible: boolean }>({
+    message: '',
+    visible: false,
+  });
 
   const showCopyToast = useCallback(() => setCopyToastVisible(true), []);
   const dismissCopyToast = useCallback(() => setCopyToastVisible(false), []);
@@ -714,6 +721,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     setSelectedActionId(data.actions[0]?.id ?? '');
     setExpandedActionId(data.actions[0]?.id ?? '');
     setExpandedVideo(null);
+    setAttachments(data.attachments ?? []);
   }, [open, data, isReadOnly]);
 
   /** Concluir liberado se alguma ação for "Resolvido" ou se a última
@@ -887,6 +895,15 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
             onClick={() => setActiveTab('eventos')}
           >
             Eventos
+          </button>
+          <button
+            type="button"
+            className={`central-validacao-tab${
+              activeTab === 'anexos' ? ' central-validacao-tab--active' : ''
+            }`}
+            onClick={() => setActiveTab('anexos')}
+          >
+            Anexos
           </button>
           {data.behaviorEvolution && (
             <button
@@ -1165,6 +1182,17 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           </div>
         )}
 
+        {activeTab === 'anexos' && (
+          <div className="tratativa-body tratativa-anexos-tab">
+            <TratativaAnexosPanel
+              attachments={attachments}
+              onChange={setAttachments}
+              readOnly={isReadOnly}
+              onValidationError={(message) => setAnexoToast({ message, visible: true })}
+            />
+          </div>
+        )}
+
         {activeTab === 'evolucao' && data.behaviorEvolution && (
           <div className="tratativa-body tratativa-behavior-evolution-tab">
             <TratativaBehaviorEvolutionPanel
@@ -1221,6 +1249,13 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
       visible={copyToastVisible}
       onClose={dismissCopyToast}
       duration={4000}
+    />
+    <SuccessToast
+      message={anexoToast.message}
+      visible={anexoToast.visible}
+      onClose={() => setAnexoToast((prev) => ({ ...prev, visible: false }))}
+      duration={4000}
+      variant="warning"
     />
     </SystemFullscreenPortal>
   );

@@ -30,6 +30,22 @@ function applyAuditoriaFilters(
   });
 }
 
+const IconAnexoIndicator: React.FC = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path
+      d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 1 1-2.83-2.83l8.49-8.48"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+function getAttachmentCount(row: AuditoriaRow): number {
+  return row.occurrenceSnapshot.attachments?.length ?? 0;
+}
+
 export const OperacoesAuditoriaPage: React.FC = () => {
   const [selected, setSelected] = useState<AuditoriaRow | null>(null);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
@@ -120,11 +136,14 @@ export const OperacoesAuditoriaPage: React.FC = () => {
                 <th className="operacoes-col-data">Tratado por</th>
                 <th className="operacoes-col-data">Placa / prefixo</th>
                 <th className="operacoes-col-data">Motorista</th>
+                <th className="operacoes-col-data operacoes-col-anexos">Anexos</th>
                 <th className="list-cell-actions operacoes-col-acoes-header" aria-label="Ações" />
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row) => (
+              {filteredRows.map((row) => {
+                const attachmentCount = getAttachmentCount(row);
+                return (
                 <tr key={row.id}>
                   <td className="operacoes-col-data">
                     <TruncatedTextTooltip text={row.treatedAt} />
@@ -137,6 +156,16 @@ export const OperacoesAuditoriaPage: React.FC = () => {
                   </td>
                   <td className="operacoes-col-data">
                     <TruncatedTextTooltip text={row.driverName} />
+                  </td>
+                  <td className="operacoes-col-data operacoes-col-anexos">
+                    {attachmentCount > 0 ? (
+                      <span className="operacoes-auditoria-anexos" title={`${attachmentCount} anexo(s)`}>
+                        <IconAnexoIndicator />
+                        <span>{attachmentCount}</span>
+                      </span>
+                    ) : (
+                      <span className="operacoes-auditoria-anexos operacoes-auditoria-anexos--empty">—</span>
+                    )}
                   </td>
                   <td className="list-cell-actions">
                     <div className="list-actions">
@@ -152,7 +181,8 @@ export const OperacoesAuditoriaPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

@@ -3,8 +3,6 @@ import type { EmailTemplate } from '../../types/risk.types';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { DEFAULT_TEMPLATE_ID } from '../../constants/emailTemplateConstants';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
-import { getCompanyName } from '../../constants/companies';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 export interface EmailTemplatesPanelHandle {
   toggleFilter: () => void;
@@ -32,15 +30,11 @@ export const EmailTemplatesPanel = forwardRef<EmailTemplatesPanelHandle, EmailTe
     { templates, onNew, onEdit, onDelete, hideToolbar = false, onFilterStateChange },
     ref,
   ) {
-    const currentUser = useCurrentUser();
-    const isClient = currentUser.kind === 'client';
-
-    const EMPTY_FILTERS = { empresa: '', status: '' };
-    const [filters, setFilters] = useState<{ empresa: string; status: string }>(EMPTY_FILTERS);
+    const EMPTY_FILTERS = { status: '' };
+    const [filters, setFilters] = useState<{ status: string }>(EMPTY_FILTERS);
     const [filterOpen, setFilterOpen] = useState(false);
 
-    const filterFields: AdvancedFilterField<{ empresa: string; status: string }>[] = [
-      { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+    const filterFields: AdvancedFilterField<{ status: string }>[] = [
       { key: 'status', label: 'Status', options: STATUS_OPTIONS },
     ];
 
@@ -64,18 +58,14 @@ export const EmailTemplatesPanel = forwardRef<EmailTemplatesPanelHandle, EmailTe
     );
 
     const filteredTemplates = useMemo(() => {
-      const baseList = isClient
-        ? templates.filter((t) => t.companyId === currentUser.companyId)
-        : templates;
-      return baseList.filter((t) => {
-        if (filters.empresa && t.companyId !== filters.empresa) return false;
+      return templates.filter((t) => {
         if (filters.status) {
           const want = filters.status === 'ativo';
           if (t.active !== want) return false;
         }
         return true;
       });
-    }, [templates, filters, isClient, currentUser.companyId]);
+    }, [templates, filters]);
 
     return (
       <>
@@ -100,7 +90,6 @@ export const EmailTemplatesPanel = forwardRef<EmailTemplatesPanelHandle, EmailTe
           <table className="list-table list-table--equal">
             <thead>
               <tr>
-                <th>Empresa</th>
                 <th>Título</th>
                 <th>Descrição</th>
                 <th>Status</th>
@@ -110,15 +99,19 @@ export const EmailTemplatesPanel = forwardRef<EmailTemplatesPanelHandle, EmailTe
             <tbody>
               {filteredTemplates.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="list-empty">
+                  <td colSpan={4} className="list-empty">
                     Nenhum template de e-mail cadastrado.
                   </td>
                 </tr>
               ) : (
                 filteredTemplates.map((t) => (
                   <tr key={t.id}>
-                    <td>{getCompanyName(t.companyId)}</td>
-                    <td>{t.title || '—'}</td>
+                    <td>
+                      {t.title || '—'}
+                      {t.sourceType === 'imported' && (
+                        <span className="email-templates-table__tag">HTML</span>
+                      )}
+                    </td>
                     <td className="drawer-email-templates-table__desc-cell">
                       {t.description ?? '—'}
                     </td>

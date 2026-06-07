@@ -266,6 +266,26 @@ export const IconAuditoria: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
   </svg>
 );
 
+/** Monitor de risco: painel com gráfico de tendência */
+export const IconMonitorRisco: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.75"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    {...props}
+  >
+    <path d="M3 20h18" />
+    <path d="M6 16l4-6 4 3 5-8" />
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+  </svg>
+);
+
 /** Mensagem voz: microfone */
 export const IconMensagemVoz: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg

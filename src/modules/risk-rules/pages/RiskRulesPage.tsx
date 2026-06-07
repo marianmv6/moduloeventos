@@ -26,6 +26,7 @@ import type { Policy, Treatment, Trail, Contact, VoiceMessage, ScoreRule, Histor
 import { ContactsPanel } from '../components/treatments/ContactsPanel';
 import { EmailTemplatesPanel } from '../components/treatments/EmailTemplatesPanel';
 import { EmailTemplateForm } from '../components/treatments/EmailTemplateForm';
+import { EmailTemplateImportForm } from '../components/treatments/EmailTemplateImportForm';
 import { VoiceMessagesPanel } from '../components/treatments/VoiceMessagesPanel';
 import { MAX_EMAIL_TEMPLATES_PER_COMPANY, DEFAULT_TEMPLATE_ID } from '../constants/emailTemplateConstants';
 import type { AppRoute } from '../../../components/layout/AppSidebar';
@@ -41,6 +42,7 @@ const ROUTE_TITLES: Record<AppRoute, string> = {
   'central-operacoes': 'Central de tratativas',
   'operacoes-eventos': 'Eventos',
   'operacoes-auditoria': 'Auditoria',
+  'monitor-risco': 'Monitor de risco',
 };
 
 const CADASTRO_ROUTES: AppRoute[] = ['contatos', 'email-automatico', 'mensagem-voz'];
@@ -93,6 +95,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     });
   }, [policies, scores, treatments, trails, contacts, voiceMessages, emailTemplates, history]);
   const [emailTemplateFormOpen, setEmailTemplateFormOpen] = useState(false);
+  const [emailTemplateFormMode, setEmailTemplateFormMode] = useState<'builder' | 'import'>('builder');
   const [emailTemplateEditing, setEmailTemplateEditing] = useState<EmailTemplate | null>(null);
   const contactsPanelRef = useRef<ContactsPanelHandle>(null);
   const voiceMessagesPanelRef = useRef<VoiceMessagesPanelHandle>(null);
@@ -333,6 +336,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
       if (state.emailTemplateFormOpen) {
         setEmailTemplateFormOpen(false);
         setEmailTemplateEditing(null);
+        setEmailTemplateFormMode('builder');
         proceed();
         return;
       }
@@ -672,7 +676,15 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     });
   };
 
-  const openEmailTemplateForm = (template: EmailTemplate | null) => {
+  const openEmailTemplateForm = (
+    template: EmailTemplate | null,
+    mode: 'builder' | 'import' = 'builder',
+  ) => {
+    if (template?.sourceType === 'imported') {
+      setEmailTemplateFormMode('import');
+    } else {
+      setEmailTemplateFormMode(mode);
+    }
     setEmailTemplateEditing(template);
     setEmailTemplateFormOpen(true);
   };
@@ -680,6 +692,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
   const closeEmailTemplateForm = () => {
     setEmailTemplateFormOpen(false);
     setEmailTemplateEditing(null);
+    setEmailTemplateFormMode('builder');
   };
 
   const handleEmailTemplateSave = (data: Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
@@ -699,6 +712,8 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                 description: data.description,
                 active: data.active,
                 variables: data.variables ?? t.variables,
+                sourceType: data.sourceType ?? t.sourceType,
+                customHtml: data.customHtml ?? t.customHtml,
                 updatedAt: now,
               }
             : t
@@ -722,6 +737,8 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
           description: data.description,
           active: data.active ?? true,
           variables: data.variables ?? {},
+          sourceType: data.sourceType ?? 'builder',
+          customHtml: data.customHtml,
           createdAt: now,
           updatedAt: now,
         },
@@ -780,7 +797,14 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
             )}
             {appRoute === 'email-automatico' && (
               <>
-                <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null)}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => openEmailTemplateForm(null, 'import')}
+                >
+                  Importar HTML
+                </button>
+                <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null, 'builder')}>
                   Novo E-mail
                 </button>
                 <AdvancedFilterToggle
@@ -845,7 +869,15 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
         {emailTemplateFormOpen && (
           <CrModal
             open
-            title={emailTemplateEditing ? 'Editar template de e-mail' : 'Novo template de e-mail'}
+            title={
+              emailTemplateEditing
+                ? emailTemplateFormMode === 'import'
+                  ? 'Editar template importado'
+                  : 'Editar template de e-mail'
+                : emailTemplateFormMode === 'import'
+                  ? 'Importar HTML'
+                  : 'Novo template de e-mail'
+            }
             onClose={closeEmailTemplateForm}
             onCancel={closeEmailTemplateForm}
             formId="email-template-form"
@@ -853,13 +885,23 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
             cancelLabel="Cancelar"
             fullScreen
           >
-            <EmailTemplateForm
-              id="email-template-form"
-              initialData={emailTemplateEditing ?? undefined}
-              onSubmit={handleEmailTemplateSave}
-              onCancel={closeEmailTemplateForm}
-              hideActions
-            />
+            {emailTemplateFormMode === 'import' ? (
+              <EmailTemplateImportForm
+                id="email-template-form"
+                initialData={emailTemplateEditing ?? undefined}
+                onSubmit={handleEmailTemplateSave}
+                onCancel={closeEmailTemplateForm}
+                hideActions
+              />
+            ) : (
+              <EmailTemplateForm
+                id="email-template-form"
+                initialData={emailTemplateEditing ?? undefined}
+                onSubmit={handleEmailTemplateSave}
+                onCancel={closeEmailTemplateForm}
+                hideActions
+              />
+            )}
           </CrModal>
         )}
         <ConfirmModal

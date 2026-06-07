@@ -1,4 +1,5 @@
 import type { AuditoriaRow } from '../types/operacoesAuditoria.types';
+import { mockTratativaAnexosAuditoria, mockTratativaAnexosPdfSample } from './tratativaAnexos.mock';
 import { mockTratativaOcorrencia } from './tratativaOcorrencia.mock';
 
 /** Listagem mock da tela de Auditoria — algumas tratativas concluídas para
@@ -23,6 +24,7 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
         a2: 'nao_resolvido',
         a3: 'resolvido',
       },
+      attachments: mockTratativaAnexosAuditoria.slice(0, 1),
     },
     history: [
       {
@@ -59,6 +61,7 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
         a1: 'nao_resolvido',
         a2: 'resolvido',
       },
+      attachments: [],
     },
     history: [
       {
@@ -95,6 +98,7 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
         a2: 'nao_resolvido',
         a3: 'resolvido',
       },
+      attachments: [...mockTratativaAnexosPdfSample, ...mockTratativaAnexosAuditoria.slice(0, 1)],
     },
     history: [
       {

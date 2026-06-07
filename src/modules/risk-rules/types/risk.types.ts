@@ -130,6 +130,10 @@ export interface EmailTemplate {
   isDefault?: boolean;
   /** Chaves das variáveis ativas (cabecalho/corpo/rodape) */
   variables?: Record<string, boolean>;
+  /** Origem do template: construtor padrão ou HTML importado */
+  sourceType?: 'builder' | 'imported';
+  /** Conteúdo HTML quando sourceType === 'imported' */
+  customHtml?: string;
   createdAt?: string;
   updatedAt?: string;
 }

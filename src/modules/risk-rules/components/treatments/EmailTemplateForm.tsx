@@ -1,8 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { EmailTemplate } from '../../types/risk.types';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
-import { COMPANY_OPTIONS } from '../../constants/companies';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
 import {
   EMAIL_VARS_CABECALHO,
   EMAIL_VARS_CORPO,
@@ -121,11 +119,6 @@ export const EmailTemplateForm: React.FC<EmailTemplateFormProps> = ({
   onCancel,
   hideActions = false,
 }) => {
-  const currentUser = useCurrentUser();
-  const isClient = currentUser.kind === 'client';
-  const defaultCompanyId = currentUser.companyId ?? COMPANY_OPTIONS[0].value;
-
-  const [companyId, setCompanyId] = useState(initialData?.companyId ?? defaultCompanyId);
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [active, setActive] = useState(initialData?.active ?? true);
@@ -138,7 +131,6 @@ export const EmailTemplateForm: React.FC<EmailTemplateFormProps> = ({
 
   useEffect(() => {
     if (initialData) {
-      setCompanyId(initialData.companyId ?? defaultCompanyId);
       setTitle(initialData.title ?? '');
       setDescription(initialData.description ?? '');
       setActive(initialData.active ?? true);
@@ -156,11 +148,11 @@ export const EmailTemplateForm: React.FC<EmailTemplateFormProps> = ({
     if (!titleTrimmed) return;
     onSubmit({
       ...(initialData?.id && { id: initialData.id }),
-      companyId,
       title: titleTrimmed,
       description: description.trim() || undefined,
       active,
       isDefault: initialData?.isDefault,
+      sourceType: 'builder',
       variables: { ...variables },
     });
   };
@@ -387,18 +379,6 @@ export const EmailTemplateForm: React.FC<EmailTemplateFormProps> = ({
       <div className="email-template-form__body">
         <div className="email-template-form__left">
           <div className="email-template-form__fields">
-            <div className="form-group">
-              <label htmlFor="email-template-company">Empresa</label>
-              <ModalSelect
-                id="email-template-company"
-                options={currentUser.availableCompanies}
-                value={companyId}
-                onChange={(v) => setCompanyId(v)}
-                placeholder="Selecione a empresa"
-                disabled={isClient}
-                className="modal-select--no-pill"
-              />
-            </div>
             <div className="form-group">
               <label htmlFor="email-template-title">Título</label>
               <input

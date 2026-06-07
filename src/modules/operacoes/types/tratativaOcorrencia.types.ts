@@ -146,6 +146,20 @@ export interface TratativaHistoryEntry {
   description: string;
 }
 
+export type TratativaAttachmentKind = 'image' | 'pdf';
+
+/** Anexo incluído na tratativa (foto ou PDF). */
+export interface TratativaAttachment {
+  id: string;
+  name: string;
+  kind: TratativaAttachmentKind;
+  mimeType: string;
+  sizeBytes: number;
+  /** URL para pré-visualização (imagens) ou ícone estático (PDF). */
+  previewUrl?: string;
+  uploadedAt?: string;
+}
+
 /** Dados gerais utilizados pelas abas Tratativa, Informações e Eventos. */
 export interface TratativaOcorrenciaData {
   /** Identificador da ocorrência sendo tratada. */
@@ -185,4 +199,6 @@ export interface TratativaOcorrenciaData {
   behaviorEvolution?: TratativaBehaviorEvolutionData;
   /** Resoluções da trilha no modo auditoria (ex.: não resolvido → resolvido). */
   auditActionResolutions?: Partial<Record<string, TratativaActionResolution>>;
+  /** Arquivos anexados na tratativa (aba Anexos). */
+  attachments?: TratativaAttachment[];
 }

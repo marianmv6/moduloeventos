@@ -5,6 +5,7 @@ import {
   IconCadastros,
   IconCentralOperacoes,
   IconConfiguracoes,
+  IconMonitorRisco,
   IconOperacoes,
   IconOperacoesEventos,
 } from './NavIcons';
@@ -20,7 +21,8 @@ export type AppRoute =
   | 'mensagem-voz'
   | 'central-operacoes'
   | 'operacoes-auditoria'
-  | 'operacoes-eventos';
+  | 'operacoes-eventos'
+  | 'monitor-risco';
 
 type FlyoutId = 'configuracoes' | 'cadastros';
 
@@ -307,6 +309,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {parentItem(<IconOperacoes />, 'Operações', goRoot)}
             {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
             {childItem('central-operacoes', 'Central de tratativas', <IconCentralOperacoes />)}
+            {childItem('monitor-risco', 'Monitor de risco', <IconMonitorRisco />)}
             {childItem('operacoes-auditoria', 'Auditoria', <IconAuditoria />)}
             {childItemWithFlyout(
               'cadastros',
