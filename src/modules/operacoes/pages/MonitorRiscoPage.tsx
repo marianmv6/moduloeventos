@@ -1,5 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { IconFilterBars } from '../components/IconFilterBars';
+import { IconIrisInsights } from '../components/IconIrisInsights';
+import {
+  IconRankingMotorista,
+  IconRankingVeiculo,
+} from '../components/MonitorRankingToggleIcons';
 import { MonitorRiscoFilterPanel } from '../components/MonitorRiscoFilterPanel';
 import { MonitorRiscoFilterBanner } from '../components/MonitorRiscoFilterBanner';
 import { mockMonitorRiscoData } from '../mocks/monitorRisco.mock';
@@ -7,70 +12,119 @@ import type {
   MonitorRankingKind,
   MonitorRiscoData,
   MonitorRiscoDistribuicaoItem,
+  MonitorRiscoFeedItem,
+  MonitorRiscoTabId,
   MonitorRiscoTendenciaPoint,
 } from '../types/monitorRisco.types';
 import {
   EMPTY_MONITOR_RISCO_FILTERS,
+  MONITOR_RISCO_DISTRIBUTION_LABELS,
+  MONITOR_RISCO_FEED_LEVEL_LABELS,
   MONITOR_RISCO_LEVEL_COLORS,
-  MONITOR_RISCO_LEVEL_LABELS,
 } from '../constants/monitorRiscoFilterOptions';
 import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
 import {
   applyMonitorRiscoFilters,
   countAppliedMonitorRiscoFilters,
 } from '../utils/monitorRiscoFilterSummary';
+import {
+  applyPolicyScope,
+  getPolicyById,
+  getPolicyRankingKind,
+} from '../utils/monitorRiscoPolicy';
 
-const TREND_ICON: Record<string, string> = {
-  up: '↑',
-  down: '↓',
-  stable: '→',
-};
 
-function DistribuicaoChart({ items }: { items: MonitorRiscoDistribuicaoItem[] }) {
+function IconMoreMenu({ selected = false }: { selected?: boolean }) {
+  return (
+    <svg width="29" height="29" viewBox="0 0 32 32" fill="none" aria-hidden>
+      {selected && (
+        <rect opacity="0.5" x="1" y="1" width="30" height="30" rx="7" stroke="#169EFF" strokeWidth="2" />
+      )}
+      <path
+        d="M16 24C15.45 24 14.9792 23.8042 14.5875 23.4125C14.1958 23.0208 14 22.55 14 22C14 21.45 14.1958 20.9792 14.5875 20.5875C14.9792 20.1958 15.45 20 16 20C16.55 20 17.0208 20.1958 17.4125 20.5875C17.8042 20.9792 18 21.45 18 22C18 22.55 17.8042 23.0208 17.4125 23.4125C17.0208 23.8042 16.55 24 16 24ZM16 18C15.45 18 14.9792 17.8042 14.5875 17.4125C14.1958 17.0208 14 16.55 14 16C14 15.45 14.1958 14.9792 14.5875 14.5875C14.9792 14.1958 15.45 14 16 14C16.55 14 17.0208 14.1958 17.4125 14.5875C17.8042 14.9792 18 15.45 18 16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18ZM16 12C15.45 12 14.9792 11.8042 14.5875 11.4125C14.1958 11.0208 14 10.55 14 10C14 9.45 14.1958 8.97917 14.5875 8.5875C14.9792 8.19583 15.45 8 16 8C16.55 8 17.0208 8.19583 17.4125 8.5875C17.8042 8.97917 18 9.45 18 10C18 10.55 17.8042 11.0208 17.4125 11.4125C17.0208 11.8042 16.55 12 16 12Z"
+        fill="#169EFF"
+      />
+    </svg>
+  );
+}
+
+
+function DonutChart({ items }: { items: MonitorRiscoDistribuicaoItem[] }) {
   const total = items.reduce((sum, item) => sum + item.count, 0);
+  const size = 140;
+  const stroke = 20;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
 
   return (
-    <div className="monitor-risco-chart monitor-risco-chart--distribution">
-      <div
-        className="monitor-risco-distribution-bar"
-        role="img"
-        aria-label="Distribuição por nível de risco"
-      >
-        {items.map((item) => (
-          <div
-            key={item.level}
-            className="monitor-risco-distribution-bar__segment"
-            style={{
-              width: `${item.percent}%`,
-              backgroundColor: MONITOR_RISCO_LEVEL_COLORS[item.level],
-            }}
-            title={`${item.label}: ${item.count} (${item.percent}%)`}
+    <div className="monitor-risco-distribution-layout">
+      <div className="monitor-risco-donut-wrap">
+        <svg
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+          className="monitor-risco-donut"
+          role="img"
+          aria-label="Distribuição por nível de risco"
+        >
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="#ECECEF"
+            strokeWidth={stroke}
           />
-        ))}
+          {items.map((item) => {
+            const segment = total > 0 ? (item.count / total) * circumference : 0;
+            const dashArray = `${segment} ${circumference - segment}`;
+            const dashOffset = -offset;
+            offset += segment;
+            return (
+              <circle
+                key={item.level}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                fill="none"
+                stroke={MONITOR_RISCO_LEVEL_COLORS[item.level]}
+                strokeWidth={stroke}
+                strokeDasharray={dashArray}
+                strokeDashoffset={dashOffset}
+                transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              />
+            );
+          })}
+        </svg>
+        <div className="monitor-risco-donut__center">
+          <strong>{total}</strong>
+          <span>ocorrências no período</span>
+        </div>
       </div>
       <ul className="monitor-risco-legend">
         {items.map((item) => (
           <li key={item.level} className="monitor-risco-legend__item">
             <span
-              className="monitor-risco-legend__dot"
+              className="monitor-risco-legend__swatch"
               style={{ backgroundColor: MONITOR_RISCO_LEVEL_COLORS[item.level] }}
             />
-            <span className="monitor-risco-legend__label">{item.label}</span>
-            <span className="monitor-risco-legend__value">
-              {item.count} <span className="monitor-risco-legend__muted">({item.percent}%)</span>
+            <span className="monitor-risco-legend__text">
+              {item.count}{' '}
+              {MONITOR_RISCO_DISTRIBUTION_LABELS[item.level] ?? item.label}{' '}
+              <span className="monitor-risco-legend__muted">({item.percent}%)</span>
             </span>
           </li>
         ))}
       </ul>
-      <p className="monitor-risco-chart__footnote">{total} ocorrências no período</p>
     </div>
   );
 }
 
 function TendenciaChart({ points }: { points: MonitorRiscoTendenciaPoint[] }) {
-  const width = 420;
-  const height = 180;
-  const pad = { top: 16, right: 12, bottom: 28, left: 36 };
+  const width = 462;
+  const height = 97;
+  const pad = { top: 0, right: 0, bottom: 0, left: 0 };
   const innerW = width - pad.left - pad.right;
   const innerH = height - pad.top - pad.bottom;
   const maxScore = Math.max(...points.flatMap((p) => [p.score, p.afterCentralActions ?? 0]), 1);
@@ -89,44 +143,50 @@ function TendenciaChart({ points }: { points: MonitorRiscoTendenciaPoint[] }) {
 
   return (
     <div className="monitor-risco-chart monitor-risco-chart--trend">
-      <svg viewBox={`0 0 ${width} ${height}`} className="monitor-risco-trend-svg" aria-hidden>
-        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-          const y = pad.top + innerH - ratio * innerH;
-          return (
-            <line
-              key={ratio}
-              x1={pad.left}
-              y1={y}
-              x2={width - pad.right}
-              y2={y}
-              className="monitor-risco-trend-svg__grid"
-            />
-          );
-        })}
-        <path d={toPath('score')} className="monitor-risco-trend-svg__line monitor-risco-trend-svg__line--raw" />
-        <path
-          d={toPath('afterCentralActions')}
-          className="monitor-risco-trend-svg__line monitor-risco-trend-svg__line--actions"
-        />
-        {points.map((point, index) => (
-          <text
-            key={point.label}
-            x={pad.left + index * xStep}
-            y={height - 8}
-            textAnchor="middle"
-            className="monitor-risco-trend-svg__label"
-          >
-            {point.label}
-          </text>
-        ))}
-      </svg>
+      <div className="monitor-risco-trend-chart">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="none"
+          className="monitor-risco-trend-svg"
+          aria-hidden
+        >
+          {[0, 0.5, 1].map((ratio) => {
+            const y = pad.top + innerH - ratio * innerH;
+            return (
+              <line
+                key={ratio}
+                x1={pad.left}
+                y1={y}
+                x2={width - pad.right}
+                y2={y}
+                className="monitor-risco-trend-svg__grid"
+              />
+            );
+          })}
+          <path d={toPath('score')} className="monitor-risco-trend-svg__line monitor-risco-trend-svg__line--raw" />
+          <path
+            d={toPath('afterCentralActions')}
+            className="monitor-risco-trend-svg__line monitor-risco-trend-svg__line--actions"
+          />
+        </svg>
+        <div
+          className="monitor-risco-trend-labels"
+          style={{ gridTemplateColumns: `repeat(${points.length}, minmax(0, 1fr))` }}
+        >
+          {points.map((point) => (
+            <span key={point.label} className="monitor-risco-trend-labels__item">
+              {point.label}
+            </span>
+          ))}
+        </div>
+      </div>
       <div className="monitor-risco-trend-legend">
         <span className="monitor-risco-trend-legend__item">
-          <span className="monitor-risco-trend-legend__line monitor-risco-trend-legend__line--raw" />
+          <span className="monitor-risco-trend-legend__swatch monitor-risco-trend-legend__swatch--raw" />
           Score observado
         </span>
         <span className="monitor-risco-trend-legend__item">
-          <span className="monitor-risco-trend-legend__line monitor-risco-trend-legend__line--actions" />
+          <span className="monitor-risco-trend-legend__swatch monitor-risco-trend-legend__swatch--actions" />
           Impacto das ações da central
         </span>
       </div>
@@ -134,77 +194,158 @@ function TendenciaChart({ points }: { points: MonitorRiscoTendenciaPoint[] }) {
   );
 }
 
-function ComportamentosChart({
-  items,
-}: {
-  items: MonitorRiscoData['comportamentos'];
-}) {
-  const max = Math.max(...items.map((item) => item.count), 1);
-
-  return (
-    <div className="monitor-risco-chart monitor-risco-chart--behaviors">
-      <ul className="monitor-risco-behavior-list">
-        {items.map((item) => (
-          <li key={item.id} className="monitor-risco-behavior-list__item">
-            <div className="monitor-risco-behavior-list__header">
-              <span>{item.label}</span>
-              <span className="monitor-risco-behavior-list__count">
-                {item.count} <span className="monitor-risco-legend__muted">({item.percent}%)</span>
-              </span>
-            </div>
-            <div className="monitor-risco-behavior-list__track">
-              <div
-                className="monitor-risco-behavior-list__fill"
-                style={{ width: `${(item.count / max) * 100}%` }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function RecenciaChart({ items }: { items: MonitorRiscoData['recencia'] }) {
-  const max = Math.max(...items.map((item) => item.count), 1);
+  const yMax = 118;
+  const plotHeight = 145;
+  const yTicks = [118, 50, 0];
 
   return (
-    <div className="monitor-risco-chart monitor-risco-chart--recency">
-      <div className="monitor-risco-recency-bars">
-        {items.map((item) => (
-          <div key={item.window} className="monitor-risco-recency-bars__item">
-            <div className="monitor-risco-recency-bars__column-wrap">
-              <div
-                className="monitor-risco-recency-bars__column"
-                style={{ height: `${(item.count / max) * 100}%` }}
-                title={`${item.label}: ${item.count}`}
-              />
-            </div>
-            <span className="monitor-risco-recency-bars__count">{item.count}</span>
-            <span className="monitor-risco-recency-bars__label">{item.label}</span>
-          </div>
+    <div className="monitor-risco-recency-chart">
+      <div className="monitor-risco-recency-chart__y-axis" aria-hidden>
+        {yTicks.map((tick) => (
+          <span key={tick} className="monitor-risco-recency-chart__y-label">
+            {tick}
+          </span>
         ))}
+      </div>
+      <div className="monitor-risco-recency-chart__plot">
+        <div
+          className="monitor-risco-recency-chart__plot-area"
+          style={{ height: plotHeight }}
+        >
+          <div className="monitor-risco-recency-chart__grid" aria-hidden>
+            {yTicks.map((tick) => (
+              <span key={tick} className="monitor-risco-recency-chart__grid-line" />
+            ))}
+          </div>
+          <div className="monitor-risco-recency-chart__bars">
+            {items.map((item) => (
+              <div key={item.window} className="monitor-risco-recency-chart__bar-col">
+                <div
+                  className="monitor-risco-recency-chart__bar"
+                  style={{
+                    height: `${Math.max(4, (item.count / yMax) * plotHeight)}px`,
+                  }}
+                  title={`${item.label}: ${item.count}`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="monitor-risco-recency-chart__labels">
+          {items.map((item) => (
+            <span key={item.window} className="monitor-risco-recency-chart__label">
+              {item.label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
+function formatRankingLine(
+  item: { driverName: string; plate: string; vehicleModel: string },
+  kind: MonitorRankingKind,
+): React.ReactNode {
+  const vehicleLabel = `${item.plate} / ${item.vehicleModel}`;
+
+  if (kind === 'veiculo') {
+    return (
+      <>
+        <span className="monitor-risco-ranking__vehicle">{vehicleLabel}</span>
+        <span className="monitor-risco-ranking__sep">|</span>
+        <span className="monitor-risco-ranking__name">{item.driverName}</span>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <span className="monitor-risco-ranking__name">{item.driverName}</span>
+      <span className="monitor-risco-ranking__sep">|</span>
+      <span className="monitor-risco-ranking__vehicle">{vehicleLabel}</span>
+    </>
+  );
+}
+
+
+function MonitorFeedTable({ items }: { items: MonitorRiscoFeedItem[] }) {
+  return (
+    <div className="monitor-risco-feed-table-wrap">
+      <table className="monitor-risco-feed-table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Evento</th>
+            <th>Motorista</th>
+            <th>Veículo</th>
+            <th>Nível</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr key={item.id}>
+              <td>{item.time}</td>
+              <td>{item.message}</td>
+              <td>{item.driverName}</td>
+              <td>{item.vehicleLabel}</td>
+              <td>
+                <span className={`monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}>
+                  {MONITOR_RISCO_FEED_LEVEL_LABELS[item.level]}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export const MonitorRiscoPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<MonitorRiscoTabId>('insights');
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<MonitorRiscoFilters>(EMPTY_MONITOR_RISCO_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<MonitorRiscoFilters>(EMPTY_MONITOR_RISCO_FILTERS);
   const [rankingKind, setRankingKind] = useState<MonitorRankingKind>('motorista');
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
-  const data = mockMonitorRiscoData;
   const appliedFilterCount = countAppliedMonitorRiscoFilters(appliedFilters);
 
+  const scopedData = useMemo(() => {
+    const base = appliedFilters.politicaId
+      ? applyPolicyScope(mockMonitorRiscoData, appliedFilters.politicaId)
+      : mockMonitorRiscoData;
+    return base;
+  }, [appliedFilters.politicaId]);
+
   const filteredFeed = useMemo(
-    () => applyMonitorRiscoFilters(data.feed, appliedFilters),
-    [appliedFilters, data.feed],
+    () => applyMonitorRiscoFilters(scopedData.feed, appliedFilters),
+    [appliedFilters, scopedData.feed],
   );
 
   const ranking =
-    rankingKind === 'motorista' ? data.rankingMotorista : data.rankingVeiculo;
+    rankingKind === 'motorista' ? scopedData.rankingMotorista : scopedData.rankingVeiculo;
+
+  const displayFeed = filteredFeed.slice(0, 4);
+
+  useEffect(() => {
+    if (!appliedFilters.politicaId) return;
+    const policy = getPolicyById(appliedFilters.politicaId);
+    if (policy) setRankingKind(getPolicyRankingKind(policy));
+  }, [appliedFilters.politicaId]);
+
+  useEffect(() => {
+    const onOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    if (moreMenuOpen) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [moreMenuOpen]);
 
   const toggleFilterPanel = () => {
     setFilterPanelOpen((open) => {
@@ -223,9 +364,10 @@ export const MonitorRiscoPage: React.FC = () => {
     setAppliedFilters(EMPTY_MONITOR_RISCO_FILTERS);
     setDraftFilters(EMPTY_MONITOR_RISCO_FILTERS);
     setFilterPanelOpen(false);
+    setRankingKind('motorista');
   };
 
-  const scorePercent = Math.round((data.scoreGeral.value / data.scoreGeral.maxScore) * 100);
+  const scorePercent = Math.round((scopedData.scoreGeral.value / scopedData.scoreGeral.maxScore) * 100);
 
   return (
     <div className="monitor-risco-page page-layout content-body">
@@ -248,7 +390,44 @@ export const MonitorRiscoPage: React.FC = () => {
               <IconFilterBars inverted={filterPanelOpen} />
             </button>
           </div>
+          <div className="tratativa-contact__menu-wrap operacoes-eventos-more-menu" ref={moreMenuRef}>
+            <button
+              type="button"
+              className={`tratativa-contact__more${moreMenuOpen ? ' tratativa-contact__more--open' : ''}`}
+              aria-label="Mais opções"
+              aria-expanded={moreMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setMoreMenuOpen((open) => !open)}
+            >
+              <IconMoreMenu selected={moreMenuOpen} />
+            </button>
+            {moreMenuOpen && (
+              <div className="tratativa-contact__menu" role="menu">
+                <button type="button" role="menuitem" className="tratativa-contact__menu-item">
+                  Exportar relatório
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+      </div>
+
+      <div className="monitor-risco-tabs risk-tabs">
+        <button
+          type="button"
+          className={`risk-tab monitor-risco-tab${activeTab === 'insights' ? ' risk-tab--active' : ''}`}
+          onClick={() => setActiveTab('insights')}
+        >
+          <IconIrisInsights />
+          Insights da Íris
+        </button>
+        <button
+          type="button"
+          className={`risk-tab monitor-risco-tab${activeTab === 'listagem' ? ' risk-tab--active' : ''}`}
+          onClick={() => setActiveTab('listagem')}
+        >
+          Listagem
+        </button>
       </div>
 
       {filterPanelOpen && (
@@ -267,136 +446,151 @@ export const MonitorRiscoPage: React.FC = () => {
         <MonitorRiscoFilterBanner appliedFilters={appliedFilters} onClear={handleClearFilters} />
       )}
 
-      <div className="monitor-risco-grid">
-        <section className="monitor-risco-card monitor-risco-card--score">
-          <div className="monitor-risco-card__header">
-            <h2 className="monitor-risco-card__title">Score geral da operação</h2>
-          </div>
-          <div className="monitor-risco-score">
-            <div className="monitor-risco-score__main">
-              <span className="monitor-risco-score__value">{data.scoreGeral.value}</span>
-              <span className="monitor-risco-score__max">/ {data.scoreGeral.maxScore} pts</span>
+      {activeTab === 'insights' ? (
+        <div className="monitor-risco-grid">
+          <section className="monitor-risco-card monitor-risco-card--score">
+            <div className="monitor-risco-card__header">
+              <h2 className="monitor-risco-card__title">Score geral da operação</h2>
             </div>
-            <div className="monitor-risco-score__meta">
-              <span className={`monitor-risco-score__trend monitor-risco-score__trend--${data.scoreGeral.trend}`}>
-                {TREND_ICON[data.scoreGeral.trend]} {data.scoreGeral.trendLabel}
-              </span>
-              <p className="monitor-risco-score__subtitle">{data.scoreGeral.subtitle}</p>
-            </div>
-            <div className="monitor-risco-score__meter" aria-hidden>
-              <div
-                className="monitor-risco-score__meter-fill"
-                style={{ width: `${scorePercent}%` }}
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="monitor-risco-card monitor-risco-card--distribution">
-          <div className="monitor-risco-card__header">
-            <h2 className="monitor-risco-card__title">Distribuição por nível de risco</h2>
-            <p className="monitor-risco-card__desc">Volume e priorização macro da operação</p>
-          </div>
-          <DistribuicaoChart items={data.distribuicao} />
-        </section>
-
-        <section className="monitor-risco-card monitor-risco-card--ranking">
-          <div className="monitor-risco-card__header monitor-risco-card__header--split">
-            <div>
-              <h2 className="monitor-risco-card__title">Ranking</h2>
-              <p className="monitor-risco-card__desc">Maiores exposições no período</p>
-            </div>
-            <div className="monitor-risco-toggle" role="group" aria-label="Tipo de ranking">
-              <button
-                type="button"
-                className={`monitor-risco-toggle__btn${rankingKind === 'motorista' ? ' is-active' : ''}`}
-                onClick={() => setRankingKind('motorista')}
-              >
-                Motorista
-              </button>
-              <button
-                type="button"
-                className={`monitor-risco-toggle__btn${rankingKind === 'veiculo' ? ' is-active' : ''}`}
-                onClick={() => setRankingKind('veiculo')}
-              >
-                Veículo
-              </button>
-            </div>
-          </div>
-          <ol className="monitor-risco-ranking">
-            {ranking.map((item, index) => (
-              <li key={item.id} className="monitor-risco-ranking__item">
-                <span className="monitor-risco-ranking__pos">{index + 1}</span>
-                <div className="monitor-risco-ranking__body">
-                  <span className="monitor-risco-ranking__name">{item.label}</span>
-                  <span className="monitor-risco-ranking__secondary">{item.secondaryLabel}</span>
+            <div className="monitor-risco-score">
+              <div className="monitor-risco-score__row">
+                <div className="monitor-risco-score__main">
+                  <span className="monitor-risco-score__value">{scopedData.scoreGeral.value}</span>
+                  <span className="monitor-risco-score__max">/ {scopedData.scoreGeral.maxScore} pts</span>
                 </div>
-                <span
-                  className={`monitor-risco-ranking__badge monitor-risco-ranking__badge--${item.level}`}
-                >
-                  {MONITOR_RISCO_LEVEL_LABELS[item.level]}
-                </span>
-                <span className="monitor-risco-ranking__score">{item.score} pts</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+                <div className="monitor-risco-score__meta">
+                  <span
+                    className={`monitor-risco-score__trend monitor-risco-score__trend--${scopedData.scoreGeral.trend}`}
+                  >
+                    {scopedData.scoreGeral.trendLabel}
+                  </span>
+                  <p className="monitor-risco-score__subtitle">{scopedData.scoreGeral.subtitle}</p>
+                </div>
+              </div>
+              <div className="monitor-risco-score__meter" aria-hidden>
+                <div
+                  className="monitor-risco-score__meter-fill"
+                  style={{ width: `${scorePercent}%` }}
+                />
+              </div>
+            </div>
+          </section>
 
-        <section className="monitor-risco-card monitor-risco-card--trend">
-          <div className="monitor-risco-card__header">
-            <h2 className="monitor-risco-card__title">Tendência de risco</h2>
-            <p className="monitor-risco-card__desc">
-              Evolução da operação e impacto das ações da central
-            </p>
-          </div>
-          <TendenciaChart points={data.tendencia} />
-        </section>
+          <section className="monitor-risco-card monitor-risco-card--distribution">
+            <div className="monitor-risco-card__header">
+              <h2 className="monitor-risco-card__title">Distribuição por nível de risco</h2>
+              <p className="monitor-risco-card__desc">Volume e priorização macro da operação</p>
+            </div>
+            <DonutChart items={scopedData.distribuicao} />
+          </section>
 
-        <section className="monitor-risco-card monitor-risco-card--behaviors">
-          <div className="monitor-risco-card__header">
-            <h2 className="monitor-risco-card__title">Tipos de comportamento</h2>
-            <p className="monitor-risco-card__desc">Causas do risco para decisões operacionais</p>
-          </div>
-          <ComportamentosChart items={data.comportamentos} />
-        </section>
+          <section className="monitor-risco-card monitor-risco-card--ranking">
+            <div className="monitor-risco-card__header monitor-risco-card__header--split">
+              <div>
+                <h2 className="monitor-risco-card__title">Ranking</h2>
+                <p className="monitor-risco-card__desc">Maiores exposições no período</p>
+              </div>
+              <div className="monitor-risco-ranking-toggle" role="group" aria-label="Tipo de ranking">
+                <div className="operacoes-view-toggle-wrap">
+                  <button
+                    type="button"
+                    className="monitor-risco-ranking-toggle__btn"
+                    onClick={() => setRankingKind('motorista')}
+                    aria-label="Filtrar por motorista"
+                    aria-pressed={rankingKind === 'motorista'}
+                  >
+                    <IconRankingMotorista selected={rankingKind === 'motorista'} />
+                  </button>
+                  <span className="operacoes-view-tooltip" role="tooltip">
+                    Filtrar por motorista
+                  </span>
+                </div>
+                <div className="operacoes-view-toggle-wrap">
+                  <button
+                    type="button"
+                    className="monitor-risco-ranking-toggle__btn"
+                    onClick={() => setRankingKind('veiculo')}
+                    aria-label="Filtrar por veículo"
+                    aria-pressed={rankingKind === 'veiculo'}
+                  >
+                    <IconRankingVeiculo selected={rankingKind === 'veiculo'} />
+                  </button>
+                  <span className="operacoes-view-tooltip" role="tooltip">
+                    Filtrar por veículo
+                  </span>
+                </div>
+              </div>
+            </div>
+            <ol className="monitor-risco-ranking">
+              {ranking.map((item) => (
+                <li key={item.id} className="monitor-risco-ranking__item">
+                  <span className="monitor-risco-ranking__line">
+                    {formatRankingLine(item, rankingKind)}
+                  </span>
+                  <span
+                    className={`monitor-risco-ranking__score monitor-risco-ranking__score--${item.level}`}
+                  >
+                    {item.score} pts
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-        <section className="monitor-risco-card monitor-risco-card--recency">
-          <div className="monitor-risco-card__header">
-            <h2 className="monitor-risco-card__title">Recência</h2>
-            <p className="monitor-risco-card__desc">Quando o risco aconteceu</p>
-          </div>
-          <RecenciaChart items={data.recencia} />
-        </section>
+          <section className="monitor-risco-card monitor-risco-card--trend">
+            <div className="monitor-risco-card__header">
+              <h2 className="monitor-risco-card__title">Tendência de risco</h2>
+              <p className="monitor-risco-card__desc">
+                Evolução da operação e impacto das ações da central
+              </p>
+            </div>
+            <TendenciaChart points={scopedData.tendencia} />
+          </section>
 
-        <section className="monitor-risco-card monitor-risco-card--feed">
-          <div className="monitor-risco-card__header monitor-risco-card__header--split">
-            <div>
-              <h2 className="monitor-risco-card__title">Feed em tempo real</h2>
+          <section className="monitor-risco-card monitor-risco-card--recency">
+            <div className="monitor-risco-card__header">
+              <h2 className="monitor-risco-card__title">Histórico recente de riscos</h2>
+              <p className="monitor-risco-card__desc">Volume de eventos de risco detectados</p>
+            </div>
+            <RecenciaChart items={scopedData.recencia} />
+          </section>
+
+          <section className="monitor-risco-card monitor-risco-card--feed">
+            <div className="monitor-risco-card__header">
+              <h2 className="monitor-risco-card__title">Atualizações em tempo real</h2>
               <p className="monitor-risco-card__desc">Últimos eventos e tratativas</p>
             </div>
-            <span className="monitor-risco-live-badge" aria-label="Atualização em tempo real">
-              <span className="monitor-risco-live-badge__dot" />
-              Ao vivo
-            </span>
-          </div>
-          <ul className="monitor-risco-feed">
-            {filteredFeed.map((item) => (
-              <li key={item.id} className="monitor-risco-feed__item">
-                <span className="monitor-risco-feed__time">{item.time}</span>
-                <div className="monitor-risco-feed__content">
+            <ul className="monitor-risco-feed">
+              {displayFeed.map((item) => (
+                <li key={item.id} className="monitor-risco-feed__item">
+                  <span className="monitor-risco-feed__time">{item.time}</span>
                   <p className="monitor-risco-feed__message">{item.message}</p>
-                  <p className="monitor-risco-feed__entity">{item.entity}</p>
-                </div>
-                <span
-                  className={`monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}
-                >
-                  {MONITOR_RISCO_LEVEL_LABELS[item.level]}
-                </span>
-              </li>
-            ))}
-          </ul>
+                  <span className="monitor-risco-feed__driver">{item.driverName}</span>
+                  <span className="monitor-risco-feed__vehicle">{item.vehicleLabel}</span>
+                  <span
+                    className={`monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}
+                  >
+                    {MONITOR_RISCO_FEED_LEVEL_LABELS[item.level]}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      ) : (
+        <section className="monitor-risco-card monitor-risco-card--listagem">
+          <div className="monitor-risco-card__header">
+            <h2 className="monitor-risco-card__title">Listagem de ocorrências</h2>
+            <p className="monitor-risco-card__desc">
+              Eventos de risco no período
+              {appliedFilters.politicaId
+                ? ` — ${getPolicyById(appliedFilters.politicaId)?.name ?? 'política selecionada'}`
+                : ''}
+            </p>
+          </div>
+          <MonitorFeedTable items={filteredFeed} />
         </section>
-      </div>
+      )}
     </div>
   );
 };

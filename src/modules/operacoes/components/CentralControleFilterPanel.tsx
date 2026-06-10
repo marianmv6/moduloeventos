@@ -91,7 +91,7 @@ export const CentralControleFilterPanel: React.FC<CentralControleFilterPanelProp
             id="central-filtro-politica"
             className="modal-select--no-pill"
             mutedPlaceholder
-            label="Política de tratativa"
+            label="Política de ocorrências"
             value={filters.politicaTratativa}
             onChange={(politicaTratativa) => patch({ politicaTratativa })}
             options={getCentralPoliticaOptions()}

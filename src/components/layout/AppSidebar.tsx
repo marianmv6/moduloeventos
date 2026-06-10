@@ -9,6 +9,7 @@ import {
   IconOperacoes,
   IconOperacoesEventos,
 } from './NavIcons';
+import { isModuloEventosDeploy } from '../../config/deployTarget';
 
 export type MenuLevel = 'root' | 'operacoes';
 
@@ -33,7 +34,7 @@ interface FlyoutItem {
 
 const CONFIG_FLYOUT_ITEMS: FlyoutItem[] = [
   { route: 'tratativas', label: 'Regras de tratativa' },
-  { route: 'regras-tratativa', label: 'Políticas de tratativa' },
+  { route: 'regras-tratativa', label: 'Políticas de ocorrências' },
 ];
 
 const CADASTROS_FLYOUT_ITEMS: FlyoutItem[] = [
@@ -309,7 +310,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {parentItem(<IconOperacoes />, 'Operações', goRoot)}
             {childItem('operacoes-eventos', 'Eventos', <IconOperacoesEventos />)}
             {childItem('central-operacoes', 'Central de tratativas', <IconCentralOperacoes />)}
-            {childItem('monitor-risco', 'Monitor de risco', <IconMonitorRisco />)}
+            {isModuloEventosDeploy &&
+              childItem('monitor-risco', 'Monitor de risco', <IconMonitorRisco />)}
             {childItem('operacoes-auditoria', 'Auditoria', <IconAuditoria />)}
             {childItemWithFlyout(
               'cadastros',

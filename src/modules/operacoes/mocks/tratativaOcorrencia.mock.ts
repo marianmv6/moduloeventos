@@ -2,6 +2,7 @@ import type { TratativaOcorrenciaData } from '../types/tratativaOcorrencia.types
 import { buildTratativaOcorrenciaFromCentral } from '../utils/centralOccurrenceBridge';
 import { getBehaviorEvolutionForOccurrence } from './tratativaBehaviorEvolution.mock';
 import { mockTratativaAnexosAuditoria } from './tratativaAnexos.mock';
+import { MOCK_TRATATIVA_CONTACT_SCHEDULES } from './tratativaContactSchedules';
 
 const ORG_GROUPS = [
   { id: 'g1', label: 'Branco' },
@@ -38,10 +39,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
         {
           id: 'c1',
           name: 'Marco Antônio da Silva',
-          shiftLabel: 'Turno manhã, tarde',
-          shiftRange: '6:00 - 12:00',
-          timeStart: '6:00',
-          timeEnd: '12:00',
+          weeklySchedule: MOCK_TRATATIVA_CONTACT_SCHEDULES.segQui,
           phone: '(11) 98887-0333',
           email: 'marco.silva@bracell.com',
           contactPreference: 'ligacao',
@@ -59,10 +57,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
         {
           id: 'c2',
           name: 'Renata Lopes Souza',
-          shiftLabel: 'Turno tarde, noite',
-          shiftRange: '12:00 - 22:00',
-          timeStart: '12:00',
-          timeEnd: '22:00',
+          weeklySchedule: MOCK_TRATATIVA_CONTACT_SCHEDULES.terNoite,
           phone: '(11) 98887-0445',
           email: 'renata.souza@bracell.com',
           contactPreference: 'email',
@@ -80,10 +75,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
         {
           id: 'c3',
           name: 'Eduardo Tavares de Lima',
-          shiftLabel: 'Turno manhã',
-          shiftRange: '6:00 - 14:00',
-          timeStart: '6:00',
-          timeEnd: '14:00',
+          weeklySchedule: MOCK_TRATATIVA_CONTACT_SCHEDULES.segSexManha,
           phone: '(11) 98887-0511',
           email: 'eduardo.lima@bracell.com',
           contactPreference: 'whatsapp',
@@ -94,10 +86,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
         {
           id: 'c4',
           name: 'Patrícia Mendonça',
-          shiftLabel: 'Turno noite',
-          shiftRange: '22:00 - 6:00',
-          timeStart: '22:00',
-          timeEnd: '6:00',
+          weeklySchedule: MOCK_TRATATIVA_CONTACT_SCHEDULES.noite,
           phone: '(11) 98887-0612',
           email: 'patricia.mendonca@bracell.com',
           contactPreference: 'ligacao',
@@ -112,10 +101,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
     {
       id: 'c1',
       name: 'Marco Antônio da Silva',
-      shiftLabel: 'Turno manhã, tarde',
-      shiftRange: '6:00 - 12:00',
-      timeStart: '6:00',
-      timeEnd: '12:00',
+      weeklySchedule: MOCK_TRATATIVA_CONTACT_SCHEDULES.segQui,
       phone: '(11) 98887-0333',
       email: 'marco.silva@bracell.com',
       contactPreference: 'ligacao',

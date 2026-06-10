@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { RiskRulesPage } from './modules/risk-rules';
 import { requestRiskRulesNavigation } from './modules/risk-rules/utils/riskRulesNavigationGuard';
 import {
   OperacoesEventosPage,
   OperacoesCentralPage,
   OperacoesAuditoriaPage,
-  MonitorRiscoPage,
 } from './modules/operacoes';
 import { AppSidebar } from './components/layout/AppSidebar';
+import { isModuloEventosDeploy } from './config/deployTarget';
 import './App.css';
+
+const MonitorRiscoPage =
+  import.meta.env.VITE_DEPLOY_TARGET === 'moduloeventos'
+    ? React.lazy(() =>
+        import('./modules/operacoes/pages/MonitorRiscoPage').then((module) => ({
+          default: module.MonitorRiscoPage,
+        })),
+      )
+    : null;
 
 function App() {
   const [menuLevel, setMenuLevel] = useState('operacoes');
@@ -20,7 +29,7 @@ function App() {
       const operacoesRoutes = [
         'operacoes-eventos',
         'central-operacoes',
-        'monitor-risco',
+        ...(isModuloEventosDeploy ? ['monitor-risco'] : []),
         'operacoes-auditoria',
       ];
       if (operacoesRoutes.includes(route)) {
@@ -39,8 +48,12 @@ function App() {
     if (activeRoute === 'operacoes-auditoria') {
       return <OperacoesAuditoriaPage />;
     }
-    if (activeRoute === 'monitor-risco') {
-      return <MonitorRiscoPage />;
+    if (isModuloEventosDeploy && activeRoute === 'monitor-risco' && MonitorRiscoPage) {
+      return (
+        <Suspense fallback={null}>
+          <MonitorRiscoPage />
+        </Suspense>
+      );
     }
     return <RiskRulesPage appRoute={activeRoute} />;
   };

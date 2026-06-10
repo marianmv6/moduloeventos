@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ModalSelect } from '../../risk-rules/components/shared/ModalSelect';
 import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
-import {
-  MONITOR_COMPORTAMENTO_OPTIONS,
-  MONITOR_NIVEL_RISCO_OPTIONS,
-  MONITOR_POLITICA_OPTIONS,
-} from '../constants/monitorRiscoFilterOptions';
 import { CentralControlePeriodPicker } from './CentralControlePeriodPicker';
+import {
+  getMonitorPoliticaOptions,
+  getPolicyComportamentoOptions,
+  getPolicyNivelRiscoOptions,
+} from '../utils/monitorRiscoPolicy';
 
 interface MonitorRiscoFilterPanelProps {
   filters: MonitorRiscoFilters;
@@ -25,6 +25,25 @@ export const MonitorRiscoFilterPanel: React.FC<MonitorRiscoFilterPanelProps> = (
     onChange({ ...filters, ...partial });
   };
 
+  const politicaOptions = useMemo(() => getMonitorPoliticaOptions(), []);
+  const nivelOptions = useMemo(
+    () => getPolicyNivelRiscoOptions(filters.politicaId),
+    [filters.politicaId],
+  );
+  const comportamentoOptions = useMemo(
+    () => getPolicyComportamentoOptions(filters.politicaId),
+    [filters.politicaId],
+  );
+
+  const handlePoliticaChange = (politicaId: string) => {
+    onChange({
+      ...filters,
+      politicaId,
+      niveisRisco: '',
+      tiposComportamento: '',
+    });
+  };
+
   return (
     <section className="operacoes-eventos-filter-panel" aria-label="Filtros do monitor de risco">
       <div className="operacoes-eventos-filter-panel__fields">
@@ -33,9 +52,9 @@ export const MonitorRiscoFilterPanel: React.FC<MonitorRiscoFilterPanelProps> = (
           className="modal-select--no-pill"
           mutedPlaceholder
           label="Política"
-          value={filters.politicaEscopo}
-          onChange={(politicaEscopo) => patch({ politicaEscopo })}
-          options={MONITOR_POLITICA_OPTIONS}
+          value={filters.politicaId}
+          onChange={handlePoliticaChange}
+          options={politicaOptions}
           placeholder="(Preencha ou selecione)"
         />
         <ModalSelect
@@ -45,7 +64,7 @@ export const MonitorRiscoFilterPanel: React.FC<MonitorRiscoFilterPanelProps> = (
           label="Nível de risco"
           value={filters.niveisRisco}
           onChange={(niveisRisco) => patch({ niveisRisco })}
-          options={MONITOR_NIVEL_RISCO_OPTIONS}
+          options={nivelOptions}
           placeholder="(Preencha ou selecione)"
           multiple
         />
@@ -56,7 +75,7 @@ export const MonitorRiscoFilterPanel: React.FC<MonitorRiscoFilterPanelProps> = (
           label="Tipo de comportamento"
           value={filters.tiposComportamento}
           onChange={(tiposComportamento) => patch({ tiposComportamento })}
-          options={MONITOR_COMPORTAMENTO_OPTIONS}
+          options={comportamentoOptions}
           placeholder="(Preencha ou selecione)"
           multiple
         />

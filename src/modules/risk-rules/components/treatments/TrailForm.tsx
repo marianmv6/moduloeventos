@@ -1,42 +1,25 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Trail, TrailStep, TrailStepTrigger, StepActionType, Contact } from '../../types/risk.types';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
+import { RequiredFieldMarker } from '../shared/RequiredFieldMarker';
 import { InfoTooltip } from '../shared/InfoTooltip';
 import { IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { COMPANY_OPTIONS } from '../../constants/companies';
 import { contactOutsideHoursDisplay, contactPreferenceDisplay } from '../../constants/contactDisplay';
+import { formatContactWeeklySchedule } from '../../utils/contactSchedule';
 import { TruncatedTextTooltip } from '../shared/TruncatedTextTooltip';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
-const TURNOS_LABELS: Record<string, string> = {
-  manha: 'Manhã',
-  tarde: 'Tarde',
-  noite: 'Noite',
-  madrugada: 'Madrugada',
-};
-
 function formatContactLabel(c: Contact): string {
   const name = c.name || c.id;
-  const turnoParts: string[] = [];
-  if (c.turnos?.length) {
-    turnoParts.push(c.turnos.map((t) => TURNOS_LABELS[t] ?? t).join(', '));
-  }
-  if (c.timeStart || c.timeEnd) {
-    turnoParts.push([c.timeStart, c.timeEnd].filter(Boolean).join('–'));
-  }
-  if (turnoParts.length === 0) return name;
-  return `${name} (${turnoParts.join(' ')})`;
+  const schedule = formatContactWeeklySchedule(c);
+  if (schedule === '—') return name;
+  return `${name} (${schedule})`;
 }
 
-function contactTurnoDisplay(c: Contact): string {
-  if (!c.turnos?.length) return '—';
-  return c.turnos.map((t) => TURNOS_LABELS[t] ?? t).join(', ');
-}
-
-function contactHorarioDisplay(c: Contact): string {
-  if (!c.timeStart && !c.timeEnd) return '—';
-  return [c.timeStart, c.timeEnd].filter(Boolean).join('–');
+function contactScheduleDisplay(c: Contact): string {
+  return formatContactWeeklySchedule(c);
 }
 
 function contactDescriptionDisplay(c: Contact): string {
@@ -116,7 +99,6 @@ function ContactStepTable({
           <col className="tsc-col-check" />
           <col className="tsc-col-contact" />
           <col className="tsc-col-turnos" />
-          <col className="tsc-col-horarios" />
           <col className="tsc-col-pref" />
           <col className="tsc-col-outside" />
           <col className="tsc-col-desc" />
@@ -125,8 +107,7 @@ function ContactStepTable({
           <tr>
             <th scope="col" className="trail-step-contacts-table__th-checkbox" aria-label="Selecionar" />
             <th scope="col">Contato</th>
-            <th scope="col">Turnos</th>
-            <th scope="col">Horários</th>
+            <th scope="col">Escala de trabalho</th>
             <th scope="col" className="trail-step-contacts-table__th-wrap">Preferência de contato</th>
             <th scope="col" className="trail-step-contacts-table__th-wrap">Contato fora do horário</th>
             <th scope="col">Descrição</th>
@@ -148,8 +129,9 @@ function ContactStepTable({
                   {c.name || c.id}
                 </label>
               </td>
-              <td>{contactTurnoDisplay(c)}</td>
-              <td>{contactHorarioDisplay(c)}</td>
+              <td className="tsc-cell-turno">
+                <TruncatedTextTooltip text={contactScheduleDisplay(c)} />
+              </td>
               <td>{contactPreferenceDisplay(c)}</td>
               <td>{contactOutsideHoursDisplay(c)}</td>
               <td className="tsc-cell-desc">
@@ -412,6 +394,7 @@ export const TrailForm: React.FC<TrailFormProps> = ({
       <div className={`form-group ${fieldErrors.name ? 'has-error' : ''}`}>
         <div className="form-group__label-row">
           <label htmlFor="trail-name">Nome da tratativa</label>
+          <RequiredFieldMarker />
         </div>
         <div className="form-group__input-with-error">
           <input

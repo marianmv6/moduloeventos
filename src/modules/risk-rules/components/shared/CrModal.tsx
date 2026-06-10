@@ -13,6 +13,8 @@ interface CrModalProps {
   formId?: string;
   primaryLabel?: string;
   cancelLabel?: string;
+  /** Desabilita o botão primário (ex.: formulário inválido) */
+  primaryDisabled?: boolean;
   /** Modal tela cheia: cobre até o nome da página, título no formato de nome de página, X na lateral, botões no rodapé */
   fullScreen?: boolean;
 }
@@ -34,6 +36,7 @@ export const CrModal: React.FC<CrModalProps> = ({
   primaryLabel = 'Salvar',
   cancelLabel = 'Cancelar',
   fullScreen = false,
+  primaryDisabled = false,
 }) => {
   const handleCancel = onCancel ?? onClose;
 
@@ -83,7 +86,12 @@ export const CrModal: React.FC<CrModalProps> = ({
             {cancelLabel}
           </button>
           {formId ? (
-            <button type="submit" form={formId} className="cr-btn cr-btn--primary">
+            <button
+              type="submit"
+              form={formId}
+              className="cr-btn cr-btn--primary"
+              disabled={primaryDisabled}
+            >
               {primaryLabel}
             </button>
           ) : null}

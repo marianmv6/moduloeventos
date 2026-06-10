@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:moduloeventos": "vite --mode moduloeventos",
     "build": "vite build",
+    "build:moduloeventos": "vite build --mode moduloeventos",
     "preview": "vite preview"
   },
   "dependencies": {

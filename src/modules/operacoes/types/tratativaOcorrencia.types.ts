@@ -1,5 +1,5 @@
 import type { CentralOccurrenceSeverity } from './operacoesCentral.types';
-import type { ContactPreference } from '../../risk-rules/types/risk.types';
+import type { ContactDaySchedule, ContactPreference } from '../../risk-rules/types/risk.types';
 
 /** Tipo da política aplicada (afeta o título do card lateral). */
 export type TratativaPolicyKind = 'veiculo' | 'motorista';
@@ -8,11 +8,15 @@ export type TratativaPolicyKind = 'veiculo' | 'motorista';
 export interface TratativaContact {
   id: string;
   name: string;
-  shiftLabel: string;
-  shiftRange: string;
-  /** Horário início (ex.: "08:00") — exibido separadamente na modal de detalhes. */
+  /** Texto legado de turno (ex.: "Turno manhã, tarde"). Preferir `weeklySchedule`. */
+  shiftLabel?: string;
+  /** Texto legado de faixa horária (ex.: "6:00 - 12:00"). Preferir `weeklySchedule`. */
+  shiftRange?: string;
+  /** Turno por dia da semana — formato ex.: Seg 08:00–17:00 */
+  weeklySchedule?: ContactDaySchedule[];
+  /** Horário início legado (ex.: "08:00") */
   timeStart?: string;
-  /** Horário fim (ex.: "12:00") — exibido separadamente na modal de detalhes. */
+  /** Horário fim legado (ex.: "12:00") */
   timeEnd?: string;
   phone: string;
   email?: string;

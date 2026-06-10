@@ -9,7 +9,7 @@ const FILTER_PARAM_LABELS: Record<
   placaPrefixo: 'placa ou prefixo',
   motorista: 'motorista',
   gravidade: 'nível de gravidade',
-  politicaTratativa: 'política de tratativa',
+  politicaTratativa: 'política de ocorrências',
   periodoInicio: 'período',
   periodoFim: 'período',
 };

@@ -2,8 +2,8 @@ import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
 import {
   MONITOR_COMPORTAMENTO_OPTIONS,
   MONITOR_NIVEL_RISCO_OPTIONS,
-  MONITOR_POLITICA_OPTIONS,
 } from '../constants/monitorRiscoFilterOptions';
+import { getMonitorPoliticaOptions } from './monitorRiscoPolicy';
 
 export interface MonitorFilterBannerEntry {
   key: string;
@@ -40,11 +40,11 @@ export function getAppliedMonitorRiscoFilterEntries(
 ): MonitorFilterBannerEntry[] {
   const entries: MonitorFilterBannerEntry[] = [];
 
-  if (filters.politicaEscopo) {
+  if (filters.politicaId) {
     entries.push({
       key: 'politica',
       paramLabel: 'Política',
-      value: labelFromOptions(filters.politicaEscopo, MONITOR_POLITICA_OPTIONS),
+      value: labelFromOptions(filters.politicaId, getMonitorPoliticaOptions()),
     });
   }
   if (filters.niveisRisco) {

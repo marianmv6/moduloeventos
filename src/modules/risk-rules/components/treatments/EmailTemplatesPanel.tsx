@@ -72,7 +72,7 @@ export const EmailTemplatesPanel = forwardRef<EmailTemplatesPanelHandle, EmailTe
         {!hideToolbar && (
           <div className="drawer-toolbar drawer-toolbar--end">
             <button type="button" className="btn btn-primary" onClick={onNew}>
-              Novo E-mail
+              Novo e-mail
             </button>
           </div>
         )}

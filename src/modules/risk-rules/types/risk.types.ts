@@ -29,12 +29,19 @@ export interface PolicyEventConfig {
 /** Gravidade para ocorrência quando a política inclui evento de vídeo */
 export type PolicyTriggerNivelRisco = 'low' | 'medium' | 'high' | 'critical';
 
+/** Comportamento após atingir nível crítico */
+export type PolicyContinuityTreatment = 'first_critical_only' | 'every_new_event' | 'interval';
+
 /** Ocorrência: a partir de X pontos solicitar tratativa (trilha) Y; opcionalmente gravidade quando há evento de vídeo */
 export interface PolicyTrigger {
   aPartirDePontos: number;
   trilhaId: string;
   /** Gravidade (Baixo/Médio/Alto/Crítico) – exibido quando a política inclui evento de vídeo */
   nivelRisco?: PolicyTriggerNivelRisco;
+  /** Tratamento de continuidade quando nivelRisco === 'critical' */
+  tratamentoContinuidade?: PolicyContinuityTreatment;
+  /** Intervalo em minutos (5–60) quando tratamentoContinuidade === 'interval' */
+  intervaloMinutos?: number;
 }
 
 export interface Policy {
@@ -49,7 +56,7 @@ export interface Policy {
   configEventos: Record<string, PolicyEventConfig>;
   /** 'all' ou ids de usuários específicos */
   usuariosAtribuidos: PolicyUsersAttributed;
-  /** Ocorrências (até 5): a partir de X pontos solicitar trilha Y; ordem crescente */
+  /** Ocorrências por nível de risco (até 4: baixo, médio, alto, crítico) */
   gatilhos: PolicyTrigger[];
   active: boolean;
   createdAt: string;
@@ -160,8 +167,23 @@ export interface Trail {
   updatedAt: string;
 }
 
-/** Turnos disponíveis para contato (multi-select) */
+/** Turnos legados (Manhã, Tarde, Noite, Madrugada) — mantido para dados antigos */
 export type ContactShift = 'manha' | 'tarde' | 'noite' | 'madrugada';
+
+export type ContactWeekday =
+  | 'domingo'
+  | 'segunda'
+  | 'terca'
+  | 'quarta'
+  | 'quinta'
+  | 'sexta'
+  | 'sabado';
+
+export interface ContactDaySchedule {
+  day: ContactWeekday;
+  timeStart: string;
+  timeEnd: string;
+}
 
 /** Preferência de contato (multi-select) */
 export type ContactPreference = 'whatsapp' | 'ligacao' | 'email';
@@ -175,12 +197,14 @@ export interface Contact {
   email?: string;
   description?: string;
   userId?: string;
-  /** Turnos: Manhã, Tarde, Noite, Madrugada (opcional) */
+  /** Turnos legados (opcional) */
   turnos?: ContactShift[];
-  /** Horário opcional início (ex: "08:00") */
+  /** Horário opcional início legado (ex: "08:00") */
   timeStart?: string;
-  /** Horário opcional fim (ex: "12:00") */
+  /** Horário opcional fim legado (ex: "12:00") */
   timeEnd?: string;
+  /** Turno por dia da semana (início e fim por dia) */
+  weeklySchedule?: ContactDaySchedule[];
   /** Preferências de contato: WhatsApp, Ligação, E-mail */
   contactPreferences?: ContactPreference[];
   /** Aceita contato fora do horário cadastrado */

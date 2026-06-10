@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OperacoesEventDetailModal } from '../components/OperacoesEventDetailModal';
 import { IconFilterBars } from '../components/IconFilterBars';
 import { OperacoesEventosFilterBanner } from '../components/OperacoesEventosFilterBanner';
@@ -10,6 +10,7 @@ import {
   type OperacoesAdvancedFilters,
 } from '../constants/operacoesFilterOptions';
 import { IconView } from '../../risk-rules/components/shared/Icons';
+import { SuccessToast } from '../../risk-rules/components/shared/SuccessToast';
 import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
 import { OperacoesDateTimeCell } from '../components/OperacoesDateTimeCell';
 import { mockOperacoesEvents } from '../mocks/operacoes.mock';
@@ -56,6 +57,20 @@ function IconMapView() {
   );
 }
 
+function IconMoreMenu({ selected = false }: { selected?: boolean }) {
+  return (
+    <svg width="29" height="29" viewBox="0 0 32 32" fill="none" aria-hidden>
+      {selected && (
+        <rect opacity="0.5" x="1" y="1" width="30" height="30" rx="7" stroke="#169EFF" strokeWidth="2" />
+      )}
+      <path
+        d="M16 24C15.45 24 14.9792 23.8042 14.5875 23.4125C14.1958 23.0208 14 22.55 14 22C14 21.45 14.1958 20.9792 14.5875 20.5875C14.9792 20.1958 15.45 20 16 20C16.55 20 17.0208 20.1958 17.4125 20.5875C17.8042 20.9792 18 21.45 18 22C18 22.55 17.8042 23.0208 17.4125 23.4125C17.0208 23.8042 16.55 24 16 24ZM16 18C15.45 18 14.9792 17.8042 14.5875 17.4125C14.1958 17.0208 14 16.55 14 16C14 15.45 14.1958 14.9792 14.5875 14.5875C14.9792 14.1958 15.45 14 16 14C16.55 14 17.0208 14.1958 17.4125 14.5875C17.8042 14.9792 18 15.45 18 16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18ZM16 12C15.45 12 14.9792 11.8042 14.5875 11.4125C14.1958 11.0208 14 10.55 14 10C14 9.45 14.1958 8.97917 14.5875 8.5875C14.9792 8.19583 15.45 8 16 8C16.55 8 17.0208 8.19583 17.4125 8.5875C17.8042 8.97917 18 9.45 18 10C18 10.55 17.8042 11.0208 17.4125 11.4125C17.0208 11.8042 16.55 12 16 12Z"
+        fill="#169EFF"
+      />
+    </svg>
+  );
+}
+
 function applyAdvancedFilters(
   rows: typeof mockOperacoesEvents,
   filters: OperacoesAdvancedFilters,
@@ -81,7 +96,20 @@ export const OperacoesEventosPage: React.FC = () => {
     EMPTY_OPERACOES_FILTERS,
   );
   const [selectedEvent, setSelectedEvent] = useState<OperacoesEventRow | null>(null);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [exportToastVisible, setExportToastVisible] = useState(false);
   const eventFilterRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    if (moreMenuOpen) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [moreMenuOpen]);
 
   const filteredRows = useMemo(() => {
     let rows = mockOperacoesEvents;
@@ -255,6 +283,33 @@ export const OperacoesEventosPage: React.FC = () => {
               <IconFilterBars inverted={filterPanelOpen} />
             </button>
           </div>
+          <div className="tratativa-contact__menu-wrap operacoes-eventos-more-menu" ref={moreMenuRef}>
+            <button
+              type="button"
+              className={`tratativa-contact__more${moreMenuOpen ? ' tratativa-contact__more--open' : ''}`}
+              aria-label="Mais opções"
+              aria-expanded={moreMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setMoreMenuOpen((open) => !open)}
+            >
+              <IconMoreMenu selected={moreMenuOpen} />
+            </button>
+            {moreMenuOpen && (
+              <div className="tratativa-contact__menu" role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="tratativa-contact__menu-item"
+                  onClick={() => {
+                    setMoreMenuOpen(false);
+                    setExportToastVisible(true);
+                  }}
+                >
+                  Exportar arquivo .xlsx
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -351,6 +406,11 @@ export const OperacoesEventosPage: React.FC = () => {
           onClose={() => setSelectedEvent(null)}
         />
       )}
+      <SuccessToast
+        message="Arquivo exportado com sucesso."
+        visible={exportToastVisible}
+        onClose={() => setExportToastVisible(false)}
+      />
     </div>
   );
 };

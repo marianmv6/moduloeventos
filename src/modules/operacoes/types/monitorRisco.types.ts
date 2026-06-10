@@ -3,7 +3,7 @@ export type MonitorRiscoLevel = 'baixo' | 'medio' | 'alto' | 'critico';
 export type MonitorRankingKind = 'motorista' | 'veiculo';
 
 export interface MonitorRiscoFilters {
-  politicaEscopo: string;
+  politicaId: string;
   niveisRisco: string;
   tiposComportamento: string;
   periodoInicio: string;
@@ -11,6 +11,8 @@ export interface MonitorRiscoFilters {
   periodoHoraInicio: string;
   periodoHoraFim: string;
 }
+
+export type MonitorRiscoTabId = 'insights' | 'listagem';
 
 export interface MonitorRiscoScoreGeral {
   value: number;
@@ -29,8 +31,9 @@ export interface MonitorRiscoDistribuicaoItem {
 
 export interface MonitorRiscoRankingItem {
   id: string;
-  label: string;
-  secondaryLabel: string;
+  driverName: string;
+  plate: string;
+  vehicleModel: string;
   score: number;
   level: MonitorRiscoLevel;
   kind: MonitorRankingKind;
@@ -60,8 +63,10 @@ export interface MonitorRiscoFeedItem {
   time: string;
   message: string;
   level: MonitorRiscoLevel;
-  entity: string;
+  driverName: string;
+  vehicleLabel: string;
   behaviorType: string;
+  scoreRuleId?: string;
 }
 
 export interface MonitorRiscoData {

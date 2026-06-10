@@ -16,6 +16,7 @@ import {
   CONTACT_PREFERENCE_OPTIONS,
 } from '../../risk-rules/constants/contactDisplay';
 import type { ContactPreference } from '../../risk-rules/types/risk.types';
+import { formatTratativaContactSchedule } from '../../risk-rules/utils/contactSchedule';
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
 import { TratativaBehaviorEvolutionPanel } from './TratativaBehaviorEvolutionPanel';
 import { TratativaAnexosPanel } from './TratativaAnexosPanel';
@@ -165,18 +166,6 @@ function contactChannelLabel(contact: TratativaContact): string {
 function contactOutsideHoursLabel(contact: TratativaContact): string {
   if (contact.acceptContactOutsideHours === undefined) return '—';
   return contact.acceptContactOutsideHours ? 'Sim' : 'Não';
-}
-
-function contactTimeStartLabel(contact: TratativaContact): string {
-  if (contact.timeStart) return contact.timeStart;
-  const parts = contact.shiftRange?.split('-').map((part) => part.trim());
-  return parts?.[0] || '—';
-}
-
-function contactTimeEndLabel(contact: TratativaContact): string {
-  if (contact.timeEnd) return contact.timeEnd;
-  const parts = contact.shiftRange?.split('-').map((part) => part.trim());
-  return parts?.[1] || '—';
 }
 
 function ContactPreferenceActionIcon({ preference }: { preference: ContactPreference }) {
@@ -513,9 +502,7 @@ const ContactDetailModal: React.FC<{
         <ReadOnlyField label="Nome" value={contact.name} />
         <ReadOnlyField label="Telefone" value={contact.phone || '—'} />
         <ReadOnlyField label="E-mail" value={contact.email || '—'} />
-        <ReadOnlyField label="Turno" value={contact.shiftLabel || '—'} />
-        <ReadOnlyField label="Horário início" value={contactTimeStartLabel(contact)} />
-        <ReadOnlyField label="Horário fim" value={contactTimeEndLabel(contact)} />
+        <ReadOnlyField label="Escala de trabalho" value={formatTratativaContactSchedule(contact)} />
         <ReadOnlyField label="Preferência de contato" value={contactPreferencesLabel(contact)} />
         <ReadOnlyField
           label="Aceita contato fora do horário?"
@@ -553,10 +540,7 @@ const ContactRow: React.FC<{ contact: TratativaContact }> = ({ contact }) => {
     <>
       <div className="tratativa-contact">
         <span className="tratativa-contact__name">{contact.name}</span>
-        <span className="tratativa-contact__shift">
-          <span>{contact.shiftLabel}</span>
-          <span className="tratativa-contact__shift-range">{contact.shiftRange}</span>
-        </span>
+        <span className="tratativa-contact__shift">{formatTratativaContactSchedule(contact)}</span>
         <span className="tratativa-contact__channel">{channelLabel}</span>
         <LevelTooltip text={tooltip} topLayer nowrap style={{ display: 'inline-flex', flexShrink: 0 }}>
           <button
@@ -933,7 +917,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           <div className="tratativa-body">
             <div className="tratativa-fields">
               <div className="tratativa-fields-row tratativa-fields-row--summary">
-                <ReadOnlyField label="Política de tratativa" value={data.policyName} />
+                <ReadOnlyField label="Política de ocorrências" value={data.policyName} />
                 <ReadOnlyField label="Tipo de política" value={data.policyTypeLabel} />
                 <ReadOnlyField label="Tratativa" value={data.trailLabel} />
                 <ReadOnlyField label="Gravidade" value={data.gravityLabel} />

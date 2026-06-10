@@ -33,7 +33,7 @@ import type { AppRoute } from '../../../components/layout/AppSidebar';
 import { setRiskRulesNavigationGuard } from '../utils/riskRulesNavigationGuard';
 
 const ROUTE_TITLES: Record<AppRoute, string> = {
-  'regras-tratativa': 'Políticas de tratativa',
+  'regras-tratativa': 'Políticas de ocorrências',
   'tipos-evento': 'Tipos de evento',
   tratativas: 'Regras de tratativa',
   contatos: 'Contatos',
@@ -96,6 +96,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
   }, [policies, scores, treatments, trails, contacts, voiceMessages, emailTemplates, history]);
   const [emailTemplateFormOpen, setEmailTemplateFormOpen] = useState(false);
   const [emailTemplateFormMode, setEmailTemplateFormMode] = useState<'builder' | 'import'>('builder');
+  const [emailImportCanSave, setEmailImportCanSave] = useState(false);
   const [emailTemplateEditing, setEmailTemplateEditing] = useState<EmailTemplate | null>(null);
   const contactsPanelRef = useRef<ContactsPanelHandle>(null);
   const voiceMessagesPanelRef = useRef<VoiceMessagesPanelHandle>(null);
@@ -693,6 +694,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
     setEmailTemplateFormOpen(false);
     setEmailTemplateEditing(null);
     setEmailTemplateFormMode('builder');
+    setEmailImportCanSave(false);
   };
 
   const handleEmailTemplateSave = (data: Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
@@ -805,7 +807,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                   Importar HTML
                 </button>
                 <button type="button" className="btn btn-primary" onClick={() => openEmailTemplateForm(null, 'builder')}>
-                  Novo E-mail
+                  Novo e-mail
                 </button>
                 <AdvancedFilterToggle
                   open={emailFilter.open}
@@ -883,6 +885,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
             formId="email-template-form"
             primaryLabel="Salvar"
             cancelLabel="Cancelar"
+            primaryDisabled={emailTemplateFormMode === 'import' && !emailImportCanSave}
             fullScreen
           >
             {emailTemplateFormMode === 'import' ? (
@@ -891,6 +894,7 @@ export const RiskRulesPage: React.FC<RiskRulesPageProps> = ({ appRoute = 'regras
                 initialData={emailTemplateEditing ?? undefined}
                 onSubmit={handleEmailTemplateSave}
                 onCancel={closeEmailTemplateForm}
+                onCanSaveChange={setEmailImportCanSave}
                 hideActions
               />
             ) : (

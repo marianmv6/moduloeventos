@@ -1,7 +1,7 @@
 import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
 
 export const EMPTY_MONITOR_RISCO_FILTERS: MonitorRiscoFilters = {
-  politicaEscopo: '',
+  politicaId: '',
   niveisRisco: '',
   tiposComportamento: '',
   periodoInicio: '',
@@ -9,12 +9,6 @@ export const EMPTY_MONITOR_RISCO_FILTERS: MonitorRiscoFilters = {
   periodoHoraInicio: '',
   periodoHoraFim: '',
 };
-
-export const MONITOR_POLITICA_OPTIONS = [
-  { value: '', label: '(Preencha ou selecione)' },
-  { value: 'motorista', label: 'Política por motorista' },
-  { value: 'veiculo', label: 'Política por veículo' },
-];
 
 export const MONITOR_NIVEL_RISCO_OPTIONS = [
   { value: 'baixo', label: 'Baixo', pillClassName: 'monitor-risco-pill--baixo' },
@@ -33,10 +27,10 @@ export const MONITOR_COMPORTAMENTO_OPTIONS = [
 ];
 
 export const MONITOR_RISCO_LEVEL_COLORS: Record<string, string> = {
-  baixo: '#169EFF',
-  medio: '#E29C2C',
-  alto: '#FF5454',
-  critico: '#7F1D1D',
+  baixo: '#00A3FF',
+  medio: '#F2994A',
+  alto: '#EB5757',
+  critico: '#820000',
 };
 
 export const MONITOR_RISCO_LEVEL_LABELS: Record<string, string> = {
@@ -44,4 +38,18 @@ export const MONITOR_RISCO_LEVEL_LABELS: Record<string, string> = {
   medio: 'Médio',
   alto: 'Alto',
   critico: 'Crítico',
+};
+
+export const MONITOR_RISCO_FEED_LEVEL_LABELS: Record<string, string> = {
+  baixo: 'Risco baixo',
+  medio: 'Risco médio',
+  alto: 'Risco alto',
+  critico: 'Risco crítico',
+};
+
+export const MONITOR_RISCO_DISTRIBUTION_LABELS: Record<string, string> = {
+  baixo: 'baixas',
+  medio: 'médias',
+  alto: 'altas',
+  critico: 'críticas',
 };

@@ -1,21 +1,23 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
-import type { Contact, ContactPreference, ContactShift } from '../../types/risk.types';
+import type { Contact, ContactPreference } from '../../types/risk.types';
 import { CONTACT_PREFERENCE_OPTIONS, contactGroupDisplay } from '../../constants/contactDisplay';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
+import { FormFieldLabel } from '../shared/FormFieldLabel';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
-import { TimePicker } from '../shared/TimePicker';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
 import { COMPANY_OPTIONS } from '../../constants/companies';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-
-const TURNOS_OPTIONS: ModalSelectOption[] = [
-  { value: 'manha', label: 'Manhã' },
-  { value: 'tarde', label: 'Tarde' },
-  { value: 'noite', label: 'Noite' },
-  { value: 'madrugada', label: 'Madrugada' },
-];
+import { ContactWeeklyShiftPicker } from './ContactWeeklyShiftPicker';
+import {
+  contactDayScheduleStateFromContact,
+  contactDayScheduleStateToWeeklySchedule,
+  createEmptyContactDayScheduleState,
+  formatContactWeeklySchedule,
+  validateContactDayScheduleState,
+  type ContactDayScheduleState,
+} from '../../utils/contactSchedule';
 
 const OUTSIDE_HOURS_OPTIONS: ModalSelectOption[] = [
   { value: 'true', label: 'Sim' },
@@ -87,9 +89,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
-  const [turnosValue, setTurnosValue] = useState('');
-  const [timeStart, setTimeStart] = useState('');
-  const [timeEnd, setTimeEnd] = useState('');
+  const [weeklyScheduleState, setWeeklyScheduleState] = useState<ContactDayScheduleState>(
+    createEmptyContactDayScheduleState,
+  );
   const [contactPreferencesValue, setContactPreferencesValue] = useState('');
   const [acceptOutsideHours, setAcceptOutsideHours] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; phone?: boolean; email?: boolean }>({});
@@ -128,15 +130,22 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     });
   }, [contacts, filters, isClient, currentUser.companyId]);
 
+  const contactPreferences = useMemo(
+    () => parseContactPreferences(contactPreferencesValue),
+    [contactPreferencesValue],
+  );
+  const phoneRequired =
+    !isWhatsAppGroup &&
+    (contactPreferences.includes('whatsapp') || contactPreferences.includes('ligacao'));
+  const emailRequired = !isWhatsAppGroup && contactPreferences.includes('email');
+
   const resetFormFields = () => {
     setIsWhatsAppGroup(false);
     setName('');
     setPhone('');
     setEmail('');
     setDescription('');
-    setTurnosValue('');
-    setTimeStart('');
-    setTimeEnd('');
+    setWeeklyScheduleState(createEmptyContactDayScheduleState());
     setContactPreferencesValue('');
     setAcceptOutsideHours('');
     setFieldErrors({});
@@ -166,9 +175,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     setPhone(c.phone ? formatPhone(c.phone) : '');
     setEmail(c.email ?? '');
     setDescription(c.description ?? '');
-    setTurnosValue(c.turnos?.length ? c.turnos.join(', ') : '');
-    setTimeStart(c.timeStart ?? '');
-    setTimeEnd(c.timeEnd ?? '');
+    setWeeklyScheduleState(contactDayScheduleStateFromContact(c));
     setContactPreferencesValue(c.contactPreferences?.length ? c.contactPreferences.join(', ') : '');
     setAcceptOutsideHours(
       c.acceptContactOutsideHours === true ? 'true' : c.acceptContactOutsideHours === false ? 'false' : '',
@@ -224,16 +231,13 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
       return;
     }
 
-    const startFilled = timeStart.trim() !== '';
-    const endFilled = timeEnd.trim() !== '';
-    if (startFilled !== endFilled) {
-      onValidationError?.('Preencha os dois campos de horário (início e fim).');
+    const scheduleError = validateContactDayScheduleState(weeklyScheduleState);
+    if (scheduleError) {
+      onValidationError?.(scheduleError);
       return;
     }
 
-    const turnosParsed = turnosValue
-      ? (turnosValue.split(',').map((v) => v.trim()).filter(Boolean) as ContactShift[])
-      : undefined;
+    const weeklySchedule = contactDayScheduleStateToWeeklySchedule(weeklyScheduleState);
     const contactPreferencesParsed = preferences.length ? preferences : undefined;
     onSave({
       ...(editing?.id && { id: editing.id }),
@@ -243,9 +247,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
       phone: formatPhone(phoneRaw),
       email: emailTrimmed,
       description: descriptionTrimmed || undefined,
-      turnos: turnosParsed?.length ? turnosParsed : undefined,
-      timeStart: timeStart.trim() || undefined,
-      timeEnd: timeEnd.trim() || undefined,
+      weeklySchedule,
       contactPreferences: contactPreferencesParsed?.length ? contactPreferencesParsed : undefined,
       acceptContactOutsideHours:
         acceptOutsideHours === 'true' ? true : acceptOutsideHours === 'false' ? false : undefined,
@@ -287,7 +289,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
               <th>Nome</th>
               <th>Telefone</th>
               <th>Email</th>
-              <th>Turnos</th>
+              <th>Escala de trabalho</th>
               <th>Descrição</th>
               <th>Grupo</th>
               <th></th>
@@ -310,23 +312,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                     {c.isWhatsAppGroup ? (
                       '—'
                     ) : (
-                      <span className="contact-turnos-cell">
-                        {c.turnos?.length
-                          ? c.turnos.map((t) => (
-                              <span key={t} className="contact-turno-chip">
-                                {TURNOS_OPTIONS.find((o) => o.value === t)?.label ?? t}
-                              </span>
-                            ))
-                          : '—'}
-                        {(c.timeStart || c.timeEnd) && (
-                          <>
-                            <br />
-                            <span className="contact-time-range">
-                              {[c.timeStart, c.timeEnd].filter(Boolean).join('–')}
-                            </span>
-                          </>
-                        )}
-                      </span>
+                      <span className="contact-turnos-cell">{formatContactWeeklySchedule(c)}</span>
                     )}
                   </td>
                   <td className="drawer-contacts-table__desc-cell">{c.description ?? '—'}</td>
@@ -365,6 +351,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
         formId="contact-form"
         primaryLabel="Salvar"
         cancelLabel="Cancelar"
+        fullScreen
       >
         <form id="contact-form" onSubmit={handleSubmit} className="form-card contact-form">
           <div className="form-field contact-form-field--toggle">
@@ -390,7 +377,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
           {isWhatsAppGroup ? (
             <>
               <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
-                <label htmlFor="contact-group-name">Nome do grupo</label>
+                <FormFieldLabel htmlFor="contact-group-name" required>
+                  Nome do grupo
+                </FormFieldLabel>
                 <div className="form-field__input-wrap">
                   <input
                     id="contact-group-name"
@@ -430,7 +419,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
             <>
               <div className="form-row">
                 <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
-                  <label htmlFor="contact-name">Nome</label>
+                  <FormFieldLabel htmlFor="contact-name" required>
+                    Nome
+                  </FormFieldLabel>
                   <div className="form-field__input-wrap">
                     <input
                       id="contact-name"
@@ -452,7 +443,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                   </div>
                 </div>
                 <div className={`form-field ${fieldErrors.phone ? 'has-error' : ''}`}>
-                  <label htmlFor="contact-phone">Telefone</label>
+                  <FormFieldLabel htmlFor="contact-phone" required={phoneRequired}>
+                    Telefone
+                  </FormFieldLabel>
                   <div className="form-field__input-wrap">
                     <input
                       id="contact-phone"
@@ -472,7 +465,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                   </div>
                 </div>
                 <div className={`form-field ${fieldErrors.email ? 'has-error' : ''}`}>
-                  <label htmlFor="contact-email">Email</label>
+                  <FormFieldLabel htmlFor="contact-email" required={emailRequired}>
+                    Email
+                  </FormFieldLabel>
                   <div className="form-field__input-wrap">
                     <input
                       id="contact-email"
@@ -495,33 +490,10 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                   </div>
                 </div>
               </div>
-              <div className="form-group">
-                <ModalSelect
-                  id="contact-turnos"
-                  label="Turno"
-                  value={turnosValue}
-                  onChange={setTurnosValue}
-                  options={TURNOS_OPTIONS}
-                  placeholder="(Digite ou selecione)"
-                  multiple
-                  mutedPlaceholder
-                  className="modal-select--no-pill"
-                />
-              </div>
-              <div className="contact-form-row contact-form-row--time">
-                <TimePicker
-                  id="contact-time-start"
-                  label="Horário início"
-                  value={timeStart}
-                  onChange={setTimeStart}
-                />
-                <TimePicker
-                  id="contact-time-end"
-                  label="Horário fim"
-                  value={timeEnd}
-                  onChange={setTimeEnd}
-                />
-              </div>
+              <ContactWeeklyShiftPicker
+                value={weeklyScheduleState}
+                onChange={setWeeklyScheduleState}
+              />
               <div className="contact-form-row contact-form-row--split">
                 <div className="form-group">
                   <ModalSelect

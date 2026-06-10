@@ -1,15 +1,25 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import type { Policy, PolicyEventConfig, PolicyTrigger, PolicyTrackingType, ScoreRule, Trail } from '../../types/risk.types';
+import type { Policy, PolicyEventConfig, PolicyTrackingType, ScoreRule, Trail } from '../../types/risk.types';
 import type { PlatformUser } from '../../mocks/risk.mock';
 import { EVENT_TYPE_LABELS } from '../../constants/eventTypes';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
-import { IconTrash, IconSearch } from '../shared/Icons';
+import { IconSearch } from '../shared/Icons';
 import { InfoTooltip } from '../shared/InfoTooltip';
 import { LevelTooltip } from '../shared/LevelTooltip';
+import { RequiredFieldMarker } from '../shared/RequiredFieldMarker';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
-import { GRAVITY_FIELD_LABEL, GRAVITY_OPTIONS } from '../../constants/gravityConstants';
 import { COMPANY_OPTIONS } from '../../constants/companies';
+import { POLICY_RISK_LEVEL_ORDER } from '../../constants/policyRiskLevel.constants';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PolicyRiskLevelCards } from './PolicyRiskLevelCards';
+import {
+  createEmptyPolicyRiskGatilhosState,
+  policyRiskGatilhosStateEquals,
+  policyRiskGatilhosStateFromTriggers,
+  policyRiskGatilhosStateToTriggers,
+  validatePolicyRiskGatilhosState,
+  type PolicyRiskGatilhosState,
+} from '../../utils/policyRiskLevelState';
 
 interface PolicyFormProps {
   id?: string;
@@ -51,20 +61,11 @@ const DURACAO_ATIVA_OPTIONS: ModalSelectOption[] = [
   { value: '12h', label: '12 h' },
 ];
 
-/** Converte texto digitado em inteiro >= 0, sem zeros à esquerda ("05" → 5). */
-function parsePointsInput(raw: string, max = 999): number {
-  const digits = raw.replace(/\D/g, '');
-  if (digits === '') return 0;
-  const normalized = digits.replace(/^0+/, '') || '0';
-  return Math.min(max, Number(normalized));
-}
-
 const STATUS_OPTIONS: ModalSelectOption[] = [
   { value: 'ativo', label: 'Ativo' },
   { value: 'inativo', label: 'Inativo' },
 ];
 
-const MAX_GATILHOS = 5;
 const DEFAULT_DURACAO = '1h';
 const DEFAULT_PONTOS = 0;
 
@@ -97,10 +98,10 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   const [usuariosSelected, setUsuariosSelected] = useState<string[]>(
     Array.isArray(initialData?.usuariosAtribuidos) ? initialData.usuariosAtribuidos : []
   );
-  const [gatilhos, setGatilhos] = useState<PolicyTrigger[]>(() => {
+  const [riskGatilhos, setRiskGatilhos] = useState<PolicyRiskGatilhosState>(() => {
     const g = initialData?.gatilhos ?? [];
-    if (g.length > 0) return g.slice(0, MAX_GATILHOS);
-    return [{ aPartirDePontos: 0, trilhaId: '' }];
+    if (g.length > 0) return policyRiskGatilhosStateFromTriggers(g);
+    return createEmptyPolicyRiskGatilhosState();
   });
   const [active, setActive] = useState(initialData?.active ?? true);
   const [eventSearchQuery, setEventSearchQuery] = useState('');
@@ -140,11 +141,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     [activeTrails]
   );
 
-  const hasVideoEvent = useMemo(
-    () => scores.some((s) => configEventos[s.id] && s.eventType === 'video'),
-    [scores, configEventos]
-  );
-
   const isDirty = useMemo(() => {
     if (!initialData)
       return (
@@ -153,7 +149,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
         Object.keys(configEventos).length > 0 ||
         !usuariosAll ||
         usuariosSelected.length > 0 ||
-        gatilhos.length > 0
+        POLICY_RISK_LEVEL_ORDER.some((level) => riskGatilhos[level].enabled)
       );
     if (name.trim() !== (initialData.name ?? '').trim()) return true;
     if ((description ?? '') !== (initialData.description ?? '')) return true;
@@ -177,18 +173,11 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
         return true;
     }
     const initG = initialData.gatilhos ?? [];
-    if (gatilhos.length !== initG.length) return true;
-    for (let i = 0; i < gatilhos.length; i++) {
-      if (
-        gatilhos[i].aPartirDePontos !== initG[i]?.aPartirDePontos ||
-        gatilhos[i].trilhaId !== initG[i]?.trilhaId ||
-        (gatilhos[i].nivelRisco ?? '') !== (initG[i]?.nivelRisco ?? '')
-      )
-        return true;
-    }
+    const initRiskGatilhos = policyRiskGatilhosStateFromTriggers(initG);
+    if (!policyRiskGatilhosStateEquals(riskGatilhos, initRiskGatilhos)) return true;
     if (active !== (initialData.active ?? true)) return true;
     return false;
-  }, [initialData, name, description, tipoAcompanhamento, configEventos, usuariosAll, usuariosSelected, gatilhos, active]);
+  }, [initialData, name, description, tipoAcompanhamento, configEventos, usuariosAll, usuariosSelected, riskGatilhos, active]);
 
   useEffect(() => {
     onDirtyChange?.(isDirty);
@@ -236,43 +225,13 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     if (fieldErrors.usuarios) setFieldErrors((err) => ({ ...err, usuarios: false }));
   };
 
-  const gatilhosOrderValid = useMemo(() => {
-    if (gatilhos.length <= 1) return true;
-    for (let i = 1; i < gatilhos.length; i++) {
-      if (gatilhos[i].aPartirDePontos <= gatilhos[i - 1].aPartirDePontos) return false;
-    }
-    return true;
-  }, [gatilhos]);
-
-  const addGatilho = () => {
-    if (gatilhos.length >= MAX_GATILHOS) return;
-    const lastPoints = gatilhos.length ? gatilhos[gatilhos.length - 1].aPartirDePontos : 0;
-    setGatilhos((prev) => [...prev, { aPartirDePontos: lastPoints + 10, trilhaId: '', nivelRisco: undefined }]);
-    if (fieldErrors.gatilhos) setFieldErrors((err) => ({ ...err, gatilhos: false }));
-  };
-
-  const updateGatilho = (index: number, patch: Partial<PolicyTrigger>) => {
-    setGatilhos((prev) =>
-      prev.map((g, i) => (i === index ? { ...g, ...patch } : g))
-    );
-    if (fieldErrors.gatilhos) setFieldErrors((err) => ({ ...err, gatilhos: false }));
-  };
-
-  const removeGatilho = (index: number) => {
-    if (gatilhos.length <= 1) return;
-    setGatilhos((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const nameTrimmed = name.trim();
     const nameInvalid = !nameTrimmed;
     const eventosInvalid = Object.keys(configEventos).length === 0;
     const usuariosInvalid = !usuariosAll && usuariosSelected.length === 0;
-    const gatilhosInvalid =
-      gatilhos.length === 0 ||
-      !gatilhosOrderValid ||
-      gatilhos.some((g) => g.trilhaId === '');
+    const gatilhosInvalid = !validatePolicyRiskGatilhosState(riskGatilhos);
     const errors = {
       name: nameInvalid,
       configEventos: eventosInvalid,
@@ -281,14 +240,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     };
     setFieldErrors(errors);
     if (nameInvalid || eventosInvalid || usuariosInvalid || gatilhosInvalid) return;
-    const gatilhosClean = gatilhos
-      .filter((g) => g.trilhaId)
-      .map((g) => ({
-        aPartirDePontos: Math.max(0, g.aPartirDePontos),
-        trilhaId: g.trilhaId,
-        ...(g.nivelRisco && { nivelRisco: g.nivelRisco }),
-      }))
-      .sort((a, b) => a.aPartirDePontos - b.aPartirDePontos);
+    const gatilhosClean = policyRiskGatilhosStateToTriggers(riskGatilhos);
     onSubmit({
       name: nameTrimmed,
       companyId,
@@ -307,6 +259,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
         <div className={`form-group ${fieldErrors.name ? 'has-error' : ''}`}>
           <div className="form-group__label-row">
             <label htmlFor="policy-name">Nome</label>
+            <RequiredFieldMarker />
           </div>
           <div className="form-group__input-with-error">
             <input
@@ -331,7 +284,10 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
         </div>
         <div className="form-group">
           <div className="policy-form-tracking-label-wrap">
-            <label htmlFor="policy-tracking" className="modal-select__label">Tipo de acompanhamento</label>
+            <label htmlFor="policy-tracking" className="modal-select__label policy-form-tracking-label">
+              <span className="form-field__label-text">Tipo de acompanhamento</span>
+              <RequiredFieldMarker />
+            </label>
             <InfoTooltip text="O tipo de acompanhamento definido nesta política fará com que o sistema monitore os eventos gerados por motorista ou por veículo, conforme a configuração estabelecida." />
           </div>
           <ModalSelect
@@ -484,99 +440,27 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       </div>
 
       <div className={`form-group ${fieldErrors.gatilhos ? 'has-error' : ''}`}>
-        <div className="policy-form-gatilhos-section">
+        <div className="policy-form-gatilhos-section policy-form-gatilhos-section--risk-cards">
           <div className="trail-form-etapas-header policy-form-gatilhos-header">
             <span className="policy-form-gatilhos-title-with-info">
-              <span className="policy-form-gatilhos-title">Ocorrências (1 a {MAX_GATILHOS})</span>
+              <span className="policy-form-gatilhos-title">Ocorrências</span>
               <InfoTooltip text="Determine quantos pontos são necessários para que uma tratativa seja aplicada e classifique sua gravidade de acordo com o nível de risco." />
             </span>
-            {gatilhos.length < MAX_GATILHOS && (
-              <button type="button" className="btn btn-sm btn-primary" onClick={addGatilho}>
-                + Adicionar ocorrência
-              </button>
-            )}
           </div>
-          <div className="trail-steps-wrapper-outer">
-            <div className={`trail-steps-wrapper ${fieldErrors.gatilhos ? 'trail-steps-wrapper--error' : ''}`}>
-              {fieldErrors.gatilhos && (
-                <span className="trail-steps-wrapper__field-error-icon">
-                  <FieldErrorIcon className="level-tooltip-wrap--tooltip-right" />
-                </span>
-              )}
-              <div className="trail-steps">
-                {gatilhos.map((g, index) => (
-                  <div key={index} className="trail-step-card">
-                    <div className="trail-step-header">
-                      <span className="trail-step-title">Ocorrência {index + 1}</span>
-                      {gatilhos.length > 1 && (
-                        <button
-                          type="button"
-                          className="trail-step-remove-btn"
-                          onClick={() => removeGatilho(index)}
-                          aria-label="Remover ocorrência"
-                        >
-                          <IconTrash />
-                        </button>
-                      )}
-                    </div>
-                    <div className="trail-step-row policy-form-gatilho-body">
-                      <div className="trail-step-action policy-form-gatilho-points-inline">
-                        <label htmlFor={`gatilho-points-${index}`}>A partir de</label>
-                        <input
-                          id={`gatilho-points-${index}`}
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          maxLength={3}
-                          value={g.aPartirDePontos === 0 ? '0' : String(g.aPartirDePontos)}
-                          onChange={(e) => {
-                            updateGatilho(index, {
-                              aPartirDePontos: parsePointsInput(e.target.value, 999),
-                            });
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key !== '0') return;
-                            const input = e.currentTarget;
-                            const { value, selectionStart, selectionEnd } = input;
-                            const start = selectionStart ?? value.length;
-                            const end = selectionEnd ?? value.length;
-                            const next = `${value.slice(0, start)}0${value.slice(end)}`;
-                            if (next.length > 1 && next.startsWith('0')) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="policy-form-gatilho-input-points"
-                          aria-valuemin={0}
-                          aria-valuemax={999}
-                        />
-                      </div>
-                      <div className="trail-step-action policy-form-gatilho-trail-inline">
-                        <ModalSelect
-                          id={`gatilho-trail-${index}`}
-                          label="Solicitar tratativa"
-                          value={g.trilhaId}
-                          onChange={(v) => updateGatilho(index, { trilhaId: v })}
-                          options={trailOptions}
-                          placeholder="Selecione a trilha"
-                        />
-                      </div>
-                      {hasVideoEvent && (
-                        <div className="trail-step-action policy-form-gatilho-trail-inline">
-                          <ModalSelect
-                            id={`gatilho-nivel-${index}`}
-                            label={GRAVITY_FIELD_LABEL}
-                            value={g.nivelRisco ?? ''}
-                            onChange={(v) => updateGatilho(index, { nivelRisco: (v || undefined) as PolicyTrigger['nivelRisco'] })}
-                            options={GRAVITY_OPTIONS}
-                            placeholder="Selecione"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className={`policy-form-risk-cards-wrap ${fieldErrors.gatilhos ? 'policy-form-risk-cards-wrap--error' : ''}`}>
+            {fieldErrors.gatilhos && (
+              <span className="policy-form-risk-cards-wrap__field-error-icon">
+                <FieldErrorIcon className="level-tooltip-wrap--tooltip-right" />
+              </span>
+            )}
+            <PolicyRiskLevelCards
+              value={riskGatilhos}
+              trailOptions={trailOptions}
+              onChange={(next) => {
+                setRiskGatilhos(next);
+                if (fieldErrors.gatilhos) setFieldErrors((err) => ({ ...err, gatilhos: false }));
+              }}
+            />
           </div>
         </div>
       </div>

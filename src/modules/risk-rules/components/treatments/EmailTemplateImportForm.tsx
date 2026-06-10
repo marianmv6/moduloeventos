@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { EmailTemplate } from '../../types/risk.types';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
+import { FormFieldLabel } from '../shared/FormFieldLabel';
+import { RequiredFieldMarker } from '../shared/RequiredFieldMarker';
 
 const STATUS_OPTIONS: ModalSelectOption[] = [
   { value: 'ativo', label: 'Ativo' },
@@ -16,6 +18,7 @@ interface EmailTemplateImportFormProps {
   onSubmit: (data: Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => void;
   onCancel: () => void;
   hideActions?: boolean;
+  onCanSaveChange?: (canSave: boolean) => void;
 }
 
 export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = ({
@@ -24,6 +27,7 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
   onSubmit,
   onCancel,
   hideActions = false,
+  onCanSaveChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState(initialData?.title ?? '');
@@ -31,6 +35,8 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
   const [customHtml, setCustomHtml] = useState(initialData?.customHtml ?? '');
   const [active, setActive] = useState(initialData?.active ?? true);
   const [importError, setImportError] = useState('');
+  const [titleError, setTitleError] = useState('');
+  const [importedFileName, setImportedFileName] = useState('');
 
   const isDefault = Boolean(initialData?.isDefault);
 
@@ -40,8 +46,15 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
       setDescription(initialData.description ?? '');
       setCustomHtml(initialData.customHtml ?? '');
       setActive(initialData.active ?? true);
+      setImportedFileName(initialData.customHtml?.trim() ? 'Arquivo HTML importado' : '');
     }
   }, [initialData?.id]);
+
+  const canSave = title.trim().length > 0 && customHtml.trim().length > 0;
+
+  useEffect(() => {
+    onCanSaveChange?.(canSave);
+  }, [canSave, onCanSaveChange]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -61,6 +74,7 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
         return;
       }
       setCustomHtml(text.slice(0, HTML_MAX_LENGTH));
+      setImportedFileName(file.name);
       setImportError('');
     };
     reader.onerror = () => {
@@ -74,6 +88,16 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
     event.preventDefault();
     const titleTrimmed = title.trim();
     const htmlTrimmed = customHtml.trim();
+
+    setTitleError('');
+    setImportError('');
+
+    if (!titleTrimmed) {
+      setTitleError('Informe o título do e-mail.');
+    }
+    if (!htmlTrimmed) {
+      setImportError('Selecione um arquivo .html para importar.');
+    }
     if (!titleTrimmed || !htmlTrimmed) return;
 
     onSubmit({
@@ -88,24 +112,33 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
     });
   };
 
-  const canSave = title.trim().length > 0 && customHtml.trim().length > 0;
-
   return (
     <form id={id} onSubmit={handleSubmit} className="email-template-form email-template-import-form">
       <div className="email-template-form__body">
         <div className="email-template-form__left">
           <div className="email-template-form__fields">
             <div className="form-group">
-              <label htmlFor="email-import-title">Título</label>
+              <FormFieldLabel htmlFor="email-import-title" required>
+                Título
+              </FormFieldLabel>
               <input
                 id="email-import-title"
                 type="text"
                 className="input-text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (titleError) setTitleError('');
+                }}
                 placeholder="Título do e-mail na caixa de entrada"
                 maxLength={120}
+                required
               />
+              {titleError && (
+                <p className="email-template-import-form__error" role="alert">
+                  {titleError}
+                </p>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="email-import-desc">Descrição</label>
@@ -134,7 +167,10 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
 
           <div className="email-template-import-form__upload">
             <div className="email-template-import-form__upload-header">
-              <h3 className="email-template-form__vars-title">HTML do template</h3>
+              <h3 className="email-template-form__vars-title form-field__label">
+                <span className="form-field__label-text">Arquivo HTML</span>
+                <RequiredFieldMarker />
+              </h3>
               <button
                 type="button"
                 className="cr-btn cr-btn--outline email-template-import-form__file-btn"
@@ -148,30 +184,20 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
                 accept=".html,.htm,text/html"
                 className="email-template-import-form__file-input"
                 onChange={handleFileChange}
+                required={!customHtml.trim()}
               />
             </div>
             <p className="email-template-form__vars-hint">
-              Importe o HTML padrão de uso ou cole o conteúdo abaixo.
+              Selecione um arquivo .html para importar o template do e-mail.
             </p>
+            {importedFileName && (
+              <p className="email-template-import-form__file-name">{importedFileName}</p>
+            )}
             {importError && (
               <p className="email-template-import-form__error" role="alert">
                 {importError}
               </p>
             )}
-            <div className="form-group email-template-import-form__html-group">
-              <textarea
-                id="email-import-html"
-                className="textarea-description email-template-import-form__html"
-              value={customHtml}
-              onChange={(e) => {
-                setCustomHtml(e.target.value.slice(0, HTML_MAX_LENGTH));
-                if (importError) setImportError('');
-              }}
-              placeholder="Cole aqui o HTML do seu template..."
-              rows={14}
-              spellCheck={false}
-            />
-            </div>
           </div>
         </div>
 
@@ -179,7 +205,7 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
           <div className="email-template-form__preview">
             <header className="email-template-form__preview-header">
               <div className="email-template-form__preview-header-left">
-                <span className="email-template-form__preview-title">Prévia do HTML</span>
+                <span className="email-template-form__preview-title">Prévia do e-mail</span>
               </div>
             </header>
             <div className="email-template-form__preview-content">
@@ -191,7 +217,7 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
               )}
               {customHtml.trim() ? (
                 <iframe
-                  title="Prévia do HTML importado"
+                  title="Prévia do e-mail importado"
                   className="email-template-import-form__preview-frame"
                   sandbox=""
                   srcDoc={customHtml}
@@ -199,7 +225,7 @@ export const EmailTemplateImportForm: React.FC<EmailTemplateImportFormProps> = (
               ) : (
                 <div className="email-template-form__preview-empty-wrap">
                   <p className="email-template-form__preview-empty">
-                    Importe ou cole um HTML para visualizar a prévia.
+                    Selecione um arquivo .html para visualizar a prévia.
                   </p>
                 </div>
               )}

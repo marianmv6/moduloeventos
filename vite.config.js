@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-/** Dev local = ambiente moduloeventos (https://moduloeventos.vercel.app) */
+/** Dev local padrão = regrasdetratativas (https://regrasdetratativas.vercel.app). Use `npm run dev:moduloeventos` para o outro deploy. */
 export default defineConfig({
   plugins: [react()],
   server: {
