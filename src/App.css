@@ -4138,7 +4138,7 @@ body.cr-fullscreen-modal-open .app-content {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #7c3aed;
+  color: var(--color-primary);
 }
 
 .contact-work-schedule__next-day-icon {
@@ -5379,27 +5379,55 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-risk-card__points-wrap {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 12.75rem;
+  height: 40px;
   min-height: 40px;
+  padding: 0 0.9375rem;
+  background: #fff;
+  border: 1px solid rgba(47, 47, 47, 0.2);
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 .policy-risk-card__points-input {
-  flex: 0 0 auto;
-  width: 3rem;
+  flex: 1;
   min-width: 0;
-  border: none;
-  background: transparent;
+  width: auto;
+  margin: 0;
   padding: 0;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  appearance: none;
+  -webkit-appearance: none;
   font-size: 0.875rem;
-  color: #101828;
+  line-height: 1.25;
+  color: #2f2f2f;
+  text-align: left;
 }
-.policy-risk-card__points-input:focus {
-  outline: none;
+.policy-risk-card__points-input:focus,
+.policy-risk-card__points-input:focus-visible,
+.policy-risk-card__points-input:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.policy-risk-card__points-wrap:focus-within {
+  border-color: rgba(47, 47, 47, 0.35);
 }
 .policy-risk-card__points-suffix {
+  flex-shrink: 0;
   padding: 0;
-  margin-left: 0.25rem;
-  font-size: 0.8125rem;
-  color: #667085;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  color: rgba(47, 47, 47, 0.5);
   white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
 }
 .policy-risk-card .modal-select__input-wrap {
   background: #fff;
@@ -5451,17 +5479,22 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-risk-card--disabled .modal-select__label {
   color: #c7cdd6;
 }
-.policy-risk-card--disabled .policy-risk-card__points-wrap,
+.policy-risk-card--disabled .policy-risk-card__points-wrap {
+  background: #fff;
+  border-color: rgba(47, 47, 47, 0.2);
+}
 .policy-risk-card--disabled .modal-select__input-wrap {
   background: #eceff3;
   border-color: #e4e7ec;
 }
-.policy-risk-card--disabled .policy-risk-card__points-input,
+.policy-risk-card--disabled .policy-risk-card__points-input {
+  color: rgba(47, 47, 47, 0.35);
+}
 .policy-risk-card--disabled .modal-select__input {
   color: #c7cdd6;
 }
 .policy-risk-card--disabled .policy-risk-card__points-suffix {
-  color: #c7cdd6;
+  color: rgba(47, 47, 47, 0.35);
 }
 
 .cr-modal__body .policy-form .policy-form-eventos-config .policy-form-eventos-pontos-input,
