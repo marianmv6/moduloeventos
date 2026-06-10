@@ -8,6 +8,24 @@ export type ContactDayScheduleState = Record<
 
 const DEFAULT_DAY_TIMES = { timeStart: '08:00', timeEnd: '17:00' };
 
+export function isScheduleNextDay(timeStart: string, timeEnd: string): boolean {
+  if (!timeStart || !timeEnd) return false;
+  const startMatch = timeStart.match(/^(\d{1,2}):(\d{2})$/);
+  const endMatch = timeEnd.match(/^(\d{1,2}):(\d{2})$/);
+  if (!startMatch || !endMatch) return false;
+  const startMinutes = Number(startMatch[1]) * 60 + Number(startMatch[2]);
+  const endMinutes = Number(endMatch[1]) * 60 + Number(endMatch[2]);
+  return endMinutes <= startMinutes;
+}
+
+export function normalizeScheduleTime(value: string): string {
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return value;
+  const hours = Math.min(23, Math.max(0, Number(match[1])));
+  const minutes = Math.min(59, Math.max(0, Number(match[2])));
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
 export function createEmptyContactDayScheduleState(): ContactDayScheduleState {
   return CONTACT_WEEKDAYS.reduce((acc, { value }) => {
     acc[value] = { enabled: false, timeStart: '', timeEnd: '' };
@@ -64,7 +82,8 @@ export function formatWeeklyScheduleEntries(entries: ContactDaySchedule[]): stri
     .map((entry) => {
       const short =
         CONTACT_WEEKDAYS.find((item) => item.value === entry.day)?.shortLabel ?? entry.day;
-      return `${short} ${entry.timeStart}–${entry.timeEnd}`;
+      const nextDay = isScheduleNextDay(entry.timeStart, entry.timeEnd);
+      return `${short} ${entry.timeStart}–${entry.timeEnd}${nextDay ? ' (+1)' : ''}`;
     })
     .join(', ');
 }

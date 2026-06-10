@@ -15,15 +15,28 @@ export interface PolicyRiskGatilhoState {
 
 export type PolicyRiskGatilhosState = Record<PolicyTriggerNivelRisco, PolicyRiskGatilhoState>;
 
-export function createEmptyPolicyRiskGatilhosState(): PolicyRiskGatilhosState {
+const DEFAULT_RISK_POINTS: Record<PolicyTriggerNivelRisco, number> = {
+  low: 40,
+  medium: 60,
+  high: 80,
+  critical: 100,
+};
+
+export function createDefaultPolicyRiskGatilhosState(): PolicyRiskGatilhosState {
   return POLICY_RISK_LEVEL_ORDER.reduce((acc, level) => {
     acc[level] = {
-      enabled: false,
-      aPartirDePontos: 0,
+      enabled: true,
+      aPartirDePontos: DEFAULT_RISK_POINTS[level],
       trilhaId: '',
+      ...(level === 'critical' ? { tratamentoContinuidade: 'first_critical_only' as const } : {}),
     };
     return acc;
   }, {} as PolicyRiskGatilhosState);
+}
+
+/** @deprecated Use createDefaultPolicyRiskGatilhosState */
+export function createEmptyPolicyRiskGatilhosState(): PolicyRiskGatilhosState {
+  return createDefaultPolicyRiskGatilhosState();
 }
 
 export function policyRiskGatilhosStateFromTriggers(gatilhos: PolicyTrigger[]): PolicyRiskGatilhosState {

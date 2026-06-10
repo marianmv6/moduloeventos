@@ -13,7 +13,7 @@ import { POLICY_RISK_LEVEL_ORDER } from '../../constants/policyRiskLevel.constan
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PolicyRiskLevelCards } from './PolicyRiskLevelCards';
 import {
-  createEmptyPolicyRiskGatilhosState,
+  createDefaultPolicyRiskGatilhosState,
   policyRiskGatilhosStateEquals,
   policyRiskGatilhosStateFromTriggers,
   policyRiskGatilhosStateToTriggers,
@@ -101,7 +101,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   const [riskGatilhos, setRiskGatilhos] = useState<PolicyRiskGatilhosState>(() => {
     const g = initialData?.gatilhos ?? [];
     if (g.length > 0) return policyRiskGatilhosStateFromTriggers(g);
-    return createEmptyPolicyRiskGatilhosState();
+    return createDefaultPolicyRiskGatilhosState();
   });
   const [active, setActive] = useState(initialData?.active ?? true);
   const [eventSearchQuery, setEventSearchQuery] = useState('');

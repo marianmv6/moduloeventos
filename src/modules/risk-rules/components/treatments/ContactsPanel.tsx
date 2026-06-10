@@ -10,6 +10,8 @@ import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilt
 import { COMPANY_OPTIONS } from '../../constants/companies';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ContactWeeklyShiftPicker } from './ContactWeeklyShiftPicker';
+import { ContactWorkScheduleTable } from './ContactWorkScheduleTable';
+import { isLocalRegrasDev } from '../../../../config/deployTarget';
 import {
   contactDayScheduleStateFromContact,
   contactDayScheduleStateToWeeklySchedule,
@@ -490,10 +492,17 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                   </div>
                 </div>
               </div>
-              <ContactWeeklyShiftPicker
-                value={weeklyScheduleState}
-                onChange={setWeeklyScheduleState}
-              />
+              {isLocalRegrasDev ? (
+                <ContactWorkScheduleTable
+                  value={weeklyScheduleState}
+                  onChange={setWeeklyScheduleState}
+                />
+              ) : (
+                <ContactWeeklyShiftPicker
+                  value={weeklyScheduleState}
+                  onChange={setWeeklyScheduleState}
+                />
+              )}
               <div className="contact-form-row contact-form-row--split">
                 <div className="form-group">
                   <ModalSelect

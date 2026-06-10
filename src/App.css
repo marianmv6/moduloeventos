@@ -3713,6 +3713,7 @@ body.cr-fullscreen-modal-open .app-content {
 .cr-modal__body .form-card.contact-form > .form-row,
 .cr-modal__body .form-card.contact-form > .contact-form-row,
 .cr-modal__body .form-card.contact-form > .contact-weekly-shift,
+.cr-modal__body .form-card.contact-form > .contact-work-schedule,
 .cr-modal__body .form-card.contact-form > .form-field {
   margin-bottom: 1rem;
 }
@@ -4028,6 +4029,120 @@ body.cr-fullscreen-modal-open .app-content {
 .contact-weekly-shift__day-body .time-picker .time-picker__display {
   font-size: 0.875rem;
   color: var(--color-text-primary);
+}
+
+/* Escala de trabalho — tabela semanal (dev local) */
+.contact-work-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-work-schedule__title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.contact-work-schedule__table-wrap {
+  overflow-x: auto;
+}
+
+.contact-work-schedule__table thead th:nth-child(2),
+.contact-work-schedule__table thead th:nth-child(3),
+.contact-work-schedule__table tbody td:nth-child(2),
+.contact-work-schedule__table tbody td:nth-child(3) {
+  width: 11rem;
+  min-width: 11rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.contact-work-schedule__table tbody th,
+.contact-work-schedule__table tbody td {
+  vertical-align: middle;
+}
+
+.contact-work-schedule__table thead th:last-child {
+  width: 5rem;
+  min-width: 5rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  text-align: center;
+}
+
+.contact-work-schedule__table tbody td.contact-work-schedule__next-day-cell {
+  width: 5rem;
+  min-width: 5rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  text-align: center;
+}
+
+.contact-work-schedule__table tbody th {
+  background: transparent;
+}
+
+.contact-work-schedule__day-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.contact-work-schedule__day-label--disabled span {
+  color: #98a2b3;
+}
+
+.contact-work-schedule__checkbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.contact-work-schedule__time-input {
+  width: 100%;
+  min-width: 9rem;
+  max-width: 10rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dce3ea;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9375rem;
+  font-family: var(--font-noto-sans);
+  color: var(--color-text-primary);
+  box-sizing: border-box;
+}
+
+.contact-work-schedule__time-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.contact-work-schedule__time-input:disabled {
+  background: #f4f6f8;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+.contact-work-schedule__next-day-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #7c3aed;
+}
+
+.contact-work-schedule__next-day-icon {
+  display: block;
 }
 
 .form-hint {
@@ -5264,18 +5379,15 @@ body.cr-fullscreen-modal-open .app-content {
 .policy-risk-card__points-wrap {
   display: flex;
   align-items: center;
-  background: #fff;
-  border: 1px solid #dce3ea;
-  border-radius: 8px;
   min-height: 40px;
-  overflow: hidden;
 }
 .policy-risk-card__points-input {
-  flex: 1;
+  flex: 0 0 auto;
+  width: 3rem;
   min-width: 0;
   border: none;
   background: transparent;
-  padding: 0.5rem 0.625rem;
+  padding: 0;
   font-size: 0.875rem;
   color: #101828;
 }
@@ -5283,7 +5395,8 @@ body.cr-fullscreen-modal-open .app-content {
   outline: none;
 }
 .policy-risk-card__points-suffix {
-  padding: 0 0.625rem;
+  padding: 0;
+  margin-left: 0.25rem;
   font-size: 0.8125rem;
   color: #667085;
   white-space: nowrap;
@@ -5298,29 +5411,29 @@ body.cr-fullscreen-modal-open .app-content {
   margin-top: 0.25rem;
 }
 .policy-risk-card--low {
-  background: #eef7ff;
-  border-color: #b8ddff;
+  background: #F1F9FF;
+  border-color: #DBF1FE;
 }
 .policy-risk-card--low .policy-risk-card__title {
   color: #169eff;
 }
 .policy-risk-card--medium {
-  background: #fff8eb;
-  border-color: #f5d9a8;
+  background: #FDF9F3;
+  border-color: #FBF1DE;
 }
 .policy-risk-card--medium .policy-risk-card__title {
   color: #c47d00;
 }
 .policy-risk-card--high {
-  background: #fff0f0;
-  border-color: #ffc9c9;
+  background: #FFF5F5;
+  border-color: #FEE5E5;
 }
 .policy-risk-card--high .policy-risk-card__title {
   color: #ff5454;
 }
 .policy-risk-card--critical {
-  background: #f5eded;
-  border-color: #d9b8b8;
+  background: #F7F2F2;
+  border-color: #ECDDDD;
 }
 .policy-risk-card--critical .policy-risk-card__title {
   color: #7f1d1d;
