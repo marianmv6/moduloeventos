@@ -6,6 +6,3 @@ const rawTarget = import.meta.env.VITE_DEPLOY_TARGET as DeployTarget | undefined
 export const DEPLOY_TARGET: DeployTarget = rawTarget ?? 'regrasdetratativas';
 
 export const isModuloEventosDeploy = DEPLOY_TARGET === 'moduloeventos';
-
-/** Dev local padrão (localhost com regrasdetratativas). */
-export const isLocalRegrasDev = import.meta.env.DEV && DEPLOY_TARGET === 'regrasdetratativas';
