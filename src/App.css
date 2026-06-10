@@ -5293,10 +5293,14 @@ body.cr-fullscreen-modal-open .app-content {
 
 /* Ocorrências por nível de risco — cards horizontais */
 .policy-form-gatilhos-section--risk-cards {
-  overflow: hidden;
+  overflow: visible;
+}
+.policy-form-gatilhos-section--risk-cards .policy-form-gatilhos-header {
+  margin-bottom: 1.5rem;
 }
 .policy-form-risk-cards-wrap {
   position: relative;
+  overflow: visible;
 }
 .policy-form-risk-cards-wrap--error {
   border: 1px solid var(--color-error, #ff5454);
@@ -5319,6 +5323,7 @@ body.cr-fullscreen-modal-open .app-content {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 0.75rem;
+  overflow: visible;
 }
 @media (max-width: 1100px) {
   .policy-risk-cards {
@@ -5339,6 +5344,8 @@ body.cr-fullscreen-modal-open .app-content {
   flex-direction: column;
   gap: 0.75rem;
   transition: opacity 0.15s ease, filter 0.15s ease;
+  overflow: visible;
+  position: relative;
 }
 .policy-risk-card__header {
   display: flex;
@@ -5367,6 +5374,7 @@ body.cr-fullscreen-modal-open .app-content {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  overflow: visible;
 }
 .policy-risk-card__field-label,
 .policy-risk-card .modal-select__label {
@@ -5437,6 +5445,13 @@ body.cr-fullscreen-modal-open .app-content {
 }
 .policy-risk-card__continuity {
   margin-top: 0.25rem;
+  overflow: visible;
+}
+.policy-risk-card .modal-select:has(.modal-select__dropdown) {
+  z-index: 30;
+}
+.policy-risk-card .modal-select__dropdown {
+  z-index: 1200;
 }
 .policy-risk-card--low {
   background: #F1F9FF;
