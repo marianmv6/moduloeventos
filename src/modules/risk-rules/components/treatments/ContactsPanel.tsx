@@ -4,6 +4,7 @@ import { CONTACT_PREFERENCE_OPTIONS, contactGroupDisplay } from '../../constants
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { FormFieldLabel } from '../shared/FormFieldLabel';
+import { RequiredFieldMarker } from '../shared/RequiredFieldMarker';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
@@ -28,6 +29,38 @@ const GROUP_FILTER_OPTIONS: ModalSelectOption[] = [
   { value: 'true', label: 'Sim' },
   { value: 'false', label: 'Não' },
 ];
+
+const CONTACT_TYPE_OPTIONS: ModalSelectOption[] = [
+  { value: 'individual', label: 'Contato individual' },
+  { value: 'whatsapp_group', label: 'Grupo de WhatsApp' },
+];
+
+type ContactTypeValue = 'individual' | 'whatsapp_group';
+
+function ContactTypeField({
+  value,
+  onChange,
+}: {
+  value: ContactTypeValue;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="form-group">
+      <label htmlFor="contact-type" className="modal-select__label form-field__label">
+        <span className="form-field__label-text">Tipo de contato</span>
+        <RequiredFieldMarker />
+      </label>
+      <ModalSelect
+        id="contact-type"
+        value={value}
+        onChange={onChange}
+        options={CONTACT_TYPE_OPTIONS}
+        placeholder="Selecione"
+        className="modal-select--no-pill"
+      />
+    </div>
+  );
+}
 
 const DESCRIPTION_MAX_LENGTH = 30;
 
@@ -84,8 +117,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Contact | null>(null);
-  const [isWhatsAppGroup, setIsWhatsAppGroup] = useState(false);
-  const [name, setName] = useState('');
+  const [contactType, setContactType] = useState<ContactTypeValue>('individual');
+  const [individualName, setIndividualName] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
@@ -130,6 +164,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     });
   }, [contacts, filters, isClient, currentUser.companyId]);
 
+  const isWhatsAppGroup = contactType === 'whatsapp_group';
   const contactPreferences = useMemo(
     () => parseContactPreferences(contactPreferencesValue),
     [contactPreferencesValue],
@@ -140,8 +175,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
   const emailRequired = !isWhatsAppGroup && contactPreferences.includes('email');
 
   const resetFormFields = () => {
-    setIsWhatsAppGroup(false);
-    setName('');
+    setContactType('individual');
+    setIndividualName('');
+    setGroupName('');
     setPhone('');
     setEmail('');
     setDescription('');
@@ -170,8 +206,10 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
 
   const openEdit = (c: Contact) => {
     setEditing(c);
-    setIsWhatsAppGroup(c.isWhatsAppGroup === true);
-    setName(c.name ?? '');
+    const isGroup = c.isWhatsAppGroup === true;
+    setContactType(isGroup ? 'whatsapp_group' : 'individual');
+    setIndividualName(isGroup ? '' : (c.name ?? ''));
+    setGroupName(isGroup ? (c.name ?? '') : '');
     setPhone(c.phone ? formatPhone(c.phone) : '');
     setEmail(c.email ?? '');
     setDescription(c.description ?? '');
@@ -195,12 +233,17 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     if (fieldErrors.phone) setFieldErrors((e2) => ({ ...e2, phone: false }));
   };
 
+  const handleContactTypeChange = (value: string) => {
+    setContactType(value === 'whatsapp_group' ? 'whatsapp_group' : 'individual');
+    setFieldErrors({});
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const nameTrimmed = name.trim();
     const descriptionTrimmed = description.trim();
 
     if (isWhatsAppGroup) {
+      const nameTrimmed = groupName.trim();
       const nameInvalid = !nameTrimmed;
       setFieldErrors({ name: nameInvalid });
       if (nameInvalid) return;
@@ -216,6 +259,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
       return;
     }
 
+    const nameTrimmed = individualName.trim();
     const phoneRaw = phoneToRaw(phone);
     const emailTrimmed = email.trim();
     const preferences = parseContactPreferences(contactPreferencesValue);
@@ -354,51 +398,34 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
         fullScreen
       >
         <form id="contact-form" onSubmit={handleSubmit} className="form-card contact-form">
-          <div className="form-field contact-form-field--toggle">
-            <label id="contact-whatsapp-group-label" htmlFor="contact-whatsapp-group-switch">
-              Grupo de WhatsApp
-            </label>
-            <button
-              id="contact-whatsapp-group-switch"
-              type="button"
-              role="switch"
-              aria-labelledby="contact-whatsapp-group-label"
-              aria-checked={isWhatsAppGroup}
-              className={`form-toggle-switch${isWhatsAppGroup ? ' form-toggle-switch--on' : ''}`}
-              onClick={() => {
-                setIsWhatsAppGroup((v) => !v);
-                setFieldErrors({});
-              }}
-            >
-              <span className="form-toggle-switch__knob" aria-hidden="true" />
-            </button>
-          </div>
-
           {isWhatsAppGroup ? (
             <>
-              <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
-                <FormFieldLabel htmlFor="contact-group-name" required>
-                  Nome do grupo
-                </FormFieldLabel>
-                <div className="form-field__input-wrap">
-                  <input
-                    id="contact-group-name"
-                    type="text"
-                    value={name}
-                    maxLength={DESCRIPTION_MAX_LENGTH}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));
-                    }}
-                    placeholder="Digite o nome do grupo"
-                    className={fieldErrors.name ? 'input-error' : ''}
-                    aria-invalid={fieldErrors.name}
-                  />
-                  {fieldErrors.name && (
-                    <span className="form-group__field-error-icon">
-                      <FieldErrorIcon />
-                    </span>
-                  )}
+              <div className="form-row form-row--contact-header form-row--contact-group">
+                <ContactTypeField value={contactType} onChange={handleContactTypeChange} />
+                <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
+                  <FormFieldLabel htmlFor="contact-group-name" required>
+                    Nome do grupo
+                  </FormFieldLabel>
+                  <div className="form-field__input-wrap">
+                    <input
+                      id="contact-group-name"
+                      type="text"
+                      value={groupName}
+                      maxLength={DESCRIPTION_MAX_LENGTH}
+                      onChange={(e) => {
+                        setGroupName(e.target.value);
+                        if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));
+                      }}
+                      placeholder="Digite o nome do grupo"
+                      className={fieldErrors.name ? 'input-error' : ''}
+                      aria-invalid={fieldErrors.name}
+                    />
+                    {fieldErrors.name && (
+                      <span className="form-group__field-error-icon">
+                        <FieldErrorIcon />
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="form-field">
@@ -414,10 +441,14 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                   />
                 </div>
               </div>
+              <p className="contact-whatsapp-group-notice" role="note">
+                Insira o nome do grupo de WhatsApp na qual a central de tratativas deverá entrar em contato.
+              </p>
             </>
           ) : (
             <>
-              <div className="form-row">
+              <div className="form-row form-row--contact-header">
+                <ContactTypeField value={contactType} onChange={handleContactTypeChange} />
                 <div className={`form-field ${fieldErrors.name ? 'has-error' : ''}`}>
                   <FormFieldLabel htmlFor="contact-name" required>
                     Nome
@@ -426,9 +457,9 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                     <input
                       id="contact-name"
                       type="text"
-                      value={name}
+                      value={individualName}
                       onChange={(e) => {
-                        setName(e.target.value);
+                        setIndividualName(e.target.value);
                         if (fieldErrors.name) setFieldErrors((err) => ({ ...err, name: false }));
                       }}
                       placeholder="Nome"

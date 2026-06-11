@@ -2618,6 +2618,16 @@ body.cr-fullscreen-modal-open .app-content {
   font-weight: 600;
   line-height: 1.4;
 }
+.contact-whatsapp-group-notice {
+  margin: 0.75rem 0 0;
+  padding: 0.625rem 1rem;
+  border-radius: 8px;
+  background: #f9ebd5;
+  color: #e29c2c;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
 /* Mesma altura entre "Selecionar todos" e a lista que entre "Pontua??o m?nima" e o input (0.25rem) */
 .trail-step-config > .policy-form-checkbox-option {
   margin-bottom: 0;
@@ -3795,13 +3805,26 @@ body.cr-fullscreen-modal-open .app-content {
   outline: 2px solid #37b574;
   outline-offset: 2px;
 }
-/* Primeira linha do modal de contato: Nome, Telefone, Email ??? Grid 3 colunas iguais */
+/* Primeira linha do modal de contato: Tipo, Nome, Telefone, Email */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
   width: 100%;
   box-sizing: border-box;
+}
+.contact-form .form-row--contact-header {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.contact-form .form-row--contact-header.form-row--contact-group {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.contact-form .form-row--contact-header .form-group {
+  margin: 0;
+  min-width: 0;
+}
+.contact-form .form-row--contact-header .modal-select__label {
+  margin-bottom: 6px;
 }
 .form-row .form-field {
   display: flex;
@@ -3848,6 +3871,10 @@ body.cr-fullscreen-modal-open .app-content {
 }
 @media (max-width: 560px) {
   .form-row {
+    grid-template-columns: 1fr;
+  }
+  .contact-form .form-row--contact-header,
+  .contact-form .form-row--contact-header.form-row--contact-group {
     grid-template-columns: 1fr;
   }
   .contact-form-row--split {
