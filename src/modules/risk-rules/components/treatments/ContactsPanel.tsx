@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import type { Contact, ContactPreference } from '../../types/risk.types';
-import { CONTACT_PREFERENCE_OPTIONS, contactGroupDisplay } from '../../constants/contactDisplay';
+import { CONTACT_PREFERENCE_OPTIONS, CONTACT_TYPE_LABELS, contactTypeDisplay } from '../../constants/contactDisplay';
 import { CrModal } from '../shared/CrModal';
 import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { FormFieldLabel } from '../shared/FormFieldLabel';
@@ -25,14 +25,9 @@ const OUTSIDE_HOURS_OPTIONS: ModalSelectOption[] = [
   { value: 'false', label: 'Não' },
 ];
 
-const GROUP_FILTER_OPTIONS: ModalSelectOption[] = [
-  { value: 'true', label: 'Sim' },
-  { value: 'false', label: 'Não' },
-];
-
 const CONTACT_TYPE_OPTIONS: ModalSelectOption[] = [
-  { value: 'individual', label: 'Contato individual' },
-  { value: 'whatsapp_group', label: 'Grupo de WhatsApp' },
+  { value: 'individual', label: CONTACT_TYPE_LABELS.individual },
+  { value: 'whatsapp_group', label: CONTACT_TYPE_LABELS.whatsapp_group },
 ];
 
 type ContactTypeValue = 'individual' | 'whatsapp_group';
@@ -105,7 +100,7 @@ interface ContactsPanelProps {
   onFilterStateChange?: (state: { open: boolean; appliedCount: number }) => void;
 }
 
-type ContactFilters = { nome: string; grupo: string };
+type ContactFilters = { nome: string; tipoContato: string };
 
 export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>(function ContactsPanel(
   { contacts, onSave, onDelete, onValidationError, hideToolbar = false, onFilterStateChange },
@@ -130,7 +125,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
   const [acceptOutsideHours, setAcceptOutsideHours] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; phone?: boolean; email?: boolean }>({});
 
-  const EMPTY_FILTERS: ContactFilters = { nome: '', grupo: '' };
+  const EMPTY_FILTERS: ContactFilters = { nome: '', tipoContato: '' };
   const [filters, setFilters] = useState<ContactFilters>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -142,7 +137,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
         .sort()
         .map((n) => ({ value: n, label: n })),
     },
-    { key: 'grupo', label: 'Grupo', options: GROUP_FILTER_OPTIONS },
+    { key: 'tipoContato', label: 'Tipo de contato', options: CONTACT_TYPE_OPTIONS },
   ];
 
   const appliedCount = useMemo(
@@ -158,8 +153,8 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
     const baseList = isClient ? contacts.filter((c) => c.companyId === currentUser.companyId) : contacts;
     return baseList.filter((c) => {
       if (filters.nome && c.name !== filters.nome) return false;
-      if (filters.grupo === 'true' && !c.isWhatsAppGroup) return false;
-      if (filters.grupo === 'false' && c.isWhatsAppGroup) return false;
+      if (filters.tipoContato === 'whatsapp_group' && !c.isWhatsAppGroup) return false;
+      if (filters.tipoContato === 'individual' && c.isWhatsAppGroup) return false;
       return true;
     });
   }, [contacts, filters, isClient, currentUser.companyId]);
@@ -335,7 +330,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
               <th>Email</th>
               <th>Escala de trabalho</th>
               <th>Descrição</th>
-              <th>Grupo</th>
+              <th>Tipo de contato</th>
               <th></th>
             </tr>
           </thead>
@@ -360,7 +355,7 @@ export const ContactsPanel = forwardRef<ContactsPanelHandle, ContactsPanelProps>
                     )}
                   </td>
                   <td className="drawer-contacts-table__desc-cell">{c.description ?? '—'}</td>
-                  <td>{contactGroupDisplay(c)}</td>
+                  <td>{contactTypeDisplay(c)}</td>
                   <td className="list-cell-actions">
                     <div className="list-actions">
                       <button

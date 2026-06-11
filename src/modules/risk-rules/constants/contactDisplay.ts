@@ -26,6 +26,16 @@ export function isWhatsAppGroupContact(c: Contact): boolean {
   return c.isWhatsAppGroup === true;
 }
 
+export const CONTACT_TYPE_LABELS = {
+  individual: 'Contato individual',
+  whatsapp_group: 'Grupo de WhatsApp',
+} as const;
+
+export function contactTypeDisplay(c: Contact): string {
+  return c.isWhatsAppGroup ? CONTACT_TYPE_LABELS.whatsapp_group : CONTACT_TYPE_LABELS.individual;
+}
+
+/** @deprecated Use contactTypeDisplay */
 export function contactGroupDisplay(c: Contact): string {
-  return c.isWhatsAppGroup ? 'Sim' : 'Não';
+  return contactTypeDisplay(c);
 }
