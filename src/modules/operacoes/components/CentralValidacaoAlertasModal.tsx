@@ -12,6 +12,7 @@ import type {
   CentralAlertType,
   CentralValidationEvent,
 } from '../types/operacoesCentral.types';
+import { resolveSeverityFromAccumulatedPoints } from '../utils/accumulatedPointsSeverity';
 
 const ALERT_TYPE_OPTIONS: { value: CentralAlertType; label: string }[] = [
   { value: 'bocejo', label: 'Bocejo' },
@@ -31,6 +32,11 @@ const ALERT_SECTION_BREAKS: number[] = [4, 8];
 
 /** Valor exibido quando telemetria/eficiência não configura alerta na validação. */
 const POLICY_EVENT_NAO_E_ALERTA = 'Não é um alerta';
+
+function formatEventPointsLabel(points?: number): string {
+  if (points == null || points <= 0) return '';
+  return `, +${points} pts`;
+}
 
 function getValidationEventLabel(
   event: CentralValidationEvent,
@@ -126,6 +132,7 @@ interface CentralValidacaoAlertasModalProps {
   readOnly?: boolean;
   onClose: () => void;
   onReturn: () => void;
+  /** Chamado ao salvar e fechar após confirmação do evento atual. */
   onConfirmClose: () => void;
   onConfirmNext: () => void;
   onConfirmTreat: () => void;
@@ -957,6 +964,41 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
       ? EVENTOS_EFICIENCIA
       : [];
 
+  const initialAccumulatedPoints = useMemo(
+    () => events.reduce((sum, event) => sum + (event.eventPoints ?? 0), 0),
+    [events],
+  );
+
+  const isEventNotAlert = (
+    event: CentralValidationEvent,
+    alerts: Record<string, CentralAlertType>,
+    policyTypes: Record<string, string>,
+  ): boolean => {
+    if (event.eventCategory === 'video') {
+      return (alerts[event.id] ?? event.suggestedAlert) === 'nao-e-alerta';
+    }
+    return (policyTypes[event.id] ?? event.suggestedEventType) === POLICY_EVENT_NAO_E_ALERTA;
+  };
+
+  const accumulatedPoints = useMemo(() => {
+    let total = initialAccumulatedPoints;
+    events.forEach((event) => {
+      if (!confirmedIds.has(event.id)) return;
+      if (isEventNotAlert(event, alertTypes, policyEventTypes)) {
+        total -= event.eventPoints ?? 0;
+      }
+    });
+    return Math.max(0, total);
+  }, [
+    events,
+    confirmedIds,
+    alertTypes,
+    policyEventTypes,
+    initialAccumulatedPoints,
+  ]);
+
+  const accumulatedSeverity = resolveSeverityFromAccumulatedPoints(accumulatedPoints);
+
   const setActiveAlertType = (value: CentralAlertType) => {
     if (!activeEvent) return;
     setAlertTypes((prev) => ({ ...prev, [activeEvent.id]: value }));
@@ -1094,6 +1136,8 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
                         className={`central-validacao-event__alert${!isActive && isConfirmed ? ' central-validacao-event__alert--muted' : ''}`}
                       >
                         {getValidationEventLabel(event, alertTypes, policyEventTypes)}
+                        {!isEventNotAlert(event, alertTypes, policyEventTypes) &&
+                          formatEventPointsLabel(event.eventPoints)}
                       </span>
                     )}
                   </div>
@@ -1105,8 +1149,14 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
             );
           })}
         </ul>
-        <div className="central-validacao-sidebar__logo" aria-hidden>
-          <IconCreareLogo />
+        <div
+          className={`central-validacao-sidebar__accumulated central-validacao-sidebar__accumulated--${accumulatedSeverity}`}
+          aria-label={`Pontuação acumulada: ${accumulatedPoints} pontos`}
+        >
+          <span className="central-validacao-sidebar__accumulated-value">
+            {accumulatedPoints} pts
+          </span>
+          <span className="central-validacao-sidebar__accumulated-label">Pontuação acumulada</span>
         </div>
       </aside>
 
@@ -1115,14 +1165,6 @@ export const CentralValidacaoAlertasModal: React.FC<CentralValidacaoAlertasModal
           <h2 id="central-validacao-title" className="central-validacao-header__title">
             {headerTitle}
           </h2>
-          <button
-            type="button"
-            className="central-validacao-header__close"
-            onClick={requestClose}
-            aria-label="Fechar validação"
-          >
-            <IconCloseLarge />
-          </button>
         </header>
 
         <nav className="central-validacao-tabs" aria-label="Abas de detalhe">

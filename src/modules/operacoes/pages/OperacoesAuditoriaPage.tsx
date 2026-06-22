@@ -1,9 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
+import { InfoTooltip } from '../../risk-rules/components/shared/InfoTooltip';
 import { IconView } from '../../risk-rules/components/shared/Icons';
 import { TratativaOcorrenciaModal } from '../components/TratativaOcorrenciaModal';
+import { MonitoringOfCell } from '../components/MonitoringOfCell';
 import { mockAuditoriaRows } from '../mocks/operacoesAuditoria.mock';
 import type { AuditoriaRow } from '../types/operacoesAuditoria.types';
+import { resolveSeverityFromAccumulatedPoints } from '../utils/accumulatedPointsSeverity';
+import { encodeMonitoringFilterValue } from '../utils/centralOccurrenceDisplay';
 import { IconFilterBars } from '../components/IconFilterBars';
 import { OperacoesAuditoriaFilterPanel } from '../components/OperacoesAuditoriaFilterPanel';
 import { OperacoesAuditoriaFilterBanner } from '../components/OperacoesAuditoriaFilterBanner';
@@ -21,8 +25,12 @@ function applyAuditoriaFilters(
 ): AuditoriaRow[] {
   return rows.filter((row) => {
     if (filters.tratadoPor && row.treatedBy !== filters.tratadoPor) return false;
-    if (filters.placa && row.vehicleId !== filters.placa) return false;
-    if (filters.motorista && row.driverName !== filters.motorista) return false;
+    if (
+      filters.monitoramentoDe &&
+      encodeMonitoringFilterValue(row.trackingType, row.monitoringOf) !== filters.monitoramentoDe
+    ) {
+      return false;
+    }
     const rowDate = row.treatedAtIso.slice(0, 10);
     if (filters.periodoInicio && rowDate < filters.periodoInicio) return false;
     if (filters.periodoFim && rowDate > filters.periodoFim) return false;
@@ -132,10 +140,16 @@ export const OperacoesAuditoriaPage: React.FC = () => {
           <table className="list-table operacoes-eventos-table">
             <thead>
               <tr>
+                <th className="operacoes-col-data operacoes-auditoria-col-points">
+                  <span className="operacoes-auditoria-th-with-info">
+                    Pontuação
+                    <InfoTooltip text="Pontuação no momento da tratativa" />
+                  </span>
+                </th>
                 <th className="operacoes-col-data">Data / hora da tratativa</th>
                 <th className="operacoes-col-data">Tratado por</th>
-                <th className="operacoes-col-data">Placa / prefixo</th>
-                <th className="operacoes-col-data">Motorista</th>
+                <th className="operacoes-col-data">Política de ocorrência</th>
+                <th className="operacoes-col-data">Monitoramento de</th>
                 <th className="operacoes-col-data operacoes-col-anexos">Anexos</th>
                 <th className="list-cell-actions operacoes-col-acoes-header" aria-label="Ações" />
               </tr>
@@ -143,8 +157,14 @@ export const OperacoesAuditoriaPage: React.FC = () => {
             <tbody>
               {filteredRows.map((row) => {
                 const attachmentCount = getAttachmentCount(row);
+                const pointsSeverity = resolveSeverityFromAccumulatedPoints(row.treatmentPoints);
                 return (
                 <tr key={row.id}>
+                  <td className="operacoes-col-data operacoes-auditoria-col-points">
+                    <span className={`operacoes-auditoria-points operacoes-auditoria-points--${pointsSeverity}`}>
+                      {row.treatmentPoints} pts
+                    </span>
+                  </td>
                   <td className="operacoes-col-data">
                     <TruncatedTextTooltip text={row.treatedAt} />
                   </td>
@@ -152,10 +172,13 @@ export const OperacoesAuditoriaPage: React.FC = () => {
                     <TruncatedTextTooltip text={row.treatedBy} />
                   </td>
                   <td className="operacoes-col-data">
-                    <TruncatedTextTooltip text={row.vehicleId} />
+                    <TruncatedTextTooltip text={row.policyName} />
                   </td>
                   <td className="operacoes-col-data">
-                    <TruncatedTextTooltip text={row.driverName} />
+                    <MonitoringOfCell
+                      label={row.monitoringOf}
+                      trackingType={row.trackingType}
+                    />
                   </td>
                   <td className="operacoes-col-data operacoes-col-anexos">
                     {attachmentCount > 0 ? (

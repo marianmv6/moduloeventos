@@ -1,6 +1,12 @@
 import type { ModalSelectOption } from '../../risk-rules/components/shared/ModalSelect';
 import type { CentralOccurrenceSeverity } from '../types/operacoesCentral.types';
 import { mockCentralOccurrenceList } from '../mocks/operacoesCentral.mock';
+import {
+  encodeMonitoringFilterValue,
+  formatCentralMonitoringLabel,
+  getMonitoringTypeSuffix,
+} from '../utils/centralOccurrenceDisplay';
+
 const toOptions = (values: string[]): ModalSelectOption[] =>
   values.map((v) => ({ value: v, label: v }));
 
@@ -14,8 +20,7 @@ const SEVERITY_LABELS: Record<CentralOccurrenceSeverity, string> = {
 export interface CentralControleFilters {
   etapa: string;
   tipoEvento: string;
-  placaPrefixo: string;
-  motorista: string;
+  monitoramentoDe: string;
   gravidade: string;
   politicaTratativa: string;
   periodoInicio: string;
@@ -27,8 +32,7 @@ export interface CentralControleFilters {
 export const EMPTY_CENTRAL_CONTROLE_FILTERS: CentralControleFilters = {
   etapa: '',
   tipoEvento: '',
-  placaPrefixo: '',
-  motorista: '',
+  monitoramentoDe: '',
   gravidade: '',
   politicaTratativa: '',
   periodoInicio: '',
@@ -49,28 +53,24 @@ export function getCentralTipoEventoOptions(): ModalSelectOption[] {
   return toOptions([...values].sort());
 }
 
-export function getCentralPlacaPrefixoOptions(): ModalSelectOption[] {
-  const values = new Set<string>();
-  mockCentralOccurrenceList.forEach((entry) => {
-    if (entry.kind === 'group') {
-      values.add(`${entry.occurrence.placa} / ${entry.occurrence.prefixo}`);
-    } else {
-      values.add(`${entry.row.placa} / ${entry.row.prefixo}`);
-    }
-  });
-  return toOptions([...values].sort());
-}
+export function getCentralMonitoramentoDeOptions(): ModalSelectOption[] {
+  const seen = new Set<string>();
+  const options: ModalSelectOption[] = [];
 
-export function getCentralMotoristaOptions(): ModalSelectOption[] {
-  const values = new Set<string>();
   mockCentralOccurrenceList.forEach((entry) => {
-    if (entry.kind === 'group') {
-      values.add(entry.occurrence.driverName);
-    } else {
-      values.add(entry.row.driverName);
-    }
+    const source = entry.kind === 'group' ? entry.occurrence : entry.row;
+    const label = formatCentralMonitoringLabel(source);
+    const value = encodeMonitoringFilterValue(source.trackingType, label);
+    if (seen.has(value)) return;
+    seen.add(value);
+    options.push({
+      value,
+      label,
+      suffixLabel: getMonitoringTypeSuffix(source.trackingType, 'filter'),
+    });
   });
-  return toOptions([...values].sort());
+
+  return options.sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 }
 
 export function getCentralGravidadeOptions(): ModalSelectOption[] {
@@ -81,12 +81,15 @@ export function getCentralGravidadeOptions(): ModalSelectOption[] {
 }
 
 export function getCentralPoliticaOptions(): ModalSelectOption[] {
-  return toOptions([
-    'Política padrão',
-    'Política de sonolência',
-    'Política de velocidade',
-    'Política de cerca eletrônica',
-  ]);
+  const values = new Set<string>();
+  mockCentralOccurrenceList.forEach((entry) => {
+    if (entry.kind === 'group') {
+      values.add(entry.occurrence.policyName);
+    } else {
+      values.add(entry.row.policyName);
+    }
+  });
+  return toOptions([...values].sort());
 }
 
 export function getCentralEtapaOptions(): ModalSelectOption[] {

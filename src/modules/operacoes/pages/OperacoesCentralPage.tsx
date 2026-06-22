@@ -5,13 +5,13 @@ import { CentralControleFilterBanner } from '../components/CentralControleFilter
 import { CentralControleFilterPanel } from '../components/CentralControleFilterPanel';
 import { CentralControleToolbarSearch } from '../components/CentralControleToolbarSearch';
 import { CentralValidacaoAlertasModal } from '../components/CentralValidacaoAlertasModal';
-import { TratativaOcorrenciaModal } from '../components/TratativaOcorrenciaModal';
+import { TratativaOcorrenciaModal, SAVED_CHANGES_TOAST } from '../components/TratativaOcorrenciaModal';
+import { SuccessToast } from '../../risk-rules/components/shared/SuccessToast';
 import { UnsavedConfirmModal } from '../../risk-rules/components/shared/UnsavedConfirmModal';
 import {
   IconAnalystHeadset,
   IconOnlineStatus,
   IconOpenOccurrence,
-  IconRowChevron,
   IconStatusValidated,
   IconStatusWaitingValidation,
   IconViewOccurrence,
@@ -32,6 +32,8 @@ import {
   buildCentralValidationEventsForOccurrence,
   getCentralDriverNameForOccurrence,
 } from '../utils/centralOccurrenceBridge';
+import { formatCentralMonitoringLabel } from '../utils/centralOccurrenceDisplay';
+import { MonitoringOfCell } from '../components/MonitoringOfCell';
 import { matchesCentralControleFilters } from '../utils/centralControleFilterMatch';
 import { countCentralAppliedFilters } from '../utils/centralControleFilterSummary';
 import {
@@ -47,7 +49,6 @@ import { formatLocalTimeTooltip } from '../utils/operacoesDateTimeDisplay';
 import type {
   CentralEventValidationStatus,
   CentralOccurrence,
-  CentralOccurrenceEvent,
   CentralOccurrenceSeverity,
   CentralOccurrenceSummaryRow,
   CentralStatusSummary,
@@ -177,10 +178,8 @@ function pointsClass(severity: CentralOccurrenceSeverity, isCurrent: boolean): s
 }
 
 /**
- * Célula "Tipo de evento" com o ícone de status (validado/aguardando) à
- * esquerda do nome. Centraliza a lógica de tooltip e ícone usada em
- * todas as variações de linha da tabela (current, past, ocorrência
- * colapsada e linhas-resumo).
+ * Célula "Último evento gerado" com o ícone de status (validado/aguardando) à
+ * esquerda do nome.
  */
 function EventTypeCell({
   status,
@@ -262,8 +261,6 @@ function PointsCell({
 }
 
 function EventRowActions({
-  expanded,
-  onToggle,
   analystName,
   showAnalyst,
   severity,
@@ -271,8 +268,6 @@ function EventRowActions({
   viewOnly,
   onPlay,
 }: {
-  expanded: boolean;
-  onToggle: () => void;
   analystName?: string;
   showAnalyst: boolean;
   severity: CentralOccurrenceSeverity;
@@ -309,15 +304,6 @@ function EventRowActions({
           )}
         </button>
       </LevelTooltip>
-      <button
-        type="button"
-        className="central-controle-row__expand-btn"
-        onClick={onToggle}
-        aria-label={expanded ? 'Recolher' : 'Expandir'}
-        aria-expanded={expanded}
-      >
-        <IconRowChevron expanded={expanded} />
-      </button>
     </div>
   );
 }
@@ -371,139 +357,50 @@ function SummaryRowActions({
           )}
         </button>
       </LevelTooltip>
-      <span className="central-controle-row__expand-spacer" aria-hidden />
     </div>
   );
 }
 
-function ExpandedOccurrenceGroup({
+function OccurrenceGroupRow({
   occurrence,
-  expanded,
-  onToggle,
   playMode,
   viewOnly,
   onPlay,
 }: {
   occurrence: CentralOccurrence;
-  expanded: boolean;
-  onToggle: () => void;
   playMode: CentralPlayMode;
   viewOnly: boolean;
   onPlay: () => void;
 }) {
-  if (!expanded) {
-    const current = occurrence.events[0];
-    return (
-      <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${occurrence.severity}`}>
-        <PointsCell points={current.pointsSum} severity={occurrence.severity} isCurrent />
-        <DateTimeCell value={current.datetime} seed={current.id} />
-        {/* Ocorrencia colapsada exibe o evento atual (mais recente) — por
-            regra de negocio ele sempre estara aguardando validacao. */}
-        <EventTypeCell
-          status="aguardando"
-          eventType={current.eventType}
-          eventPoints={current.eventPoints}
-          validatedByAi={current.validatedByAi}
-        />
-        <td className="central-controle-row__vehicle">
-          {occurrence.placa} / {occurrence.prefixo}
-        </td>
-        <td className="central-controle-row__driver">{occurrence.driverName}</td>
-        <td className="central-controle-row__actions">
-          <EventRowActions
-            expanded={false}
-            onToggle={onToggle}
-            analystName={occurrence.openedByAnalyst}
-            showAnalyst={Boolean(occurrence.openedByAnalyst)}
-            severity={occurrence.severity}
-            playMode={playMode}
-            viewOnly={viewOnly}
-            onPlay={onPlay}
-          />
-        </td>
-      </tr>
-    );
-  }
+  const current = occurrence.events.find((event) => event.isCurrent) ?? occurrence.events[0];
+  if (!current) return null;
 
   return (
-    <>
-      {occurrence.events.map((event, index) => (
-        <EventOccurrenceRow
-          key={event.id}
-          event={event}
-          occurrence={occurrence}
-          index={index}
-          totalEvents={occurrence.events.length}
-          onToggle={onToggle}
+    <tr className={`central-controle-row central-controle-row--occurrence central-controle-row--${occurrence.severity}`}>
+      <PointsCell points={current.pointsSum} severity={occurrence.severity} isCurrent />
+      <DateTimeCell value={current.datetime} seed={current.id} />
+      <EventTypeCell
+        status="aguardando"
+        eventType={current.eventType}
+        eventPoints={current.eventPoints}
+        validatedByAi={current.validatedByAi}
+      />
+      <td className="central-controle-row__policy">{occurrence.policyName}</td>
+      <td className="central-controle-row__monitoring">
+        <MonitoringOfCell
+          label={formatCentralMonitoringLabel(occurrence)}
+          trackingType={occurrence.trackingType}
+        />
+      </td>
+      <td className="central-controle-row__actions">
+        <EventRowActions
+          analystName={occurrence.openedByAnalyst}
+          showAnalyst={Boolean(occurrence.openedByAnalyst)}
+          severity={occurrence.severity}
           playMode={playMode}
           viewOnly={viewOnly}
           onPlay={onPlay}
         />
-      ))}
-    </>
-  );
-}
-
-function EventOccurrenceRow({
-  event,
-  occurrence,
-  index,
-  totalEvents,
-  onToggle,
-  playMode,
-  viewOnly,
-  onPlay,
-}: {
-  event: CentralOccurrenceEvent;
-  occurrence: CentralOccurrence;
-  index: number;
-  totalEvents: number;
-  onToggle: () => void;
-  playMode: CentralPlayMode;
-  viewOnly: boolean;
-  onPlay: () => void;
-}) {
-  const isCurrent = Boolean(event.isCurrent);
-  /** Status exibido como icone na coluna "Tipo de evento":
-   *  - o evento atual (mais recente) SEMPRE esta aguardando validacao
-   *    (regra de negocio: e ele que disparou a ocorrencia);
-   *  - os demais eventos usam o `validationStatus` definido no mock. */
-  const status: CentralEventValidationStatus = isCurrent
-    ? 'aguardando'
-    : event.validationStatus ?? 'aguardando';
-
-  return (
-    <tr
-      className={`central-controle-row central-controle-row--${occurrence.severity} central-controle-row--in-group${isCurrent ? ' central-controle-row--current-event' : ' central-controle-row--past-event'}${index === 0 ? ' central-controle-row--group-first' : ''}${index === totalEvents - 1 ? ' central-controle-row--group-last' : ''}`}
-    >
-      <PointsCell points={event.pointsSum} severity={occurrence.severity} isCurrent={isCurrent} />
-      <DateTimeCell value={event.datetime} seed={event.id} />
-      <EventTypeCell
-        status={status}
-        eventType={event.eventType}
-        eventPoints={event.eventPoints}
-        validatedBy={event.validatedBy}
-        validatedByAi={event.validatedByAi}
-      />
-      <td className="central-controle-row__vehicle">
-        {isCurrent ? `${occurrence.placa} / ${occurrence.prefixo}` : ''}
-      </td>
-      <td className="central-controle-row__driver">
-        {isCurrent ? occurrence.driverName : ''}
-      </td>
-      <td className="central-controle-row__actions">
-        {isCurrent && (
-          <EventRowActions
-            expanded
-            onToggle={onToggle}
-            analystName={occurrence.openedByAnalyst}
-            showAnalyst={Boolean(occurrence.openedByAnalyst)}
-            severity={occurrence.severity}
-            playMode={playMode}
-            viewOnly={viewOnly}
-            onPlay={onPlay}
-          />
-        )}
       </td>
     </tr>
   );
@@ -532,10 +429,13 @@ function CollapsedSummaryRow({
         validatedBy={row.validatedBy}
         validatedByAi={row.validatedByAi}
       />
-      <td className="central-controle-row__vehicle">
-        {row.placa} / {row.prefixo}
+      <td className="central-controle-row__policy">{row.policyName}</td>
+      <td className="central-controle-row__monitoring">
+        <MonitoringOfCell
+          label={formatCentralMonitoringLabel(row)}
+          trackingType={row.trackingType}
+        />
       </td>
-      <td className="central-controle-row__driver">{row.driverName}</td>
       <td className="central-controle-row__actions">
         <SummaryRowActions row={row} playMode={playMode} viewOnly={viewOnly} onPlay={onPlay} />
       </td>
@@ -544,7 +444,6 @@ function CollapsedSummaryRow({
 }
 
 export const OperacoesCentralPage: React.FC = () => {
-  const [expandedId, setExpandedId] = useState<string | null>(mockCentralOccurrenceExpanded.id);
   const [severityFilter, setSeverityFilter] = useState<CentralOccurrenceSeverity | null>(null);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<CentralControleFilters>(
@@ -569,6 +468,7 @@ export const OperacoesCentralPage: React.FC = () => {
   const [treatmentDurationByOccurrence, setTreatmentDurationByOccurrence] = useState<
     Record<string, string>
   >({});
+  const [savedChangesToastVisible, setSavedChangesToastVisible] = useState(false);
 
   const validationEvents = useMemo(
     () =>
@@ -684,10 +584,6 @@ export const OperacoesCentralPage: React.FC = () => {
     [filteredOccurrences],
   );
 
-  const toggleExpanded = (id: string) => {
-    setExpandedId((current) => (current === id ? null : id));
-  };
-
   const toggleFilterPanel = () => {
     setFilterPanelOpen((open) => {
       const next = !open;
@@ -798,8 +694,8 @@ export const OperacoesCentralPage: React.FC = () => {
                 <col className="central-controle-col-points" />
                 <col className="central-controle-col-datetime" />
                 <col className="central-controle-col-event" />
-                <col className="central-controle-col-vehicle" />
-                <col className="central-controle-col-driver" />
+                <col className="central-controle-col-policy" />
+                <col className="central-controle-col-monitoring" />
                 <col className="central-controle-col-actions" />
               </colgroup>
               <thead>
@@ -811,20 +707,18 @@ export const OperacoesCentralPage: React.FC = () => {
                       <InfoTooltip text="Data/hora do evento" />
                     </span>
                   </th>
-                  <th scope="col">Tipo de evento</th>
-                  <th scope="col">Placa / prefixo</th>
-                  <th scope="col">Motorista</th>
+                  <th scope="col">Último evento gerado</th>
+                  <th scope="col">Política de ocorrência</th>
+                  <th scope="col">Monitoramento de</th>
                   <th scope="col" aria-label="Ações" />
                 </tr>
               </thead>
               <tbody>
                 {filteredOccurrences.map((entry) =>
                   entry.kind === 'group' ? (
-                    <ExpandedOccurrenceGroup
+                    <OccurrenceGroupRow
                       key={entry.occurrence.id}
                       occurrence={entry.occurrence}
-                      expanded={expandedId === entry.occurrence.id}
-                      onToggle={() => toggleExpanded(entry.occurrence.id)}
                       playMode={getGroupOccurrencePlayMode(entry.occurrence)}
                       viewOnly={isOccurrenceOpenedByAnotherAnalyst(entry.occurrence)}
                       onPlay={() =>
@@ -874,7 +768,10 @@ export const OperacoesCentralPage: React.FC = () => {
         readOnly={validationViewOnly}
         onClose={closeValidationModal}
         onReturn={closeValidationModal}
-        onConfirmClose={closeValidationModal}
+        onConfirmClose={() => {
+          setSavedChangesToastVisible(true);
+          closeValidationModal();
+        }}
         onConfirmNext={() => undefined}
         onConfirmTreat={handleStartTratativaFromValidation}
       />
@@ -888,7 +785,10 @@ export const OperacoesCentralPage: React.FC = () => {
             treatmentDurationByOccurrence[tratativaData.occurrenceId] ?? '0:00',
         }}
         onClose={closeTratativaModal}
-        onReturn={closeTratativaModal}
+        onReturn={(saved) => {
+          if (saved) setSavedChangesToastVisible(true);
+          closeTratativaModal();
+        }}
         onConclude={(durationMs) => {
           const minutes = Math.floor(durationMs / 60000);
           const seconds = Math.floor((durationMs % 60000) / 1000);
@@ -899,6 +799,11 @@ export const OperacoesCentralPage: React.FC = () => {
           }));
           closeTratativaModal();
         }}
+      />
+      <SuccessToast
+        message={SAVED_CHANGES_TOAST}
+        visible={savedChangesToastVisible}
+        onClose={() => setSavedChangesToastVisible(false)}
       />
     </div>
   );

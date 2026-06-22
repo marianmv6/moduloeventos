@@ -1,8 +1,7 @@
 import React from 'react';
 import { ModalSelect } from '../../risk-rules/components/shared/ModalSelect';
 import {
-  getAuditoriaMotoristaOptions,
-  getAuditoriaPlacaOptions,
+  getAuditoriaMonitoramentoDeOptions,
   getAuditoriaTratadoPorOptions,
   type AuditoriaAdvancedFilters,
 } from '../constants/operacoesAuditoriaFilterOptions';
@@ -19,8 +18,7 @@ export const OperacoesAuditoriaFilterPanel: React.FC<
   OperacoesAuditoriaFilterPanelProps
 > = ({ filters, onChange, onClose, onSearch }) => {
   const tratadoPorOptions = getAuditoriaTratadoPorOptions();
-  const placaOptions = getAuditoriaPlacaOptions();
-  const motoristaOptions = getAuditoriaMotoristaOptions();
+  const monitoramentoDeOptions = getAuditoriaMonitoramentoDeOptions();
 
   const patch = (partial: Partial<AuditoriaAdvancedFilters>) => {
     onChange({ ...filters, ...partial });
@@ -54,23 +52,13 @@ export const OperacoesAuditoriaFilterPanel: React.FC<
           placeholder="(Preencha ou selecione)"
         />
         <ModalSelect
-          id="filtro-aud-placa"
+          id="filtro-aud-monitoramento"
           className="modal-select--no-pill"
           mutedPlaceholder
-          label="Placa/ prefixo"
-          value={filters.placa}
-          onChange={(placa) => patch({ placa })}
-          options={placaOptions}
-          placeholder="(Preencha ou selecione)"
-        />
-        <ModalSelect
-          id="filtro-aud-motorista"
-          className="modal-select--no-pill"
-          mutedPlaceholder
-          label="Motorista"
-          value={filters.motorista}
-          onChange={(motorista) => patch({ motorista })}
-          options={motoristaOptions}
+          label="Monitoramento de"
+          value={filters.monitoramentoDe}
+          onChange={(monitoramentoDe) => patch({ monitoramentoDe })}
+          options={monitoramentoDeOptions}
           placeholder="(Preencha ou selecione)"
         />
       </div>

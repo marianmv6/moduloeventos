@@ -1,4 +1,5 @@
 import type { CentralControleFilters } from '../constants/centralControleFilterOptions';
+import { formatMonitoringFilterDisplayValue } from './centralOccurrenceDisplay';
 
 const FILTER_PARAM_LABELS: Record<
   Exclude<keyof CentralControleFilters, 'periodoHoraInicio' | 'periodoHoraFim'>,
@@ -6,8 +7,7 @@ const FILTER_PARAM_LABELS: Record<
 > = {
   etapa: 'etapa',
   tipoEvento: 'tipo de evento',
-  placaPrefixo: 'placa ou prefixo',
-  motorista: 'motorista',
+  monitoramentoDe: 'monitoramento de',
   gravidade: 'nível de gravidade',
   politicaTratativa: 'política de ocorrências',
   periodoInicio: 'período',
@@ -41,13 +41,16 @@ export function getCentralAppliedFilterEntries(
 ): CentralAppliedFilterEntry[] {
   const entries: CentralAppliedFilterEntry[] = [];
 
-  (['etapa', 'tipoEvento', 'placaPrefixo', 'motorista', 'gravidade', 'politicaTratativa'] as const).forEach(
+  (['etapa', 'tipoEvento', 'monitoramentoDe', 'gravidade', 'politicaTratativa'] as const).forEach(
     (key) => {
       if (filters[key].trim()) {
         entries.push({
           key,
           paramLabel: FILTER_PARAM_LABELS[key],
-          value: filters[key],
+          value:
+            key === 'monitoramentoDe'
+              ? formatMonitoringFilterDisplayValue(filters[key])
+              : filters[key],
         });
       }
     },
@@ -72,8 +75,7 @@ export function hasCentralDraftFilters(filters: CentralControleFilters): boolean
   return (
     filters.etapa.trim() !== '' ||
     filters.tipoEvento.trim() !== '' ||
-    filters.placaPrefixo.trim() !== '' ||
-    filters.motorista.trim() !== '' ||
+    filters.monitoramentoDe.trim() !== '' ||
     filters.gravidade.trim() !== '' ||
     filters.politicaTratativa.trim() !== '' ||
     filters.periodoInicio.trim() !== '' ||

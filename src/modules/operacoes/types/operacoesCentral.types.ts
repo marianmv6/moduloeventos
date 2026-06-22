@@ -35,7 +35,13 @@ export interface CentralValidationEvent {
   fromAi?: boolean;
   /** Já validado pelo analista nesta sessão */
   validated?: boolean;
+  /** Pontos atribuídos a este evento */
+  eventPoints?: number;
+  /** Soma acumulada até este evento (inclusive) */
+  accumulatedPoints?: number;
 }
+
+export type CentralPolicyTrackingType = 'motorista' | 'veiculo';
 
 export interface CentralOccurrenceEvent {
   id: string;
@@ -60,6 +66,8 @@ export interface CentralOccurrence {
   placa: string;
   prefixo: string;
   driverName: string;
+  policyName: string;
+  trackingType: CentralPolicyTrackingType;
   openedByAnalyst?: string;
   /** Exibe ícone de validação pela IA na linha principal quando não há analista */
   validatedByAi?: boolean;
@@ -89,6 +97,8 @@ export interface CentralOccurrenceSummaryRow {
   placa: string;
   prefixo: string;
   driverName: string;
+  policyName: string;
+  trackingType: CentralPolicyTrackingType;
   actions: CentralOccurrenceActions;
   /** Status do evento exibido na linha-resumo (padrão: aguardando validação). */
   validationStatus?: CentralEventValidationStatus;

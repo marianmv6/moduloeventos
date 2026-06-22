@@ -5,7 +5,7 @@ import { FieldErrorIcon } from '../shared/FieldErrorIcon';
 import { ModalSelect, type ModalSelectOption } from '../shared/ModalSelect';
 import { IconEdit, IconTrash } from '../shared/Icons';
 import { AdvancedFilter, type AdvancedFilterField } from '../shared/AdvancedFilter';
-import { COMPANY_OPTIONS, getCompanyName } from '../../constants/companies';
+import { COMPANY_OPTIONS } from '../../constants/companies';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const STATUS_OPTIONS: ModalSelectOption[] = [
@@ -52,10 +52,8 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
   const [active, setActive] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<{ identification?: boolean; message?: boolean }>({});
 
-  const EMPTY_FILTERS = { empresa: '', status: '' };
-  const [filters, setFilters] = useState<{ empresa: string; status: string }>(
-    EMPTY_FILTERS,
-  );
+  const EMPTY_FILTERS = { status: '' };
+  const [filters, setFilters] = useState<{ status: string }>(EMPTY_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const appliedCount = useMemo(
@@ -67,8 +65,7 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
     onFilterStateChange?.({ open: filterOpen, appliedCount });
   }, [filterOpen, appliedCount, onFilterStateChange]);
 
-  const filterFields: AdvancedFilterField<{ empresa: string; status: string }>[] = [
-    { key: 'empresa', label: 'Empresa', options: currentUser.availableCompanies },
+  const filterFields: AdvancedFilterField<{ status: string }>[] = [
     { key: 'status', label: 'Status', options: STATUS_OPTIONS },
   ];
 
@@ -77,7 +74,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
       ? voiceMessages.filter((m) => m.companyId === currentUser.companyId)
       : voiceMessages;
     return baseList.filter((m) => {
-      if (filters.empresa && m.companyId !== filters.empresa) return false;
       if (filters.status) {
         const want = filters.status === 'ativo';
         if (m.active !== want) return false;
@@ -176,7 +172,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
         <table className="list-table">
           <thead>
             <tr>
-              <th>Empresa</th>
               <th>Identificação</th>
               <th>Mensagem</th>
               <th>Status</th>
@@ -186,14 +181,13 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
           <tbody>
             {filteredMessages.length === 0 ? (
               <tr>
-                <td colSpan={5} className="list-empty">
+                <td colSpan={4} className="list-empty">
                   Nenhuma mensagem de voz cadastrada.
                 </td>
               </tr>
             ) : (
               filteredMessages.map((m) => (
                 <tr key={m.id}>
-                  <td>{getCompanyName(m.companyId)}</td>
                   <td>{m.identification}</td>
                   <td className="cell-message">{m.message}</td>
                   <td>
@@ -237,18 +231,6 @@ export const VoiceMessagesPanel = forwardRef<VoiceMessagesPanelHandle, VoiceMess
         cancelLabel="Cancelar"
       >
         <form id="voice-message-form" className="form-card voice-message-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <ModalSelect
-              id="voice-company"
-              label="Empresa"
-              value={companyId}
-              onChange={(v) => setCompanyId(v)}
-              options={currentUser.availableCompanies}
-              placeholder="Selecione a empresa"
-              disabled={isClient}
-              className="modal-select--no-pill"
-            />
-          </div>
           <div className={`form-group ${fieldErrors.identification ? 'has-error' : ''}`}>
             <div className="form-group__label-row">
               <label htmlFor="voice-ident">Identificação</label>

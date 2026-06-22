@@ -134,6 +134,8 @@ export function buildCentralValidationEventsForOccurrence(
       suggestedEventType: category !== 'video' ? event.eventType : undefined,
       fromAi: category === 'video' ? (event.validatedByAi ?? fromAi) : undefined,
       validated: isEventValidated(event),
+      eventPoints: event.eventPoints,
+      accumulatedPoints: event.pointsSum,
     };
   });
 }

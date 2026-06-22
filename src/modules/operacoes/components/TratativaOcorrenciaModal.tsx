@@ -20,24 +20,73 @@ import { formatTratativaContactSchedule } from '../../risk-rules/utils/contactSc
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
 import { TratativaBehaviorEvolutionPanel } from './TratativaBehaviorEvolutionPanel';
 import { TratativaAnexosPanel } from './TratativaAnexosPanel';
+import emptyHistoryImage from '../../../assets/empty-history.png';
 
 interface TratativaOcorrenciaModalProps {
   open: boolean;
   data: TratativaOcorrenciaData;
   onClose: () => void;
-  onReturn?: () => void;
+  /** `saved=true` quando houve alterações salvas ao devolver. */
+  onReturn?: (saved?: boolean) => void;
   onConclude?: (durationMs: number) => void;
   /** "tratativa" (padrão) = fluxo ativo; "auditoria" = visualização
    *  somente-leitura, com aba adicional "Histórico" e sem footer;
    *  "visualizacao" = somente-leitura sem edição (ex.: ocorrência aberta por outro analista). */
   mode?: 'tratativa' | 'auditoria' | 'visualizacao';
-  /** Histórico exibido na aba "Histórico" quando mode === "auditoria". */
+  /** Histórico legado (auditoria). Preferir `data.treatmentHistory`. */
   history?: TratativaHistoryEntry[];
 }
 
 type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'anexos' | 'evolucao' | 'historico';
 
+const MOCK_CURRENT_ANALYST = 'Júlia Luz Campos';
+
+function formatHistoryWhen(date = new Date()): string {
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function resolutionHistoryDescription(
+  action: TratativaAction,
+  resolution: TratativaActionResolution,
+): string {
+  const label = resolution === 'resolvido' ? 'Resolvido' : 'Não resolvido';
+  return `Ação "${action.title}" marcada como ${label}`;
+}
+
+function buildSessionChangesDescription(
+  actions: TratativaAction[],
+  actionResolutions: Partial<Record<string, ActionResolution>>,
+  observations: Record<string, string>,
+  attachments: TratativaAttachment[],
+  initialAttachments: TratativaAttachment[],
+): string {
+  const parts: string[] = [];
+  actions.forEach((action) => {
+    const resolution = actionResolutions[action.id];
+    if (resolution) {
+      parts.push(resolutionHistoryDescription(action, resolution));
+    }
+    const obs = observations[action.id]?.trim();
+    if (obs) {
+      parts.push(`Observação — "${action.title}": ${obs}`);
+    }
+  });
+  const addedAttachments = attachments.length - initialAttachments.length;
+  if (addedAttachments > 0) {
+    parts.push(`${addedAttachments} anexo(s) adicionado(s)`);
+  }
+  return parts.join('. ');
+}
+
 const COPY_SUCCESS_TOAST = 'Copiado para a área de transferência.';
+/** Texto exibido ao salvar validação ou devolver tratativa. */
+export const SAVED_CHANGES_TOAST = 'Alterações salvas com sucesso.';
 
 const SEVERITY_DOT_CLASS: Record<string, string> = {
   critical: 'tratativa-card__dot--critical',
@@ -220,6 +269,85 @@ const IconPlayBlue: React.FC = () => (
     <path d="M5 3.5L16 10L5 16.5V3.5Z" stroke="#169EFF" strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 );
+
+const IconChevronLeft: React.FC = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+    <path
+      d="M9 2.5L4.5 7L9 11.5"
+      stroke="#169EFF"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconChevronRight: React.FC = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+    <path
+      d="M5 2.5L9.5 7L5 11.5"
+      stroke="#169EFF"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+interface EventCarouselFieldProps {
+  value: string;
+  options: { id: string; label: string }[];
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}
+
+function EventCarouselField({
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: EventCarouselFieldProps) {
+  const currentIndex = options.findIndex((opt) => opt.id === value);
+  const selected = options[currentIndex >= 0 ? currentIndex : 0];
+
+  const goPrev = () => {
+    if (disabled || options.length <= 1) return;
+    const idx = currentIndex <= 0 ? options.length - 1 : currentIndex - 1;
+    onChange(options[idx].id);
+  };
+
+  const goNext = () => {
+    if (disabled || options.length <= 1) return;
+    const idx = currentIndex >= options.length - 1 ? 0 : currentIndex + 1;
+    onChange(options[idx].id);
+  };
+
+  return (
+    <div className={`tratativa-event-carousel${disabled ? ' tratativa-event-carousel--disabled' : ''}`}>
+      <button
+        type="button"
+        className="tratativa-event-carousel__nav"
+        onClick={goPrev}
+        disabled={disabled || options.length <= 1}
+        aria-label="Evento anterior"
+      >
+        <IconChevronLeft />
+      </button>
+      <span className="tratativa-event-carousel__value" aria-live="polite">
+        {selected?.label ?? '—'}
+      </span>
+      <button
+        type="button"
+        className="tratativa-event-carousel__nav"
+        onClick={goNext}
+        disabled={disabled || options.length <= 1}
+        aria-label="Próximo evento"
+      >
+        <IconChevronRight />
+      </button>
+    </div>
+  );
+}
 
 interface SelectFieldProps<T> {
   value: T;
@@ -646,6 +774,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     message: '',
     visible: false,
   });
+  const [sessionHistory, setSessionHistory] = useState<TratativaHistoryEntry[]>([]);
+  const initialAttachmentsRef = useRef<TratativaAttachment[]>(data.attachments ?? []);
 
   const showCopyToast = useCallback(() => setCopyToastVisible(true), []);
   const dismissCopyToast = useCallback(() => setCopyToastVisible(false), []);
@@ -706,6 +836,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     setExpandedActionId(data.actions[0]?.id ?? '');
     setExpandedVideo(null);
     setAttachments(data.attachments ?? []);
+    setSessionHistory([]);
+    initialAttachmentsRef.current = data.attachments ?? [];
   }, [open, data, isReadOnly]);
 
   /** Concluir liberado se alguma ação for "Resolvido" ou se a última
@@ -718,6 +850,42 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     const lastAction = data.actions[data.actions.length - 1];
     return actionResolutions[lastAction.id] === 'nao_resolvido';
   }, [data.actions, actionResolutions]);
+
+  const treatmentTimeLabel =
+    mode === 'auditoria'
+      ? (data.treatmentDurationLabel ?? '5:47')
+      : mode === 'visualizacao'
+        ? (data.treatmentDurationLabel ?? '0:00')
+        : formatTreatmentClock(savedTreatmentMs > 0 ? savedTreatmentMs : elapsedMs);
+
+  const appendHistoryEntry = useCallback(
+    (description: string, durationLabel = treatmentTimeLabel) => {
+      setSessionHistory((prev) => [
+        {
+          id: `hist-${Date.now()}-${prev.length}`,
+          when: formatHistoryWhen(),
+          author: MOCK_CURRENT_ANALYST,
+          description,
+          treatmentDuration: durationLabel,
+        },
+        ...prev,
+      ]);
+    },
+    [treatmentTimeLabel],
+  );
+
+  const hasSessionChanges = useMemo(() => {
+    if (Object.keys(actionResolutions).length > 0) return true;
+    if (Object.values(observations).some((value) => value.trim().length > 0)) return true;
+    const initial = initialAttachmentsRef.current;
+    if (attachments.length !== initial.length) return true;
+    return attachments.some((attachment, index) => attachment.id !== initial[index]?.id);
+  }, [actionResolutions, observations, attachments]);
+
+  const historyEntries = useMemo(() => {
+    if (isAuditoria) return history;
+    return sessionHistory;
+  }, [isAuditoria, history, sessionHistory]);
 
   const handleSetResolution = (actionId: string, resolution: ActionResolution) => {
     const currentIdx = data.actions.findIndex((a) => a.id === actionId);
@@ -766,16 +934,42 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     if (!canConcludeTreatment) return;
     const durationMs =
       startedAtRef.current !== null ? Date.now() - startedAtRef.current : savedTreatmentMs;
+    const durationLabel = formatTreatmentClock(durationMs);
+    const changes = buildSessionChangesDescription(
+      data.actions,
+      actionResolutions,
+      observations,
+      attachments,
+      initialAttachmentsRef.current,
+    );
+    appendHistoryEntry(
+      changes || 'Ocorrência concluída sem alterações registradas',
+      durationLabel,
+    );
     setSavedTreatmentMs(durationMs);
     onConclude?.(durationMs);
   };
 
-  const treatmentTimeLabel =
-    mode === 'auditoria'
-      ? (data.treatmentDurationLabel ?? '5:47')
-      : mode === 'visualizacao'
-        ? (data.treatmentDurationLabel ?? '0:00')
-        : formatTreatmentClock(savedTreatmentMs > 0 ? savedTreatmentMs : elapsedMs);
+  const handleReturn = () => {
+    if (hasSessionChanges) {
+      const changes = buildSessionChangesDescription(
+        data.actions,
+        actionResolutions,
+        observations,
+        attachments,
+        initialAttachmentsRef.current,
+      );
+      appendHistoryEntry(
+        changes || 'Alterações devolvidas para a fila',
+        treatmentTimeLabel,
+      );
+      if (onReturn) onReturn(true);
+      else onClose();
+      return;
+    }
+    if (onReturn) onReturn(false);
+    else onClose();
+  };
 
   const selectedDriver = data.driverOptions.find((d) => d.id === selectedDriverId);
   const selectedVehicle = data.vehicleOptions.find((v) => v.id === selectedVehicleId);
@@ -840,15 +1034,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
             <span className="tratativa-header__timer" aria-live="polite">
               Tempo de tratativa {treatmentTimeLabel}
             </span>
-            <span className="tratativa-header__divider" aria-hidden />
-            <button
-              type="button"
-              className="central-validacao-header__close"
-              onClick={onClose}
-              aria-label={isAuditoria ? 'Fechar auditoria' : 'Fechar tratativa'}
-            >
-              <IconCloseLarge />
-            </button>
+            {isAuditoria && (
+              <>
+                <span className="tratativa-header__divider" aria-hidden />
+                <button
+                  type="button"
+                  className="central-validacao-header__close"
+                  onClick={onClose}
+                  aria-label="Fechar auditoria"
+                >
+                  <IconCloseLarge />
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -900,17 +1098,15 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
               Evolução do comportamento
             </button>
           )}
-          {isAuditoria && (
-            <button
-              type="button"
-              className={`central-validacao-tab${
-                activeTab === 'historico' ? ' central-validacao-tab--active' : ''
-              }`}
-              onClick={() => setActiveTab('historico')}
-            >
-              Histórico
-            </button>
-          )}
+          <button
+            type="button"
+            className={`central-validacao-tab${
+              activeTab === 'historico' ? ' central-validacao-tab--active' : ''
+            }`}
+            onClick={() => setActiveTab('historico')}
+          >
+            Histórico
+          </button>
         </nav>
 
         {activeTab === 'tratativa' && (
@@ -1081,11 +1277,11 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
             <div className="tratativa-eventos-fields">
               <div className="tratativa-field">
                 <span className="tratativa-field__label">Evento</span>
-                <SelectField
+                <EventCarouselField
                   value={selectedEventId}
                   options={eventSelectOptions}
                   onChange={(id) => setSelectedEventId(id)}
-                  ariaLabel="Selecionar evento"
+                  disabled={isReadOnly}
                 />
               </div>
               <ReadOnlyField
@@ -1186,22 +1382,46 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           </div>
         )}
 
-        {activeTab === 'historico' && isAuditoria && (
-          <div className="tratativa-body tratativa-historico">
-            {history.length === 0 ? (
-              <p className="tratativa-empty">Sem registros de histórico.</p>
+        {activeTab === 'historico' && (
+          <div
+            className={`tratativa-body tratativa-historico${
+              historyEntries.length === 0 ? ' tratativa-historico--empty' : ''
+            }`}
+          >
+            {historyEntries.length === 0 ? (
+              <div className="history-empty-state">
+                <div className="history-empty-state__image-wrap">
+                  <img
+                    src={emptyHistoryImage}
+                    alt=""
+                    className="history-empty-state__image"
+                  />
+                </div>
+                <p className="history-empty-state__message">Nenhum histórico registrado.</p>
+              </div>
             ) : (
-              <ul className="tratativa-historico-list">
-                {history.map((entry) => (
-                  <li key={entry.id} className="tratativa-historico-row">
-                    <span className="tratativa-historico-row__when">{entry.when}</span>
-                    <span className="tratativa-historico-row__author">{entry.author}</span>
-                    <span className="tratativa-historico-row__description">
-                      {entry.description}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="tratativa-historico-head" aria-hidden>
+                  <span>Data/hora</span>
+                  <span>Analista</span>
+                  <span>Alteração</span>
+                  <span>Tempo de tratativa</span>
+                </div>
+                <ul className="tratativa-historico-list">
+                  {historyEntries.map((entry) => (
+                    <li key={entry.id} className="tratativa-historico-row">
+                      <span className="tratativa-historico-row__when">{entry.when}</span>
+                      <span className="tratativa-historico-row__author">{entry.author}</span>
+                      <span className="tratativa-historico-row__description">
+                        {entry.description}
+                      </span>
+                      <span className="tratativa-historico-row__duration">
+                        {entry.treatmentDuration ?? '—'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         )}
@@ -1211,7 +1431,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
             <button
               type="button"
               className="tratativa-btn tratativa-btn--outline"
-              onClick={onReturn ?? onClose}
+              onClick={handleReturn}
             >
               Devolver
             </button>

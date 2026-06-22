@@ -171,6 +171,22 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
   ],
   behaviorEvolution: getBehaviorEvolutionForOccurrence('occ-1'),
   attachments: mockTratativaAnexosAuditoria.slice(0, 1),
+  treatmentHistory: [
+    {
+      id: 'th-1',
+      when: '23/05/2026 10:04',
+      author: 'Marcos da Silva',
+      description: 'Evento Sonolência N1 — 23/05/06 08:30:00 validado',
+      treatmentDuration: '—',
+    },
+    {
+      id: 'th-2',
+      when: '23/05/2026 10:05',
+      author: 'Marcos da Silva',
+      description: 'Evento Sonolência N2 — 23/05/06 10:05:00 validado',
+      treatmentDuration: '—',
+    },
+  ],
 };
 
 const TRATATIVA_SHARED_TEMPLATE = {
@@ -187,5 +203,6 @@ export function getTratativaOcorrenciaForOccurrence(occurrenceId: string): Trata
     ...buildTratativaOcorrenciaFromCentral(occurrenceId, TRATATIVA_SHARED_TEMPLATE),
     behaviorEvolution: getBehaviorEvolutionForOccurrence(occurrenceId),
     attachments: mockTratativaAnexosAuditoria.slice(0, 1),
+    treatmentHistory: mockTratativaOcorrencia.treatmentHistory,
   };
 }

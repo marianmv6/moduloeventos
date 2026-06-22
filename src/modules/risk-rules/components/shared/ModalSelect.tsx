@@ -4,6 +4,8 @@ export interface ModalSelectOption {
   value: string;
   label: string;
   children?: ModalSelectOption[];
+  /** Texto auxiliar exibido ao lado do rótulo (ex.: tipo de monitoramento). */
+  suffixLabel?: string;
   /** Classe CSS aplicada ao pill da opção (ex.: cores por nível de risco) */
   pillClassName?: string;
 }
@@ -73,9 +75,10 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
     return find(options) ?? placeholder;
   })();
 
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = options.filter((o) => {
+    const haystack = `${o.label} ${o.suffixLabel ?? ''}`.toLowerCase();
+    return haystack.includes(search.toLowerCase());
+  });
 
   useEffect(() => {
     if (!open) setSearch('');
@@ -131,7 +134,15 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
               {selected ? '☑' : '☐'}
             </span>
           )}
-          <span className={`modal-select__option-pill ${opt.pillClassName ?? ''}`.trim()}>{opt.label}</span>
+          <span className={`modal-select__option-pill ${opt.pillClassName ?? ''}`.trim()}>
+            {opt.label}
+            {opt.suffixLabel ? (
+              <span className="modal-select__option-suffix" aria-hidden>
+                {' '}
+                {opt.suffixLabel}
+              </span>
+            ) : null}
+          </span>
           {hasChildren && (
             <span className="modal-select__chevron" aria-hidden>
               {isExp ? '▼' : '▶'}
@@ -145,10 +156,11 @@ export const ModalSelect: React.FC<ModalSelectProps> = ({
 
   const hasValue = multiple ? value.trim().length > 0 : Boolean(value);
   const showMutedPlaceholder = mutedPlaceholder && !hasValue;
+  const isTyping = open && !multiple;
 
   return (
     <div
-      className={`modal-select ${className}${showMutedPlaceholder ? ' modal-select--muted-placeholder' : ''}`.trim()}
+      className={`modal-select ${className}${showMutedPlaceholder ? ' modal-select--muted-placeholder' : ''}${hasValue ? ' modal-select--has-value' : ''}${isTyping ? ' modal-select--typing' : ''}`.trim()}
       ref={containerRef}
     >
       {label && (

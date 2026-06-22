@@ -4,7 +4,6 @@ import { IconFilterBars } from '../components/IconFilterBars';
 import { OperacoesEventosFilterBanner } from '../components/OperacoesEventosFilterBanner';
 import { OperacoesEventosFilterPanel } from '../components/OperacoesEventosFilterPanel';
 import { countAppliedFilters } from '../utils/operacoesFilterSummary';
-import { OperacoesEventosMap } from '../components/OperacoesEventosMap';
 import {
   EMPTY_OPERACOES_FILTERS,
   type OperacoesAdvancedFilters,
@@ -27,35 +26,6 @@ const EVENT_FILTER_OPTIONS = [
 const ICON_BLUE = '#169EFF';
 
 type EventFilterValue = (typeof EVENT_FILTER_OPTIONS)[number]['value'];
-
-function IconListView() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="4" y="5" width="16" height="14" rx="2" stroke={ICON_BLUE} strokeWidth="1.75" />
-      <rect x="7" y="8.5" width="2.5" height="2.5" rx="0.5" fill={ICON_BLUE} />
-      <line x1="11" y1="9.75" x2="17" y2="9.75" stroke={ICON_BLUE} strokeWidth="1.75" strokeLinecap="round" />
-      <rect x="7" y="13" width="2.5" height="2.5" rx="0.5" fill={ICON_BLUE} />
-      <line x1="11" y1="14.25" x2="17" y2="14.25" stroke={ICON_BLUE} strokeWidth="1.75" strokeLinecap="round" />
-      <rect x="7" y="17.5" width="2.5" height="2.5" rx="0.5" fill={ICON_BLUE} />
-      <line x1="11" y1="18.75" x2="15" y2="18.75" stroke={ICON_BLUE} strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconMapView() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z"
-        stroke={ICON_BLUE}
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-      <line x1="10" y1="4" x2="10" y2="20" stroke={ICON_BLUE} strokeWidth="1.75" />
-      <line x1="16" y1="6" x2="16" y2="22" stroke={ICON_BLUE} strokeWidth="1.75" />
-    </svg>
-  );
-}
 
 function IconMoreMenu({ selected = false }: { selected?: boolean }) {
   return (
@@ -86,8 +56,6 @@ function applyAdvancedFilters(
 export const OperacoesEventosPage: React.FC = () => {
   const [eventFilter, setEventFilter] = useState<EventFilterValue>('all');
   const [eventFilterOpen, setEventFilterOpen] = useState(false);
-  const [showList, setShowList] = useState(true);
-  const [showMap, setShowMap] = useState(true);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<OperacoesAdvancedFilters>(
     EMPTY_OPERACOES_FILTERS,
@@ -128,22 +96,6 @@ export const OperacoesEventosPage: React.FC = () => {
   const eventFilterLabel =
     EVENT_FILTER_OPTIONS.find((o) => o.value === eventFilter)?.label ?? 'Todos os eventos';
 
-  const toggleList = () => {
-    setShowList((prev) => {
-      const next = !prev;
-      if (!next && !showMap) return true;
-      return next;
-    });
-  };
-
-  const toggleMap = () => {
-    setShowMap((prev) => {
-      const next = !prev;
-      if (!next && !showList) return true;
-      return next;
-    });
-  };
-
   const toggleFilterPanel = () => {
     setFilterPanelOpen((open) => {
       const next = !open;
@@ -172,20 +124,6 @@ export const OperacoesEventosPage: React.FC = () => {
     setDraftFilters(EMPTY_OPERACOES_FILTERS);
     setFilterPanelOpen(false);
   };
-
-  const bodyLayoutClass = [
-    'operacoes-eventos-body',
-    showList && showMap ? 'operacoes-eventos-body--split' : '',
-    showList && !showMap ? 'operacoes-eventos-body--list-only' : '',
-    !showList && showMap ? 'operacoes-eventos-body--map-only' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const listTooltip = showList ? 'Ocultar lista' : 'Exibir lista';
-  const mapTooltip = showMap ? 'Ocultar mapa' : 'Exibir mapa';
-  const tableLayoutClass =
-    showList && showMap ? ' operacoes-eventos-table--map-visible' : '';
 
   return (
     <div className="operacoes-eventos-page page-layout content-body">
@@ -241,36 +179,6 @@ export const OperacoesEventosPage: React.FC = () => {
             </svg>
           </button>
           <span className="operacoes-toolbar-divider" aria-hidden />
-          <div className="operacoes-view-toggles" role="group" aria-label="Modo de visualização">
-            <div className="operacoes-view-toggle-wrap">
-              <button
-                type="button"
-                className={`operacoes-view-toggle-btn${showList ? ' is-active' : ''}`}
-                onClick={toggleList}
-                aria-label={listTooltip}
-                aria-pressed={showList}
-              >
-                <IconListView />
-              </button>
-              <span className="operacoes-view-tooltip" role="tooltip">
-                {listTooltip}
-              </span>
-            </div>
-            <div className="operacoes-view-toggle-wrap">
-              <button
-                type="button"
-                className={`operacoes-view-toggle-btn${showMap ? ' is-active' : ''}`}
-                onClick={toggleMap}
-                aria-label={mapTooltip}
-                aria-pressed={showMap}
-              >
-                <IconMapView />
-              </button>
-              <span className="operacoes-view-tooltip" role="tooltip">
-                {mapTooltip}
-              </span>
-            </div>
-          </div>
           <div className="operacoes-view-toggle-wrap">
             <button
               type="button"
@@ -329,14 +237,13 @@ export const OperacoesEventosPage: React.FC = () => {
         />
       )}
 
-      <div className={bodyLayoutClass}>
-        {showList && (
+      <div className="operacoes-eventos-body operacoes-eventos-body--list-only">
           <section className="operacoes-eventos-list-pane" aria-label="Lista de eventos">
             <p className="operacoes-eventos-summary">
               <strong>{filteredRows.length}</strong> eventos, <strong>{uniqueTypes}</strong> tipos
             </p>
             <div className="operacoes-eventos-table-wrap">
-              <table className={`list-table operacoes-eventos-table${tableLayoutClass}`}>
+              <table className="list-table operacoes-eventos-table">
                 <colgroup>
                   <col className="operacoes-col-datetime" />
                   <col className="operacoes-col-evento" />
@@ -393,12 +300,6 @@ export const OperacoesEventosPage: React.FC = () => {
               </table>
             </div>
           </section>
-        )}
-        {showMap && (
-          <section className="operacoes-eventos-map-pane" aria-label="Mapa de eventos">
-            <OperacoesEventosMap />
-          </section>
-        )}
       </div>
       {selectedEvent && (
         <OperacoesEventDetailModal

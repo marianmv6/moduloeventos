@@ -2,6 +2,10 @@ import type { CentralOccurrenceListEntry } from '../mocks/operacoesCentral.mock'
 import type { CentralControleFilters } from '../constants/centralControleFilterOptions';
 import { severityFromGravidadeLabel } from '../constants/centralControleFilterOptions';
 import {
+  encodeMonitoringFilterValue,
+  formatCentralMonitoringLabel,
+} from './centralOccurrenceDisplay';
+import {
   CENTRAL_ETAPA_TRATATIVA,
   CENTRAL_ETAPA_VALIDACAO,
   getEntryPlayMode,
@@ -24,16 +28,17 @@ function getEntryEventType(entry: CentralOccurrenceListEntry): string {
   return entry.row.eventType;
 }
 
-function getEntryPlacaPrefixo(entry: CentralOccurrenceListEntry): string {
-  if (entry.kind === 'group') {
-    return `${entry.occurrence.placa} / ${entry.occurrence.prefixo}`;
-  }
-  return `${entry.row.placa} / ${entry.row.prefixo}`;
+function getEntryMonitoramentoDe(entry: CentralOccurrenceListEntry): string {
+  const source = entry.kind === 'group' ? entry.occurrence : entry.row;
+  return encodeMonitoringFilterValue(
+    source.trackingType,
+    formatCentralMonitoringLabel(source),
+  );
 }
 
-function getEntryMotorista(entry: CentralOccurrenceListEntry): string {
-  if (entry.kind === 'group') return entry.occurrence.driverName;
-  return entry.row.driverName;
+function getEntryPolicyName(entry: CentralOccurrenceListEntry): string {
+  if (entry.kind === 'group') return entry.occurrence.policyName;
+  return entry.row.policyName;
 }
 
 function getEntrySeverity(entry: CentralOccurrenceListEntry) {
@@ -76,24 +81,15 @@ export function matchesCentralControleFilters(
   }
 
   if (filters.tipoEvento && getEntryEventType(entry) !== filters.tipoEvento) return false;
-  if (filters.placaPrefixo && getEntryPlacaPrefixo(entry) !== filters.placaPrefixo) return false;
-  if (filters.motorista && getEntryMotorista(entry) !== filters.motorista) return false;
+  if (filters.monitoramentoDe && getEntryMonitoramentoDe(entry) !== filters.monitoramentoDe) return false;
 
   if (filters.gravidade) {
     const severity = severityFromGravidadeLabel(filters.gravidade);
     if (severity && getEntrySeverity(entry) !== severity) return false;
   }
 
-  if (filters.politicaTratativa) {
-    const id = entry.kind === 'group' ? entry.occurrence.id : entry.row.id;
-    const policyIds: Record<string, string[]> = {
-      'Política padrão': ['occ-3', 'occ-4', 'occ-5', 'occ-6', 'occ-7'],
-      'Política de sonolência': ['occ-1', 'occ-2'],
-      'Política de velocidade': ['occ-6'],
-      'Política de cerca eletrônica': ['occ-4'],
-    };
-    const allowed = policyIds[filters.politicaTratativa];
-    if (allowed && !allowed.includes(id)) return false;
+  if (filters.politicaTratativa && getEntryPolicyName(entry) !== filters.politicaTratativa) {
+    return false;
   }
 
   const { start, end } = buildPeriodBounds(filters);

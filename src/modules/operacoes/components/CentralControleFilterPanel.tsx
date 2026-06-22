@@ -4,8 +4,7 @@ import type { CentralControleFilters } from '../constants/centralControleFilterO
 import {
   getCentralEtapaOptions,
   getCentralGravidadeOptions,
-  getCentralMotoristaOptions,
-  getCentralPlacaPrefixoOptions,
+  getCentralMonitoramentoDeOptions,
   getCentralPoliticaOptions,
   getCentralTipoEventoOptions,
 } from '../constants/centralControleFilterOptions';
@@ -46,23 +45,13 @@ export const CentralControleFilterPanel: React.FC<CentralControleFilterPanelProp
             placeholder="(Preencha ou selecione)"
           />
           <ModalSelect
-            id="central-filtro-placa"
+            id="central-filtro-monitoramento"
             className="modal-select--no-pill"
             mutedPlaceholder
-            label="Placa ou prefixo"
-            value={filters.placaPrefixo}
-            onChange={(placaPrefixo) => patch({ placaPrefixo })}
-            options={getCentralPlacaPrefixoOptions()}
-            placeholder="(Preencha ou selecione)"
-          />
-          <ModalSelect
-            id="central-filtro-motorista"
-            className="modal-select--no-pill"
-            mutedPlaceholder
-            label="Motorista"
-            value={filters.motorista}
-            onChange={(motorista) => patch({ motorista })}
-            options={getCentralMotoristaOptions()}
+            label="Monitoramento de"
+            value={filters.monitoramentoDe}
+            onChange={(monitoramentoDe) => patch({ monitoramentoDe })}
+            options={getCentralMonitoramentoDeOptions()}
             placeholder="(Preencha ou selecione)"
           />
         </div>

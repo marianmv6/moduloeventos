@@ -140,14 +140,14 @@ export interface TratativaBehaviorEvolutionData {
   points: TratativaBehaviorChartPoint[];
 }
 
-/** Entrada do histórico de auditoria — exibida na aba "Histórico"
- *  do AuditoriaOcorrenciaModal. */
 export interface TratativaHistoryEntry {
   id: string;
   /** Texto formatado da data/hora ("Hoje, 11:20"). */
   when: string;
   author: string;
   description: string;
+  /** Tempo de tratativa registrado no momento da ação. */
+  treatmentDuration?: string;
 }
 
 export type TratativaAttachmentKind = 'image' | 'pdf';
@@ -205,4 +205,6 @@ export interface TratativaOcorrenciaData {
   auditActionResolutions?: Partial<Record<string, TratativaActionResolution>>;
   /** Arquivos anexados na tratativa (aba Anexos). */
   attachments?: TratativaAttachment[];
+  /** Registros anteriores exibidos na aba Histórico. */
+  treatmentHistory?: TratativaHistoryEntry[];
 }

@@ -18,6 +18,8 @@ export const mockCentralOccurrenceExpanded: CentralOccurrence = {
   placa: 'ABC1D23',
   prefixo: 'MBB102',
   driverName: 'Paulo Roberto Moreira Pestana',
+  policyName: 'Política de sonolência',
+  trackingType: 'motorista',
   events: [
     {
       id: 'ev-1a',
@@ -55,6 +57,8 @@ export const mockCentralOccurrenceSonolenciaN1: CentralOccurrence = {
   placa: 'FAL0M70',
   prefixo: 'VOL204',
   driverName: 'José Raimundo de Oliveira',
+  policyName: 'Política de sonolência',
+  trackingType: 'motorista',
   openedByAnalyst: 'Júlia',
   events: [
     {
@@ -95,6 +99,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'IQP2A01',
     prefixo: 'SCN118',
     driverName: 'Douglas Almeida',
+    policyName: 'Política padrão',
+    trackingType: 'motorista',
     actions: { kind: 'none' },
     validationStatus: 'validado',
     validatedBy: 'Júlia',
@@ -110,6 +116,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'HQH5986',
     prefixo: 'MBR205',
     driverName: 'Juan Valencia',
+    policyName: 'Política de cerca eletrônica',
+    trackingType: 'veiculo',
     validatedByAi: true,
     actions: { kind: 'with-monitor', monitorType: 'ai' },
   },
@@ -123,6 +131,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'BKR5I96',
     prefixo: 'VW128',
     driverName: 'Rogério da Silva',
+    policyName: 'Política padrão',
+    trackingType: 'motorista',
     actions: { kind: 'with-monitor', monitorType: 'human', analystName: 'Renato' },
     validationStatus: 'validado',
     validatedBy: 'Renato',
@@ -137,6 +147,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'QWE4R55',
     prefixo: 'FRT089',
     driverName: 'Fernanda Costa Lima',
+    policyName: 'Política de velocidade',
+    trackingType: 'veiculo',
     actions: { kind: 'none' },
   },
   {
@@ -149,6 +161,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     placa: 'TYU8H21',
     prefixo: 'SCN412',
     driverName: 'Marcos Antônio Pereira',
+    policyName: 'Política padrão',
+    trackingType: 'motorista',
     validationStatus: 'aguardando',
     actions: { kind: 'with-monitor', monitorType: 'ai' },
   },
@@ -186,18 +200,8 @@ export function computeCentralStatusSummary(
 }
 
 /**
- * Soma de eventos tratados x pendentes considerando o conjunto de
- * ocorrências passadas (já filtradas).
- *
- * - Ocorrências do tipo "group" (com lista expandida) contribuem com
- *   um evento por item, classificando como "tratado" os de
- *   `validationStatus === 'validado'` e como "pendente" os demais
- *   (`aguardando`, `isCurrent` ou sem status).
- * - Ocorrências do tipo "summary" (linha única) contam como um evento:
- *   validado se `validationStatus === 'validado'`, senão pendente.
- *
- * Exemplo: filtrando as 3 ocorrências críticas (occ-1, occ-2, occ-3)
- * o total é 6 eventos, sendo 2 tratados (1 em occ-1 + occ-3 validada).
+ * Soma de eventos tratados x pendentes — uma ocorrência = uma linha.
+ * Validada se o último evento pendente já foi validado; caso contrário, pendente.
  */
 export function computeCentralTreatedSummary(
   entries: CentralOccurrenceListEntry[],
@@ -206,10 +210,10 @@ export function computeCentralTreatedSummary(
   let pending = 0;
   entries.forEach((entry) => {
     if (entry.kind === 'group') {
-      entry.occurrence.events.forEach((event) => {
-        if (event.validationStatus === 'validado') treated += 1;
-        else pending += 1;
-      });
+      const current = entry.occurrence.events.find((event) => event.isCurrent)
+        ?? entry.occurrence.events[0];
+      if (current?.validationStatus === 'validado') treated += 1;
+      else pending += 1;
     } else if (entry.row.validationStatus === 'validado') {
       treated += 1;
     } else {

@@ -1,9 +1,9 @@
 import type { AuditoriaAdvancedFilters } from '../constants/operacoesAuditoriaFilterOptions';
+import { formatMonitoringFilterDisplayValue } from './centralOccurrenceDisplay';
 
 const FILTER_PARAM_LABELS: Partial<Record<keyof AuditoriaAdvancedFilters, string>> = {
   tratadoPor: 'tratado por',
-  placa: 'placa ou prefixo',
-  motorista: 'motorista',
+  monitoramentoDe: 'monitoramento de',
 };
 
 export interface AppliedAuditoriaFilterEntry {
@@ -38,7 +38,10 @@ export function getAppliedAuditoriaFilterEntries(
     entries.push({
       key,
       paramLabel: FILTER_PARAM_LABELS[key]!,
-      value,
+      value:
+        key === 'monitoramentoDe'
+          ? formatMonitoringFilterDisplayValue(value)
+          : value,
     });
   });
 

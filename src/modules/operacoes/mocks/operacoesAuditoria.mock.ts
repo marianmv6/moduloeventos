@@ -9,11 +9,13 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
   {
     id: 'aud-1',
     companyId: 'bracell',
+    treatmentPoints: 100,
     treatedAtIso: '2026-05-23 11:20',
     treatedAt: '23/05/2026 11:20',
     treatedBy: 'Júlia Luz Campos',
-    vehicleId: 'ABW5F22 / MBB122',
-    driverName: 'João das Dores',
+    policyName: 'Política alta criticidade',
+    monitoringOf: 'ABW5F22 / MBB122',
+    trackingType: 'veiculo',
     occurrenceSnapshot: {
       ...mockTratativaOcorrencia,
       parameterTitle: 'ABW5F22 / MBB122',
@@ -29,26 +31,24 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
     history: [
       {
         id: 'h1',
-        when: 'Hoje, 11:20',
+        when: '23/05/2026 11:20',
         author: 'Júlia Luz Campos',
-        description: 'Ocorrência tratada',
-      },
-      {
-        id: 'h2',
-        when: 'Hoje, 11:15',
-        author: 'Marcos da Silva',
-        description: 'Evento Sonolência N1 - 25/05/06 11:12:03 validado',
+        description:
+          'Ação "Contato gestor imediato" marcada como Não resolvido. Ação "Ligar para gestor" marcada como Não resolvido. Ação "Ligar para supervisores" marcada como Resolvido',
+        treatmentDuration: '5:47',
       },
     ],
   },
   {
     id: 'aud-2',
     companyId: 'expresso-nepomuceno',
+    treatmentPoints: 60,
     treatedAtIso: '2026-05-23 10:42',
     treatedAt: '23/05/2026 10:42',
     treatedBy: 'Marco Romero da Costa',
-    vehicleId: 'SLE3P56 / MBB121',
-    driverName: 'Carlos Fujimoto do Prado',
+    policyName: 'Política de sonolência',
+    monitoringOf: 'Carlos Fujimoto do Prado',
+    trackingType: 'motorista',
     occurrenceSnapshot: {
       ...mockTratativaOcorrencia,
       parameterTitle: 'SLE3P56 / MBB121',
@@ -66,26 +66,24 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
     history: [
       {
         id: 'h1',
-        when: 'Hoje, 10:42',
+        when: '23/05/2026 10:42',
         author: 'Marco Romero da Costa',
-        description: 'Ocorrência tratada',
-      },
-      {
-        id: 'h2',
-        when: 'Hoje, 10:30',
-        author: 'Marco Romero da Costa',
-        description: 'Evento Sonolência N2 - 25/05/06 10:28:11 validado',
+        description:
+          'Ação "Contato gestor imediato" marcada como Não resolvido. Ação "Ligar para gestor" marcada como Resolvido',
+        treatmentDuration: '5:47',
       },
     ],
   },
   {
     id: 'aud-3',
     companyId: 'transpetro',
+    treatmentPoints: 40,
     treatedAtIso: '2026-05-22 17:08',
     treatedAt: '22/05/2026 17:08',
     treatedBy: 'Ana Cristina dos Santos',
-    vehicleId: 'ANB1K52 / VOL204',
-    driverName: 'Pedro Ramos de Paula',
+    policyName: 'Política padrão',
+    monitoringOf: 'ANB1K52 / VOL204',
+    trackingType: 'veiculo',
     occurrenceSnapshot: {
       ...mockTratativaOcorrencia,
       parameterTitle: 'ANB1K52 / VOL204',
@@ -103,15 +101,11 @@ export const mockAuditoriaRows: AuditoriaRow[] = [
     history: [
       {
         id: 'h1',
-        when: 'Ontem, 17:08',
+        when: '22/05/2026 17:08',
         author: 'Ana Cristina dos Santos',
-        description: 'Ocorrência tratada',
-      },
-      {
-        id: 'h2',
-        when: 'Ontem, 16:55',
-        author: 'Ana Cristina dos Santos',
-        description: 'Evento Velocidade acima do permitido - 24/05/06 16:52:45 validado',
+        description:
+          'Ação "Contato gestor imediato" marcada como Não resolvido. Ação "Ligar para gestor" marcada como Não resolvido. Ação "Ligar para supervisores" marcada como Resolvido. 1 anexo(s) adicionado(s)',
+        treatmentDuration: '5:47',
       },
     ],
   },
