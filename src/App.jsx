@@ -21,7 +21,9 @@ const MonitorRiscoPage =
 
 function App() {
   const [menuLevel, setMenuLevel] = useState('operacoes');
-  const [activeRoute, setActiveRoute] = useState('operacoes-eventos');
+  const [activeRoute, setActiveRoute] = useState(
+    isModuloEventosDeploy ? 'monitor-risco' : 'operacoes-eventos',
+  );
 
   const handleRouteChange = (route) => {
     requestRiskRulesNavigation(() => {
