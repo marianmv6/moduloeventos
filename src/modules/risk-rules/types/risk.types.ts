@@ -121,6 +121,10 @@ export interface TrailStepConfig {
   url?: string;
   /** Mensagem padrão exibida na tela de tratativa da ocorrência (contato / grupo) */
   defaultMessage?: string;
+  /** Habilita retorno automático para confirmação após contato. */
+  scheduleReturnConfirmation?: boolean;
+  /** Tempo em minutos (1–99) para retorno quando scheduleReturnConfirmation. */
+  returnConfirmationMinutes?: number;
 }
 
 /** Template de e-mail automático: título, descrição, status e variáveis ativas */

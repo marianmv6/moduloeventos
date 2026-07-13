@@ -51,7 +51,7 @@ export const MonitorRiscoFilterPanel: React.FC<MonitorRiscoFilterPanelProps> = (
           id="monitor-filtro-politica"
           className="modal-select--no-pill"
           mutedPlaceholder
-          label="Política"
+          label="Política de ocorrência"
           value={filters.politicaId}
           onChange={handlePoliticaChange}
           options={politicaOptions}

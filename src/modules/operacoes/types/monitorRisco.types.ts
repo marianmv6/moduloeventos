@@ -1,3 +1,11 @@
+import type { CentralPolicyTrackingType } from './operacoesCentral.types';
+
+export type MonitorRiscoOccurrenceStatus =
+  | 'pendente_validacao'
+  | 'pendente_tratativa'
+  | 'retorno_agendado'
+  | 'expirada';
+
 export type MonitorRiscoLevel = 'baixo' | 'medio' | 'alto' | 'critico';
 
 export type MonitorRankingKind = 'motorista' | 'veiculo';
@@ -14,48 +22,59 @@ export interface MonitorRiscoFilters {
 
 export type MonitorRiscoTabId = 'insights' | 'listagem';
 
-export interface MonitorRiscoScoreGeral {
-  value: number;
-  maxScore: number;
-  trend: 'up' | 'down' | 'stable';
-  trendLabel: string;
-  subtitle: string;
-}
-
-export interface MonitorRiscoDistribuicaoItem {
-  level: MonitorRiscoLevel;
+export interface MonitorRiscoDonutSegment {
+  id: string;
   label: string;
   count: number;
   percent: number;
+  color: string;
+}
+
+export interface MonitorRiscoPoliticaDistribuicaoItem extends MonitorRiscoDonutSegment {}
+
+export interface MonitorRiscoNivelRisco {
+  percent: number;
+  activePoints: number;
+  level: MonitorRiscoLevel;
+  levelLabel: string;
+  tooltipText: string;
+}
+
+export interface MonitorRiscoEventosTempoItem {
+  id: string;
+  label: string;
+  count: number;
+  kind: 'historico' | 'previsao';
+  alertOutline?: boolean;
+}
+
+export interface MonitorRiscoDonutInsight {
+  total: number;
+  centerPrimary: string;
+  centerSecondary: string;
+  segments: MonitorRiscoDonutSegment[];
 }
 
 export interface MonitorRiscoRankingItem {
   id: string;
+  rank: number;
   driverName: string;
   plate: string;
   vehicleModel: string;
   score: number;
   level: MonitorRiscoLevel;
   kind: MonitorRankingKind;
+  flagged?: boolean;
 }
 
-export interface MonitorRiscoTendenciaPoint {
-  label: string;
-  score: number;
-  afterCentralActions?: number;
-}
-
-export interface MonitorRiscoComportamentoItem {
+export interface MonitorRiscoReincidenteItem {
   id: string;
-  label: string;
-  count: number;
-  percent: number;
-}
-
-export interface MonitorRiscoRecenciaItem {
-  window: string;
-  label: string;
-  count: number;
+  rank: number;
+  driverName: string;
+  plate: string;
+  vehicleModel: string;
+  score: number;
+  level: MonitorRiscoLevel;
 }
 
 export interface MonitorRiscoFeedItem {
@@ -69,13 +88,31 @@ export interface MonitorRiscoFeedItem {
   scoreRuleId?: string;
 }
 
+export interface MonitorRiscoListagemItem {
+  id: string;
+  score: number;
+  level: MonitorRiscoLevel;
+  monitoringOf: string;
+  trackingType: CentralPolicyTrackingType;
+  policyId: string;
+  policyName: string;
+  lastEventAtIso: string;
+  behaviorType?: string;
+  /** Status operacional da ocorrência na central. */
+  status: MonitorRiscoOccurrenceStatus;
+  /** Tempo de retorno agendado (min) — quando status é retorno_agendado. */
+  returnConfirmationMinutes?: number;
+}
+
 export interface MonitorRiscoData {
-  scoreGeral: MonitorRiscoScoreGeral;
-  distribuicao: MonitorRiscoDistribuicaoItem[];
+  ocorrenciasPorPolitica: MonitorRiscoPoliticaDistribuicaoItem[];
+  nivelRisco: MonitorRiscoNivelRisco;
+  eventosPorTempo: MonitorRiscoEventosTempoItem[];
+  tipoEventos: MonitorRiscoDonutInsight;
+  ocorrenciasPendentes: MonitorRiscoDonutInsight;
   rankingMotorista: MonitorRiscoRankingItem[];
   rankingVeiculo: MonitorRiscoRankingItem[];
-  tendencia: MonitorRiscoTendenciaPoint[];
-  comportamentos: MonitorRiscoComportamentoItem[];
-  recencia: MonitorRiscoRecenciaItem[];
+  reincidentes: MonitorRiscoReincidenteItem[];
   feed: MonitorRiscoFeedItem[];
+  listagem: MonitorRiscoListagemItem[];
 }

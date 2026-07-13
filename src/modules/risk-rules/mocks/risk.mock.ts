@@ -141,7 +141,7 @@ export const mockTrails: Trail[] = [
     mode: 'points',
     steps: [
       { id: 'ts-1', order: 1, trigger: { type: 'points', minScore: 20 }, action: 'email_automatico', config: { contactIds: ['cont-1'] } },
-      { id: 'ts-2', order: 2, trigger: { type: 'points', minScore: 40 }, action: 'contato_gestor', config: { contactIds: ['cont-1', 'cont-2'], defaultMessage: 'Informar ao gestor sobre a ocorrência e solicitar retorno imediato.' } },
+      { id: 'ts-2', order: 2, trigger: { type: 'points', minScore: 40 }, action: 'contato_gestor', config: { contactIds: ['cont-1', 'cont-2'], defaultMessage: 'Informar ao gestor sobre a ocorrência e solicitar retorno imediato.', scheduleReturnConfirmation: true, returnConfirmationMinutes: 30 } },
     ],
     active: true,
     createdAt: '2025-01-10T08:00:00Z',

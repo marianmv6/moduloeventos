@@ -41,6 +41,10 @@ export interface TratativaAction {
   title: string;
   /** Mensagem padrão configurada na trilha (exibida na tratativa da ocorrência). */
   defaultMessage?: string;
+  /** Quando true, marcar como Resolvido exige retorno para confirmação. */
+  scheduleReturnConfirmation?: boolean;
+  /** Tempo em minutos (1–99) para retorno quando scheduleReturnConfirmation. */
+  returnConfirmationMinutes?: number;
   /** Contatos exibidos no painel "Detalhes" quando esta ação está
    *  selecionada. Se ausente, faz fallback para a lista global em
    *  `TratativaOcorrenciaData.contacts`. */
@@ -98,6 +102,8 @@ export interface TratativaBehaviorTreatmentMarker {
   actionTitle: string;
   startedAt: string;
   endedAt: string;
+  /** Minutos para retorno agendado após conclusão como Resolvido. */
+  scheduledReturnMinutes?: number;
 }
 
 /** Ponto de evento (alerta) no gráfico de evolução do comportamento. */
@@ -148,6 +154,10 @@ export interface TratativaHistoryEntry {
   description: string;
   /** Tempo de tratativa registrado no momento da ação. */
   treatmentDuration?: string;
+  /** ISO local ("YYYY-MM-DD HH:mm") para controle de exclusão de comentários. */
+  createdAtIso?: string;
+  /** Comentário inserido manualmente na auditoria. */
+  isComment?: boolean;
 }
 
 export type TratativaAttachmentKind = 'image' | 'pdf';
@@ -174,6 +184,8 @@ export interface TratativaOcorrenciaData {
   parameterTitle: string;
   /** Quantidade de eventos da ocorrência (texto auxiliar do card lateral). */
   eventsCount: number;
+  /** Soma dos pontos dos eventos da ocorrência (card lateral). */
+  occurrencePoints?: number;
   severity: CentralOccurrenceSeverity;
 
   policyName: string;
@@ -185,6 +197,8 @@ export interface TratativaOcorrenciaData {
   trailLabel: string;
   /** Tempo total da tratativa (ex.: "5:47") — exibido de forma estática. */
   treatmentDurationLabel?: string;
+  /** 1ª ação já concluída como Resolvido; aguarda retorno para confirmação. */
+  awaitingReturnConfirmation?: boolean;
   actions: TratativaAction[];
   contacts: TratativaContact[];
 

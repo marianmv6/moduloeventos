@@ -106,4 +106,10 @@ export interface CentralOccurrenceSummaryRow {
   validatedByAi?: boolean;
   /** Próximo passo ao clicar em play; padrão: validação. */
   playMode?: 'validation' | 'treatment';
+  /** 1ª ação da trilha exige retorno para confirmação ao marcar como Resolvido. */
+  scheduleReturnConfirmation?: boolean;
+  /** Tempo em minutos para retorno (valor da ocorrência/trilha). */
+  returnConfirmationMinutes?: number;
+  /** Ocorrência retornou à fila aguardando confirmação do retorno agendado. */
+  awaitingReturnConfirmation?: boolean;
 }

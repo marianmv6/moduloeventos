@@ -206,6 +206,44 @@ export const mockTratativaBehaviorEvolution: TratativaBehaviorEvolutionData = {
   ],
 };
 
-export function getBehaviorEvolutionForOccurrence(_occurrenceId: string): TratativaBehaviorEvolutionData {
-  return mockTratativaBehaviorEvolution;
+export function getBehaviorEvolutionForOccurrence(
+  occurrenceId: string,
+  options?: { scheduledReturnMinutes?: number },
+): TratativaBehaviorEvolutionData {
+  const scheduledReturnMinutes =
+    options?.scheduledReturnMinutes ?? resolveScheduledReturnMinutes(occurrenceId);
+  if (scheduledReturnMinutes == null) return mockTratativaBehaviorEvolution;
+
+  const points = mockTratativaBehaviorEvolution.points.map((point) => ({ ...point }));
+  const lastTreatmentIndex = points.reduce<number>(
+    (found, point, index) => (point.kind === 'treatment' ? index : found),
+    -1,
+  );
+  if (lastTreatmentIndex === -1) return mockTratativaBehaviorEvolution;
+
+  const lastTreatment = points[lastTreatmentIndex];
+  if (lastTreatment.kind !== 'treatment') return mockTratativaBehaviorEvolution;
+
+  points[lastTreatmentIndex] = {
+    ...lastTreatment,
+    treatment: {
+      ...lastTreatment.treatment,
+      scheduledReturnMinutes,
+    },
+  };
+
+  return {
+    ...mockTratativaBehaviorEvolution,
+    points,
+  };
+}
+
+/** Ocorrências com retorno agendado — valor em minutos (última tratativa no gráfico). */
+function resolveScheduledReturnMinutes(occurrenceId: string): number | null {
+  const scheduledReturnByOccurrence: Record<string, number> = {
+    'ml-3': 15,
+    'occ-3': 15,
+    'occ-6': 15,
+  };
+  return scheduledReturnByOccurrence[occurrenceId] ?? null;
 }

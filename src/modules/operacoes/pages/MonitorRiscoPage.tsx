@@ -1,18 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
+import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
+import { IconView } from '../../risk-rules/components/shared/Icons';
 import { IconFilterBars } from '../components/IconFilterBars';
 import { IconIrisInsights } from '../components/IconIrisInsights';
 import {
   IconRankingMotorista,
   IconRankingVeiculo,
 } from '../components/MonitorRankingToggleIcons';
+import { MonitorRiscoBehaviorEvolutionModal } from '../components/MonitorRiscoBehaviorEvolutionModal';
 import { MonitorRiscoFilterPanel } from '../components/MonitorRiscoFilterPanel';
 import { MonitorRiscoFilterBanner } from '../components/MonitorRiscoFilterBanner';
+import { MonitoringOfCell } from '../components/MonitoringOfCell';
+import { OperacoesDateTimeCell } from '../components/OperacoesDateTimeCell';
 import { mockMonitorRiscoData } from '../mocks/monitorRisco.mock';
 import type {
   MonitorRankingKind,
   MonitorRiscoData,
   MonitorRiscoDistribuicaoItem,
   MonitorRiscoFeedItem,
+  MonitorRiscoLevel,
+  MonitorRiscoListagemItem,
+  MonitorRiscoPoliticaImpactItem,
+  MonitorRiscoProjecao,
+  MonitorRiscoScoreGeral,
   MonitorRiscoTabId,
   MonitorRiscoTendenciaPoint,
 } from '../types/monitorRisco.types';
@@ -21,6 +32,8 @@ import {
   MONITOR_RISCO_DISTRIBUTION_LABELS,
   MONITOR_RISCO_FEED_LEVEL_LABELS,
   MONITOR_RISCO_LEVEL_COLORS,
+  MONITOR_RISCO_STATUS_BADGE_CLASS,
+  MONITOR_RISCO_STATUS_LABELS,
 } from '../constants/monitorRiscoFilterOptions';
 import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
 import {
@@ -32,6 +45,160 @@ import {
   getPolicyById,
   getPolicyRankingKind,
 } from '../utils/monitorRiscoPolicy';
+import { resolveSeverityFromAccumulatedPoints } from '../utils/accumulatedPointsSeverity';
+
+const SCORE_SCALE_MARKERS = [0, 50, 80, 100] as const;
+
+const POLITICA_BAR_COLORS = ['#169EFF', '#F2994A'] as const;
+
+function resolveRiskLevelFromPercent(percent: number): MonitorRiscoLevel {
+  if (percent >= 80) return 'alto';
+  if (percent >= 50) return 'medio';
+  return 'baixo';
+}
+
+function IconMonitorAlert() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M8 2.5L14 13.5H2L8 2.5Z"
+        stroke="#F2994A"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path d="M8 6.5V9" stroke="#F2994A" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="8" cy="11.25" r="0.75" fill="#F2994A" />
+    </svg>
+  );
+}
+
+function ScoreGeralOverview({ scoreGeral }: { scoreGeral: MonitorRiscoScoreGeral }) {
+  const scorePercent = Math.round((scoreGeral.value / scoreGeral.maxScore) * 100);
+  const unfilledPercent = 100 - scorePercent;
+
+  return (
+    <div className="monitor-risco-score-overview">
+      <div className="monitor-risco-score-overview__header">
+        <h2 className="monitor-risco-score-overview__title">Score geral da operação</h2>
+        <p className="monitor-risco-score-overview__risk-line">
+          <span className="monitor-risco-score-overview__percent">{scorePercent}%</span>
+          <span className="monitor-risco-score-overview__risk-text">nível de risco atual</span>
+        </p>
+        <div className="monitor-risco-score-overview__meta">
+          <span className="monitor-risco-score-overview__points-generated">
+            {scoreGeral.value} pontos até o momento
+          </span>
+          <p className="monitor-risco-score__subtitle">{scoreGeral.subtitle}</p>
+        </div>
+      </div>
+      <div className="monitor-risco-score-overview__meter-block">
+        <div className="monitor-risco-score-overview__meter" aria-hidden>
+          <div className="monitor-risco-score-overview__meter-gradient" />
+          <div
+            className="monitor-risco-score-overview__meter-unfilled"
+            style={{ width: `${unfilledPercent}%` }}
+          />
+        </div>
+        <div className="monitor-risco-score-overview__scale" aria-hidden>
+          {SCORE_SCALE_MARKERS.map((marker) => (
+            <span
+              key={marker}
+              className="monitor-risco-score-overview__scale-mark"
+              style={{ left: `${marker}%` }}
+            >
+              {marker}%
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DistribuicaoNivelCard({ items }: { items: MonitorRiscoDistribuicaoItem[] }) {
+  return (
+    <section className="monitor-risco-card monitor-risco-card--distribution">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Distribuição por nível de risco</h2>
+        <p className="monitor-risco-card__desc">Volume e priorização macro da operação</p>
+      </div>
+      <DonutChart items={items} />
+    </section>
+  );
+}
+
+function TendenciaCombinadaSection({
+  projecao,
+  points,
+}: {
+  projecao: MonitorRiscoProjecao;
+  points: MonitorRiscoTendenciaPoint[];
+}) {
+  const projectedLevel = resolveRiskLevelFromPercent(projecao.projectedPercent);
+
+  return (
+    <section className="monitor-risco-card monitor-risco-card--trend">
+      <div className="monitor-risco-trend-combined">
+        <div className="monitor-risco-card__header">
+          <h2 className="monitor-risco-card__title">Tendência de risco</h2>
+          <p className="monitor-risco-card__desc">
+            Projeção para as próximas 2 h e evolução da operação no período
+          </p>
+        </div>
+        <div className="monitor-risco-trend-combined__summary">
+          <div className="monitor-risco-trend-combined__projecao">
+            <p className="monitor-risco-projecao__value">
+              <strong
+                className={`monitor-risco-projecao__percent monitor-risco-projecao__percent--${projectedLevel}`}
+              >
+                {projecao.projectedPercent}%
+              </strong>{' '}
+              {projecao.projectedLabel}
+            </p>
+            <div className="monitor-risco-projecao__alert" role="note">
+              <IconMonitorAlert />
+              <p className="monitor-risco-projecao__alert-text">
+                Atenção: O ritmo atual indica um aumento de{' '}
+                <strong>+{projecao.alertIncreasePercent}%</strong> no risco nas próximas 2 horas.
+              </p>
+            </div>
+          </div>
+        </div>
+        <TendenciaChart points={points} />
+      </div>
+    </section>
+  );
+}
+
+function PoliticasImpactCard({ items }: { items: MonitorRiscoPoliticaImpactItem[] }) {
+  return (
+    <section className="monitor-risco-card monitor-risco-card--politicas">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Distribuição por políticas</h2>
+        <p className="monitor-risco-card__desc">Impacto no risco total</p>
+      </div>
+      <ul className="monitor-risco-politicas-impact">
+        {items.map((item, index) => (
+          <li key={item.id} className="monitor-risco-politicas-impact__item">
+            <div className="monitor-risco-politicas-impact__row">
+              <span className="monitor-risco-politicas-impact__label">{item.label}</span>
+              <span className="monitor-risco-politicas-impact__percent">{item.percent}%</span>
+            </div>
+            <div className="monitor-risco-politicas-impact__bar" aria-hidden>
+              <div
+                className="monitor-risco-politicas-impact__bar-fill"
+                style={{
+                  width: `${item.percent}%`,
+                  backgroundColor: POLITICA_BAR_COLORS[index % POLITICA_BAR_COLORS.length],
+                }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 
 function IconMoreMenu({ selected = false }: { selected?: boolean }) {
@@ -99,7 +266,7 @@ function DonutChart({ items }: { items: MonitorRiscoDistribuicaoItem[] }) {
         </svg>
         <div className="monitor-risco-donut__center">
           <strong>{total}</strong>
-          <span>ocorrências no período</span>
+          <span>ocorrências</span>
         </div>
       </div>
       <ul className="monitor-risco-legend">
@@ -195,9 +362,13 @@ function TendenciaChart({ points }: { points: MonitorRiscoTendenciaPoint[] }) {
 }
 
 function RecenciaChart({ items }: { items: MonitorRiscoData['recencia'] }) {
-  const yMax = 118;
+  const recencyOrder = ['3h', '1h', '15m'];
+  const orderedItems = [...items].sort(
+    (a, b) => recencyOrder.indexOf(a.window) - recencyOrder.indexOf(b.window),
+  );
+  const yMax = Math.max(...orderedItems.map((item) => item.count), 1);
   const plotHeight = 145;
-  const yTicks = [118, 50, 0];
+  const yTicks = [yMax, Math.round(yMax / 2), 0];
 
   return (
     <div className="monitor-risco-recency-chart">
@@ -219,21 +390,26 @@ function RecenciaChart({ items }: { items: MonitorRiscoData['recencia'] }) {
             ))}
           </div>
           <div className="monitor-risco-recency-chart__bars">
-            {items.map((item) => (
+            {orderedItems.map((item) => (
               <div key={item.window} className="monitor-risco-recency-chart__bar-col">
-                <div
-                  className="monitor-risco-recency-chart__bar"
-                  style={{
-                    height: `${Math.max(4, (item.count / yMax) * plotHeight)}px`,
-                  }}
-                  title={`${item.label}: ${item.count}`}
-                />
+                <LevelTooltip
+                  text={`${item.label}: ${item.count} eventos`}
+                  topLayer
+                  nowrap
+                >
+                  <div
+                    className="monitor-risco-recency-chart__bar"
+                    style={{
+                      height: `${Math.max(4, (item.count / yMax) * plotHeight)}px`,
+                    }}
+                  />
+                </LevelTooltip>
               </div>
             ))}
           </div>
         </div>
         <div className="monitor-risco-recency-chart__labels">
-          {items.map((item) => (
+          {orderedItems.map((item) => (
             <span key={item.window} className="monitor-risco-recency-chart__label">
               {item.label}
             </span>
@@ -270,33 +446,93 @@ function formatRankingLine(
 }
 
 
-function MonitorFeedTable({ items }: { items: MonitorRiscoFeedItem[] }) {
+function MonitorRiscoStatusBadge({ status }: { status: MonitorRiscoListagemItem['status'] }) {
   return (
-    <div className="monitor-risco-feed-table-wrap">
-      <table className="monitor-risco-feed-table">
+    <span
+      className={`badge badge-rounded monitor-risco-status-badge ${MONITOR_RISCO_STATUS_BADGE_CLASS[status] ?? ''}`}
+    >
+      {MONITOR_RISCO_STATUS_LABELS[status] ?? status}
+    </span>
+  );
+}
+
+function MonitorListagemTable({
+  items,
+  onView,
+}: {
+  items: MonitorRiscoListagemItem[];
+  onView: (item: MonitorRiscoListagemItem) => void;
+}) {
+  return (
+    <div className="operacoes-eventos-table-wrap monitor-risco-listagem-table-wrap">
+      <table className="list-table operacoes-eventos-table monitor-risco-listagem-table">
+        <colgroup>
+          <col className="monitor-risco-col-pontuacao" />
+          <col className="monitor-risco-col-nivel-risco" />
+          <col className="monitor-risco-col-monitoramento" />
+          <col className="monitor-risco-col-politica" />
+          <col className="monitor-risco-col-datetime" />
+          <col className="monitor-risco-col-status" />
+          <col className="operacoes-col-acoes" />
+        </colgroup>
         <thead>
           <tr>
-            <th>Hora</th>
-            <th>Evento</th>
-            <th>Motorista</th>
-            <th>Veículo</th>
-            <th>Nível</th>
+            <th className="operacoes-col-data">Pontuação</th>
+            <th className="operacoes-col-data">Nível de risco</th>
+            <th className="operacoes-col-data">Monitoramento de</th>
+            <th className="operacoes-col-data">Política de ocorrência</th>
+            <th className="operacoes-col-data">Data/hora (último evento)</th>
+            <th className="operacoes-col-data">Status</th>
+            <th className="list-cell-actions operacoes-col-acoes-header" aria-label="Ações" />
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
-              <td>{item.time}</td>
-              <td>{item.message}</td>
-              <td>{item.driverName}</td>
-              <td>{item.vehicleLabel}</td>
-              <td>
-                <span className={`monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}>
-                  {MONITOR_RISCO_FEED_LEVEL_LABELS[item.level]}
-                </span>
-              </td>
-            </tr>
-          ))}
+          {items.map((item) => {
+            const pointsSeverity = resolveSeverityFromAccumulatedPoints(item.score);
+
+            return (
+              <tr key={item.id}>
+                <td className="operacoes-col-data monitor-risco-listagem-col-pontuacao">
+                  <span
+                    className={`operacoes-auditoria-points operacoes-auditoria-points--${pointsSeverity}`}
+                  >
+                    {item.score} pts
+                  </span>
+                </td>
+                <td className="operacoes-col-data monitor-risco-listagem-col-nivel">
+                  <span className={`monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}>
+                    {MONITOR_RISCO_FEED_LEVEL_LABELS[item.level]}
+                  </span>
+                </td>
+                <td className="operacoes-col-data">
+                  <MonitoringOfCell label={item.monitoringOf} trackingType={item.trackingType} />
+                </td>
+                <td className="operacoes-col-data">
+                  <TruncatedTextTooltip text={item.policyName} />
+                </td>
+                <OperacoesDateTimeCell
+                  occurredAtIso={item.lastEventAtIso}
+                  seed={item.id}
+                />
+                <td className="operacoes-col-data monitor-risco-listagem-col-status">
+                  <MonitorRiscoStatusBadge status={item.status} />
+                </td>
+                <td className="list-cell-actions">
+                  <div className="list-actions">
+                    <button
+                      type="button"
+                      className="btn btn-icon-action operacoes-view-btn"
+                      aria-label="Visualizar evolução comportamental"
+                      title="Visualizar evolução comportamental"
+                      onClick={() => onView(item)}
+                    >
+                      <IconView />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -310,6 +546,9 @@ export const MonitorRiscoPage: React.FC = () => {
   const [appliedFilters, setAppliedFilters] = useState<MonitorRiscoFilters>(EMPTY_MONITOR_RISCO_FILTERS);
   const [rankingKind, setRankingKind] = useState<MonitorRankingKind>('motorista');
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [selectedListagemItem, setSelectedListagemItem] = useState<MonitorRiscoListagemItem | null>(
+    null,
+  );
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   const appliedFilterCount = countAppliedMonitorRiscoFilters(appliedFilters);
@@ -320,6 +559,11 @@ export const MonitorRiscoPage: React.FC = () => {
       : mockMonitorRiscoData;
     return base;
   }, [appliedFilters.politicaId]);
+
+  const filteredListagem = useMemo(
+    () => applyMonitorRiscoFilters(scopedData.listagem, appliedFilters),
+    [appliedFilters, scopedData.listagem],
+  );
 
   const filteredFeed = useMemo(
     () => applyMonitorRiscoFilters(scopedData.feed, appliedFilters),
@@ -366,8 +610,6 @@ export const MonitorRiscoPage: React.FC = () => {
     setFilterPanelOpen(false);
     setRankingKind('motorista');
   };
-
-  const scorePercent = Math.round((scopedData.scoreGeral.value / scopedData.scoreGeral.maxScore) * 100);
 
   return (
     <div className="monitor-risco-page page-layout content-body">
@@ -449,46 +691,21 @@ export const MonitorRiscoPage: React.FC = () => {
       {activeTab === 'insights' ? (
         <div className="monitor-risco-grid">
           <section className="monitor-risco-card monitor-risco-card--score">
-            <div className="monitor-risco-card__header">
-              <h2 className="monitor-risco-card__title">Score geral da operação</h2>
-            </div>
-            <div className="monitor-risco-score">
-              <div className="monitor-risco-score__row">
-                <div className="monitor-risco-score__main">
-                  <span className="monitor-risco-score__value">{scopedData.scoreGeral.value}</span>
-                  <span className="monitor-risco-score__max">/ {scopedData.scoreGeral.maxScore} pts</span>
-                </div>
-                <div className="monitor-risco-score__meta">
-                  <span
-                    className={`monitor-risco-score__trend monitor-risco-score__trend--${scopedData.scoreGeral.trend}`}
-                  >
-                    {scopedData.scoreGeral.trendLabel}
-                  </span>
-                  <p className="monitor-risco-score__subtitle">{scopedData.scoreGeral.subtitle}</p>
-                </div>
-              </div>
-              <div className="monitor-risco-score__meter" aria-hidden>
-                <div
-                  className="monitor-risco-score__meter-fill"
-                  style={{ width: `${scorePercent}%` }}
-                />
-              </div>
-            </div>
+            <ScoreGeralOverview scoreGeral={scopedData.scoreGeral} />
           </section>
 
-          <section className="monitor-risco-card monitor-risco-card--distribution">
-            <div className="monitor-risco-card__header">
-              <h2 className="monitor-risco-card__title">Distribuição por nível de risco</h2>
-              <p className="monitor-risco-card__desc">Volume e priorização macro da operação</p>
-            </div>
-            <DonutChart items={scopedData.distribuicao} />
-          </section>
+          <DistribuicaoNivelCard items={scopedData.distribuicao} />
+
+          <TendenciaCombinadaSection
+            projecao={scopedData.projecao}
+            points={scopedData.tendencia}
+          />
 
           <section className="monitor-risco-card monitor-risco-card--ranking">
             <div className="monitor-risco-card__header monitor-risco-card__header--split">
               <div>
                 <h2 className="monitor-risco-card__title">Ranking</h2>
-                <p className="monitor-risco-card__desc">Maiores exposições no período</p>
+                <p className="monitor-risco-card__desc">5 maiores exposições no período</p>
               </div>
               <div className="monitor-risco-ranking-toggle" role="group" aria-label="Tipo de ranking">
                 <div className="operacoes-view-toggle-wrap">
@@ -537,20 +754,12 @@ export const MonitorRiscoPage: React.FC = () => {
             </ol>
           </section>
 
-          <section className="monitor-risco-card monitor-risco-card--trend">
-            <div className="monitor-risco-card__header">
-              <h2 className="monitor-risco-card__title">Tendência de risco</h2>
-              <p className="monitor-risco-card__desc">
-                Evolução da operação e impacto das ações da central
-              </p>
-            </div>
-            <TendenciaChart points={scopedData.tendencia} />
-          </section>
+          <PoliticasImpactCard items={scopedData.distribuicaoPoliticas} />
 
           <section className="monitor-risco-card monitor-risco-card--recency">
             <div className="monitor-risco-card__header">
-              <h2 className="monitor-risco-card__title">Histórico recente de riscos</h2>
-              <p className="monitor-risco-card__desc">Volume de eventos de risco detectados</p>
+              <h2 className="monitor-risco-card__title">Histórico recente</h2>
+              <p className="monitor-risco-card__desc">Volume de eventos validados</p>
             </div>
             <RecenciaChart items={scopedData.recencia} />
           </section>
@@ -578,19 +787,25 @@ export const MonitorRiscoPage: React.FC = () => {
           </section>
         </div>
       ) : (
-        <section className="monitor-risco-card monitor-risco-card--listagem">
-          <div className="monitor-risco-card__header">
-            <h2 className="monitor-risco-card__title">Listagem de ocorrências</h2>
-            <p className="monitor-risco-card__desc">
-              Eventos de risco no período
+        <div className="operacoes-eventos-body operacoes-eventos-body--list-only monitor-risco-listagem-body">
+          <section className="operacoes-eventos-list-pane" aria-label="Listagem de ocorrências">
+            <p className="operacoes-eventos-summary">
+              <strong>{filteredListagem.length}</strong> ocorrências
               {appliedFilters.politicaId
                 ? ` — ${getPolicyById(appliedFilters.politicaId)?.name ?? 'política selecionada'}`
                 : ''}
             </p>
-          </div>
-          <MonitorFeedTable items={filteredFeed} />
-        </section>
+            <MonitorListagemTable
+              items={filteredListagem}
+              onView={setSelectedListagemItem}
+            />
+          </section>
+        </div>
       )}
+      <MonitorRiscoBehaviorEvolutionModal
+        item={selectedListagemItem}
+        onClose={() => setSelectedListagemItem(null)}
+      />
     </div>
   );
 };

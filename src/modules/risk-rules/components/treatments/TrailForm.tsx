@@ -169,6 +169,79 @@ function DefaultMessageField({ step, onUpdate }: DefaultMessageFieldProps) {
   );
 }
 
+interface ScheduleReturnConfirmationFieldProps {
+  step: TrailStep;
+  onToggle: (enabled: boolean) => void;
+  onMinutesChange: (minutes: string) => void;
+}
+
+function ScheduleReturnConfirmationField({
+  step,
+  onToggle,
+  onMinutesChange,
+}: ScheduleReturnConfirmationFieldProps) {
+  const enabled = step.config?.scheduleReturnConfirmation === true;
+  const minutesValue =
+    step.config?.returnConfirmationMinutes != null
+      ? String(step.config.returnConfirmationMinutes)
+      : '';
+
+  return (
+    <div className="trail-step-schedule-return">
+      <div className="trail-step-schedule-return__title-row">
+        <div className="policy-form-checkbox-option trail-step-schedule-return__toggle">
+          <input
+            id={`step-schedule-return-${step.id}`}
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => onToggle(e.target.checked)}
+          />
+          <label
+            htmlFor={`step-schedule-return-${step.id}`}
+            className="trail-step-config__section-title"
+          >
+            Agendar retorno para confirmação
+          </label>
+        </div>
+        <InfoTooltip text={SCHEDULE_RETURN_INFO_TOOLTIP} />
+      </div>
+
+      {enabled && (
+        <>
+          <div className="trail-step-schedule-return__time">
+            <label
+              className="trail-step-schedule-return__time-label"
+              htmlFor={`step-return-minutes-${step.id}`}
+            >
+              Tempo para retorno
+            </label>
+            <div className="policy-risk-card__points-wrap trail-step-schedule-return__minutes-wrap">
+              <input
+                id={`step-return-minutes-${step.id}`}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={2}
+                className="policy-risk-card__points-input"
+                value={minutesValue}
+                onChange={(e) => onMinutesChange(e.target.value)}
+                placeholder="00"
+                aria-label="Tempo para retorno em minutos"
+              />
+              <span className="policy-risk-card__points-suffix">min</span>
+            </div>
+          </div>
+          <p className="trail-step-voice-notice" role="note">
+            O retorno só será considerado quando a tratativa for marcada como{' '}
+            <strong>Resolvido</strong>. Em caso de <strong>Não resolvido</strong>, o fluxo seguirá
+            para a próxima etapa.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 const ACTION_OPTIONS: ModalSelectOption[] = [
   { value: 'email_automatico', label: 'Email automático' },
   { value: 'contato_gestor', label: 'Contato gestor imediato' },
@@ -185,6 +258,11 @@ const STATUS_OPTIONS: ModalSelectOption[] = [
 
 const MAX_STEPS = 5;
 const DEFAULT_MESSAGE_MAX_LENGTH = 250;
+const RETURN_CONFIRMATION_MAX_MINUTES = 99;
+const SCHEDULE_RETURN_INFO_TOOLTIP =
+  'Defina o tempo para reavaliar a ocorrência após tentativa de contato. Após o período, a ocorrência retorna para a lista de tratativas para confirmação com o motorista.';
+
+const CONTACT_ACTIONS_WITH_SCHEDULE: StepActionType[] = ['contato_gestor', 'notificar_contato'];
 
 const DEFAULT_TRIGGER: TrailStepTrigger = { type: 'points', minScore: 0 };
 
@@ -278,6 +356,18 @@ export const TrailForm: React.FC<TrailFormProps> = ({
       if ((a.config?.voiceMessageId ?? '') !== (b.config?.voiceMessageId ?? '')) return true;
       if ((a.config?.emailTemplateId ?? '') !== (b.config?.emailTemplateId ?? '')) return true;
       if ((a.config?.defaultMessage ?? '') !== (b.config?.defaultMessage ?? '')) return true;
+      if (
+        (a.config?.scheduleReturnConfirmation ?? false) !==
+        (b.config?.scheduleReturnConfirmation ?? false)
+      ) {
+        return true;
+      }
+      if (
+        (a.config?.returnConfirmationMinutes ?? null) !==
+        (b.config?.returnConfirmationMinutes ?? null)
+      ) {
+        return true;
+      }
     }
     return false;
   }, [initialData, name, description, active, steps]);
@@ -315,7 +405,13 @@ export const TrailForm: React.FC<TrailFormProps> = ({
     const contactsValid =
       contacts.length === 0 ||
       stepsRequiringContacts.every((s) => (s.config?.contactIds ?? []).length > 0);
-    return contactsValid;
+    const scheduleReturnValid = steps.every((step) => {
+      if (!CONTACT_ACTIONS_WITH_SCHEDULE.includes(step.action)) return true;
+      if (!step.config?.scheduleReturnConfirmation) return true;
+      const minutes = step.config.returnConfirmationMinutes;
+      return minutes != null && minutes >= 1 && minutes <= RETURN_CONFIRMATION_MAX_MINUTES;
+    });
+    return contactsValid && scheduleReturnValid;
   }, [steps, stepsRequiringContacts, contacts.length]);
 
   const updateStep = (stepId: string, patch: Partial<TrailStep>) => {
@@ -330,6 +426,31 @@ export const TrailForm: React.FC<TrailFormProps> = ({
     const limited = defaultMessage.slice(0, DEFAULT_MESSAGE_MAX_LENGTH);
     updateStep(stepId, {
       config: { ...step.config, defaultMessage: limited || undefined },
+    });
+  };
+
+  const updateStepScheduleReturn = (stepId: string, enabled: boolean) => {
+    const step = steps.find((s) => s.id === stepId);
+    if (!step) return;
+    updateStep(stepId, {
+      config: {
+        ...step.config,
+        scheduleReturnConfirmation: enabled || undefined,
+        returnConfirmationMinutes: enabled ? step.config?.returnConfirmationMinutes : undefined,
+      },
+    });
+  };
+
+  const updateStepReturnMinutes = (stepId: string, rawValue: string) => {
+    const step = steps.find((s) => s.id === stepId);
+    if (!step) return;
+    const digits = rawValue.replace(/\D/g, '').slice(0, 2);
+    const parsed = digits ? Math.min(Number(digits), RETURN_CONFIRMATION_MAX_MINUTES) : undefined;
+    updateStep(stepId, {
+      config: {
+        ...step.config,
+        returnConfirmationMinutes: parsed,
+      },
     });
   };
 
@@ -380,6 +501,13 @@ export const TrailForm: React.FC<TrailFormProps> = ({
           ? {
               ...s.config,
               defaultMessage: s.config.defaultMessage?.trim().slice(0, DEFAULT_MESSAGE_MAX_LENGTH) || undefined,
+              scheduleReturnConfirmation: s.config.scheduleReturnConfirmation || undefined,
+              returnConfirmationMinutes:
+                s.config.scheduleReturnConfirmation &&
+                s.config.returnConfirmationMinutes != null &&
+                s.config.returnConfirmationMinutes >= 1
+                  ? Math.min(s.config.returnConfirmationMinutes, RETURN_CONFIRMATION_MAX_MINUTES)
+                  : undefined,
             }
           : undefined,
       })),
@@ -517,6 +645,11 @@ export const TrailForm: React.FC<TrailFormProps> = ({
                     step={step}
                     onUpdate={(v) => updateStepDefaultMessage(step.id, v)}
                   />
+                  <ScheduleReturnConfirmationField
+                    step={step}
+                    onToggle={(enabled) => updateStepScheduleReturn(step.id, enabled)}
+                    onMinutesChange={(value) => updateStepReturnMinutes(step.id, value)}
+                  />
                 </div>
               )}
               {step.action === 'notificar_contato' && (
@@ -531,6 +664,11 @@ export const TrailForm: React.FC<TrailFormProps> = ({
                   <DefaultMessageField
                     step={step}
                     onUpdate={(v) => updateStepDefaultMessage(step.id, v)}
+                  />
+                  <ScheduleReturnConfirmationField
+                    step={step}
+                    onToggle={(enabled) => updateStepScheduleReturn(step.id, enabled)}
+                    onMinutesChange={(value) => updateStepReturnMinutes(step.id, value)}
                   />
                 </div>
               )}

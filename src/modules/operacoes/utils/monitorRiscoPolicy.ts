@@ -88,5 +88,7 @@ export function applyPolicyScope(data: MonitorRiscoData, politicaId: string): Mo
     return true;
   });
 
-  return { ...data, feed };
+  const listagem = data.listagem.filter((item) => item.policyId === politicaId);
+
+  return { ...data, feed, listagem };
 }

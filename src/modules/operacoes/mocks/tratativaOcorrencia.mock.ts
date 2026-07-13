@@ -21,6 +21,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
   policyKind: 'veiculo',
   parameterTitle: 'ABC1D23 / MBB102',
   eventsCount: 3,
+  occurrencePoints: 100,
   severity: 'critical',
 
   policyName: 'Política alta criticidade',

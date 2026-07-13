@@ -12,7 +12,7 @@ import type {
 import { resolveEventCategory } from './eventCategory';
 import type {
   TratativaOcorrenciaData,
-  TratativaValidatedEvent,
+  TratativaAction,
 } from '../types/tratativaOcorrencia.types';
 
 const VIDEO_EVENT_TYPE_TO_ALERT: Record<string, CentralAlertType> = {
@@ -163,6 +163,25 @@ type TratativaTemplate = Pick<
   'policyName' | 'policyTypeLabel' | 'trailLabel' | 'actions' | 'contacts' | 'company'
 >;
 
+function applyScheduleReturnFromOccurrence(
+  actions: TratativaAction[],
+  entry: CentralOccurrenceEntry,
+): TratativaAction[] {
+  if (entry.kind !== 'summary') return actions;
+  const { scheduleReturnConfirmation, returnConfirmationMinutes } = entry.row;
+  if (!scheduleReturnConfirmation || returnConfirmationMinutes == null) return actions;
+
+  return actions.map((action) =>
+    action.sequence === 1
+      ? {
+          ...action,
+          scheduleReturnConfirmation: true,
+          returnConfirmationMinutes,
+        }
+      : action,
+  );
+}
+
 export function buildTratativaOcorrenciaFromCentral(
   occurrenceId: string,
   template: TratativaTemplate,
@@ -192,22 +211,28 @@ export function buildTratativaOcorrenciaFromCentral(
     entry.kind === 'group' ? entry.occurrence.driverName : entry.row.driverName;
   const severity = entry.kind === 'group' ? entry.occurrence.severity : entry.row.severity;
   const events = getCentralOccurrenceEvents(entry);
+  const occurrencePoints = events.reduce((sum, event) => sum + (event.eventPoints ?? 0), 0);
   const currentEvent = events.find((event) => event.isCurrent) ?? events[events.length - 1];
   const driverId = `d-${occurrenceId}`;
   const vehicleId = `v-${occurrenceId}`;
+  const actions = applyScheduleReturnFromOccurrence(template.actions, entry);
+  const awaitingReturnConfirmation =
+    entry.kind === 'summary' ? entry.row.awaitingReturnConfirmation === true : false;
 
   return {
     occurrenceId,
     policyKind: 'veiculo',
     parameterTitle: `${placa} / ${prefixo}`,
     eventsCount: events.length,
+    occurrencePoints,
     severity,
     policyName: template.policyName,
     policyTypeLabel: template.policyTypeLabel,
     eventTypeLabel: currentEvent?.eventType ?? events[0]?.eventType ?? '—',
     gravityLabel: SEVERITY_LABELS[severity],
     trailLabel: template.trailLabel,
-    actions: template.actions,
+    awaitingReturnConfirmation,
+    actions,
     contacts: template.contacts,
     company: template.company,
     driverOptions: [

@@ -43,7 +43,7 @@ export function getAppliedMonitorRiscoFilterEntries(
   if (filters.politicaId) {
     entries.push({
       key: 'politica',
-      paramLabel: 'Política',
+      paramLabel: 'Política de ocorrência',
       value: labelFromOptions(filters.politicaId, getMonitorPoliticaOptions()),
     });
   }

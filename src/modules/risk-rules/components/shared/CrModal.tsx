@@ -17,6 +17,8 @@ interface CrModalProps {
   primaryDisabled?: boolean;
   /** Modal tela cheia: cobre até o nome da página, título no formato de nome de página, X na lateral, botões no rodapé */
   fullScreen?: boolean;
+  /** Oculta o rodapé com ações (Cancelar / Salvar). */
+  hideFooter?: boolean;
 }
 
 const CloseIcon: React.FC = () => (
@@ -37,6 +39,7 @@ export const CrModal: React.FC<CrModalProps> = ({
   cancelLabel = 'Cancelar',
   fullScreen = false,
   primaryDisabled = false,
+  hideFooter = false,
 }) => {
   const handleCancel = onCancel ?? onClose;
 
@@ -81,21 +84,23 @@ export const CrModal: React.FC<CrModalProps> = ({
         <div className="cr-modal__body">
           {children}
         </div>
-        <footer className="cr-modal__footer">
-          <button type="button" className="cr-btn cr-btn--outline" onClick={handleCancel}>
-            {cancelLabel}
-          </button>
-          {formId ? (
-            <button
-              type="submit"
-              form={formId}
-              className="cr-btn cr-btn--primary"
-              disabled={primaryDisabled}
-            >
-              {primaryLabel}
+        {!hideFooter && (
+          <footer className="cr-modal__footer">
+            <button type="button" className="cr-btn cr-btn--outline" onClick={handleCancel}>
+              {cancelLabel}
             </button>
-          ) : null}
-        </footer>
+            {formId ? (
+              <button
+                type="submit"
+                form={formId}
+                className="cr-btn cr-btn--primary"
+                disabled={primaryDisabled}
+              >
+                {primaryLabel}
+              </button>
+            ) : null}
+          </footer>
+        )}
       </div>
     </div>
   );

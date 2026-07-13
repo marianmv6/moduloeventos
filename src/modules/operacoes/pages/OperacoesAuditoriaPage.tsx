@@ -1,11 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
 import { InfoTooltip } from '../../risk-rules/components/shared/InfoTooltip';
-import { IconView } from '../../risk-rules/components/shared/Icons';
+import { IconEdit, IconView } from '../../risk-rules/components/shared/Icons';
 import { TratativaOcorrenciaModal } from '../components/TratativaOcorrenciaModal';
 import { MonitoringOfCell } from '../components/MonitoringOfCell';
 import { mockAuditoriaRows } from '../mocks/operacoesAuditoria.mock';
 import type { AuditoriaRow } from '../types/operacoesAuditoria.types';
+import type {
+  TratativaAttachment,
+  TratativaHistoryEntry,
+  TratativaOcorrenciaData,
+} from '../types/tratativaOcorrencia.types';
 import { resolveSeverityFromAccumulatedPoints } from '../utils/accumulatedPointsSeverity';
 import { encodeMonitoringFilterValue } from '../utils/centralOccurrenceDisplay';
 import { IconFilterBars } from '../components/IconFilterBars';
@@ -16,6 +21,9 @@ import {
   type AuditoriaAdvancedFilters,
 } from '../constants/operacoesAuditoriaFilterOptions';
 import { countAppliedAuditoriaFilters } from '../utils/operacoesAuditoriaFilterSummary';
+
+/** Linha da listagem que abre em modo edição (demais abrem somente visualização). */
+const EDITABLE_AUDITORIA_ROW_ID = 'aud-1';
 /** Filtra uma linha de auditoria pelos campos do filtro avançado.
  *  O período compara apenas a parte da data (YYYY-MM-DD) extraída de
  *  `treatedAtIso` contra os valores do picker. */
@@ -55,7 +63,15 @@ function getAttachmentCount(row: AuditoriaRow): number {
 }
 
 export const OperacoesAuditoriaPage: React.FC = () => {
-  const [selected, setSelected] = useState<AuditoriaRow | null>(null);
+  const [selected, setSelected] = useState<{
+    row: AuditoriaRow;
+    editable: boolean;
+  } | null>(null);
+  const [auditSession, setAuditSession] = useState<{
+    history: TratativaHistoryEntry[];
+    attachments: TratativaAttachment[];
+    occurrenceSnapshot: TratativaOcorrenciaData;
+  } | null>(null);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<AuditoriaAdvancedFilters>(
     EMPTY_AUDITORIA_FILTERS,
@@ -69,7 +85,25 @@ export const OperacoesAuditoriaPage: React.FC = () => {
     [appliedFilters],
   );
 
+  const editableRowId = EDITABLE_AUDITORIA_ROW_ID;
+
   const appliedFilterCount = countAppliedAuditoriaFilters(appliedFilters);
+
+  useEffect(() => {
+    if (!selected?.editable) {
+      setAuditSession(null);
+      return;
+    }
+    const { row } = selected;
+    setAuditSession({
+      history: [...row.history],
+      attachments: [...(row.occurrenceSnapshot.attachments ?? [])],
+      occurrenceSnapshot: {
+        ...row.occurrenceSnapshot,
+        attachments: row.occurrenceSnapshot.attachments ?? [],
+      },
+    });
+  }, [selected]);
 
   const toggleFilterPanel = () => {
     setFilterPanelOpen((open) => {
@@ -96,7 +130,7 @@ export const OperacoesAuditoriaPage: React.FC = () => {
   };
 
   return (
-    <div className="operacoes-eventos-page page-layout content-body">
+    <div className="operacoes-eventos-page operacoes-auditoria-page page-layout content-body">
       <div className="content-toolbar top-bar operacoes-eventos-toolbar">
         <div className="content-toolbar-left">
           <h1 className="body-page-title">Auditoria</h1>
@@ -158,6 +192,7 @@ export const OperacoesAuditoriaPage: React.FC = () => {
               {filteredRows.map((row) => {
                 const attachmentCount = getAttachmentCount(row);
                 const pointsSeverity = resolveSeverityFromAccumulatedPoints(row.treatmentPoints);
+                const isEditable = row.id === editableRowId;
                 return (
                 <tr key={row.id}>
                   <td className="operacoes-col-data operacoes-auditoria-col-points">
@@ -192,15 +227,19 @@ export const OperacoesAuditoriaPage: React.FC = () => {
                   </td>
                   <td className="list-cell-actions">
                     <div className="list-actions">
-                      <button
-                        type="button"
-                        className="btn btn-icon-action operacoes-view-btn"
-                        aria-label="Visualizar"
-                        title="Visualizar"
-                        onClick={() => setSelected(row)}
-                      >
-                        <IconView />
-                      </button>
+                      <div className="operacoes-view-toggle-wrap">
+                        <button
+                          type="button"
+                          className="btn btn-icon-action operacoes-view-btn"
+                          aria-label={isEditable ? 'Editar' : 'Visualizar'}
+                          onClick={() => setSelected({ row, editable: isEditable })}
+                        >
+                          {isEditable ? <IconEdit /> : <IconView />}
+                        </button>
+                        <span className="operacoes-view-tooltip" role="tooltip">
+                          {isEditable ? 'Editar' : 'Visualizar'}
+                        </span>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -211,12 +250,46 @@ export const OperacoesAuditoriaPage: React.FC = () => {
         </div>
       </section>
 
-      {selected && (
+      {selected && (!selected.editable || auditSession) && (
         <TratativaOcorrenciaModal
           open
           mode="auditoria"
-          data={selected.occurrenceSnapshot}
-          history={selected.history}
+          auditEditable={selected.editable}
+          data={
+            selected.editable && auditSession
+              ? {
+                  ...auditSession.occurrenceSnapshot,
+                  attachments: auditSession.attachments,
+                }
+              : selected.row.occurrenceSnapshot
+          }
+          history={
+            selected.editable && auditSession
+              ? auditSession.history
+              : selected.row.history
+          }
+          onHistoryChange={
+            selected.editable
+              ? (entries) =>
+                  setAuditSession((current) =>
+                    current ? { ...current, history: entries } : current,
+                  )
+              : undefined
+          }
+          onAttachmentsChange={
+            selected.editable
+              ? (attachments) =>
+                  setAuditSession((current) =>
+                    current
+                      ? {
+                          ...current,
+                          attachments,
+                          occurrenceSnapshot: { ...current.occurrenceSnapshot, attachments },
+                        }
+                      : current,
+                  )
+              : undefined
+          }
           onClose={() => setSelected(null)}
         />
       )}

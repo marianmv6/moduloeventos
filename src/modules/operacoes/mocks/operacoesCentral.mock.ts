@@ -105,6 +105,8 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     validationStatus: 'validado',
     validatedBy: 'Júlia',
     playMode: 'treatment',
+    scheduleReturnConfirmation: true,
+    returnConfirmationMinutes: 15,
   },
   {
     id: 'occ-4',
@@ -137,6 +139,7 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     validationStatus: 'validado',
     validatedBy: 'Renato',
   },
+  /** Ocorrência 6: validada — retorno agendado aguardando confirmação na tratativa. */
   {
     id: 'occ-6',
     totalPoints: 18,
@@ -150,6 +153,12 @@ export const mockCentralOccurrenceSummaries: CentralOccurrenceSummaryRow[] = [
     policyName: 'Política de velocidade',
     trackingType: 'veiculo',
     actions: { kind: 'none' },
+    validationStatus: 'validado',
+    validatedBy: 'Pedro',
+    playMode: 'treatment',
+    scheduleReturnConfirmation: true,
+    returnConfirmationMinutes: 15,
+    awaitingReturnConfirmation: true,
   },
   {
     id: 'occ-7',

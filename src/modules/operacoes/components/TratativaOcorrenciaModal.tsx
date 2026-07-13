@@ -11,6 +11,7 @@ import type {
 import { VideoTile, MapPanel } from './CentralValidacaoAlertasModal';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
 import { SuccessToast } from '../../risk-rules/components/shared/SuccessToast';
+import { IconTrash } from '../../risk-rules/components/shared/Icons';
 import { CrModal } from '../../risk-rules/components/shared/CrModal';
 import {
   CONTACT_PREFERENCE_OPTIONS,
@@ -35,13 +36,43 @@ interface TratativaOcorrenciaModalProps {
   mode?: 'tratativa' | 'auditoria' | 'visualizacao';
   /** Histórico legado (auditoria). Preferir `data.treatmentHistory`. */
   history?: TratativaHistoryEntry[];
+  /** Aba inicial ao abrir o modal. */
+  initialTab?: ActiveTab;
+  /** Callback quando o histórico é alterado no modo auditoria. */
+  onHistoryChange?: (entries: TratativaHistoryEntry[]) => void;
+  /** Callback quando anexos são alterados no modo auditoria. */
+  onAttachmentsChange?: (attachments: TratativaAttachment[]) => void;
+  /** Quando false, auditoria abre somente para visualização (campos bloqueados). */
+  auditEditable?: boolean;
 }
 
 type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'anexos' | 'evolucao' | 'historico';
 
 const MOCK_CURRENT_ANALYST = 'Júlia Luz Campos';
+const HISTORY_COMMENT_MAX_LENGTH = 250;
+const HISTORY_COMMENT_DELETE_WINDOW_MS = 120 * 60 * 1000;
+const COMMENT_INSERTED_TOAST = 'Comentário inserido com sucesso.';
+const COMMENT_DELETED_TOAST = 'Comentário excluído com sucesso.';
+const COMMENT_DELETE_EXPIRED_TOOLTIP =
+  'Por questões de segurança e integridade do histórico, comentários só podem ser excluídos nos primeiros 120 minutos.';
+
+function formatCreatedAtIso(date = new Date()): string {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 function formatHistoryWhen(date = new Date()): string {
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  const time = date.toLocaleString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  if (isToday) {
+    return `Hoje, ${time}`;
+  }
+
   return date.toLocaleString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -49,6 +80,52 @@ function formatHistoryWhen(date = new Date()): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function isHistoryCommentEntry(entry: TratativaHistoryEntry): boolean {
+  return entry.isComment === true || entry.description.startsWith('Comentário:');
+}
+
+function isOwnHistoryComment(entry: TratativaHistoryEntry): boolean {
+  return isHistoryCommentEntry(entry) && entry.author === MOCK_CURRENT_ANALYST;
+}
+
+function getCommentCreatedAtMs(entry: TratativaHistoryEntry): number | null {
+  if (!entry.createdAtIso) return null;
+  const created = new Date(entry.createdAtIso.replace(' ', 'T')).getTime();
+  return Number.isNaN(created) ? null : created;
+}
+
+function canDeleteHistoryComment(entry: TratativaHistoryEntry): boolean {
+  const created = getCommentCreatedAtMs(entry);
+  if (!isOwnHistoryComment(entry) || created == null) return false;
+  return Date.now() - created < HISTORY_COMMENT_DELETE_WINDOW_MS;
+}
+
+function isExpiredOwnHistoryComment(entry: TratativaHistoryEntry): boolean {
+  const created = getCommentCreatedAtMs(entry);
+  if (!isOwnHistoryComment(entry) || created == null) return false;
+  return Date.now() - created >= HISTORY_COMMENT_DELETE_WINDOW_MS;
+}
+
+function buildAttachmentHistoryDescription(
+  previous: TratativaAttachment[],
+  next: TratativaAttachment[],
+): string | null {
+  const previousIds = new Set(previous.map((attachment) => attachment.id));
+  const nextIds = new Set(next.map((attachment) => attachment.id));
+  const added = next.filter((attachment) => !previousIds.has(attachment.id)).length;
+  const removed = previous.filter((attachment) => !nextIds.has(attachment.id)).length;
+  const parts: string[] = [];
+
+  if (added > 0) {
+    parts.push(`${added} anexo(s) adicionado(s)`);
+  }
+  if (removed > 0) {
+    parts.push(`${removed} anexo(s) removido(s)`);
+  }
+
+  return parts.length > 0 ? parts.join('. ') : null;
 }
 
 function resolutionHistoryDescription(
@@ -466,6 +543,12 @@ interface ActionCardProps {
   onSelect?: () => void;
   /** Disparado após copiar a mensagem padrão com sucesso. */
   onCopySuccess?: () => void;
+  /** Resolução da ação bloqueada (ex.: retorno agendado já concluído). */
+  resolutionLocked?: boolean;
+  /** Exibe seção "Retorno para confirmação" abaixo da ação. */
+  showReturnConfirmationSection?: boolean;
+  returnConfirmationResolution?: ActionResolution;
+  onSetReturnConfirmationResolution?: (resolution: ActionResolution) => void;
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({
@@ -481,6 +564,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
   expanded = true,
   onSelect,
   onCopySuccess,
+  resolutionLocked = false,
+  showReturnConfirmationSection = false,
+  returnConfirmationResolution,
+  onSetReturnConfirmationResolution,
 }) => {
   const handleCopyDefaultMessage = async (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -501,6 +588,24 @@ const ActionCard: React.FC<ActionCardProps> = ({
       : status === 'done'
         ? ' tratativa-action--done'
         : ' tratativa-action--active';
+
+  const showReturnNotice =
+    !readOnly &&
+    action.scheduleReturnConfirmation &&
+    action.returnConfirmationMinutes != null &&
+    (resolution === 'resolvido' || resolutionLocked);
+
+  const handleSelectResolution = (value: ActionResolution) => {
+    if (readOnly || resolutionLocked) return;
+    onSetResolution(value);
+  };
+
+  const handleSelectReturnConfirmation = (value: ActionResolution) => {
+    if (readOnly) return;
+    onSetReturnConfirmationResolution?.(value);
+  };
+
+  const resolutionDisabled = readOnly || resolutionLocked;
 
   if (!readOnly && !expanded) {
     return (
@@ -529,13 +634,12 @@ const ActionCard: React.FC<ActionCardProps> = ({
   return (
     <div
       className={`tratativa-action${
-        status === 'active' ? ' tratativa-action--active' : ' tratativa-action--done'
-      }${readOnly ? ' tratativa-action--readonly' : ''}${
-        selected ? ' tratativa-action--selected' : ''
-      }${focused ? ' tratativa-action--focused' : ''}`}
-      role={onSelect ? 'button' : undefined}
-      tabIndex={onSelect ? 0 : undefined}
-      onClick={onSelect}
+        status === 'active' || showReturnNotice || showReturnConfirmationSection
+          ? ' tratativa-action--active'
+          : ' tratativa-action--done'
+      }${showReturnNotice || showReturnConfirmationSection ? ' tratativa-action--return-notice' : ''}${readOnly ? ' tratativa-action--readonly' : ''}${
+        resolutionLocked ? ' tratativa-action--resolution-locked' : ''
+      }${selected ? ' tratativa-action--selected' : ''}${focused ? ' tratativa-action--focused' : ''}`}
     >
       <div className="tratativa-action__heading">
         <span className="tratativa-action__title">
@@ -566,37 +670,112 @@ const ActionCard: React.FC<ActionCardProps> = ({
         value={observation}
         onChange={(event) => onChangeObservation(event.target.value)}
         rows={3}
-        readOnly={readOnly}
-        disabled={readOnly}
+        readOnly={readOnly || resolutionLocked}
+        disabled={readOnly || resolutionLocked}
         onClick={(event) => event.stopPropagation()}
       />
       <div
         className="tratativa-action__resolution"
         role="radiogroup"
         aria-label={`Status da ação ${action.sequence}`}
-        onClick={(event) => event.stopPropagation()}
       >
-        <label className="tratativa-action__resolution-option policy-form-checkbox-option">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={resolution === 'resolvido'}
+          className="tratativa-action__resolution-option policy-form-checkbox-option"
+          disabled={resolutionDisabled}
+          onClick={() => handleSelectResolution('resolvido')}
+        >
           <input
             type="radio"
             name={`action-resolution-${action.id}`}
             checked={resolution === 'resolvido'}
-            onChange={readOnly ? undefined : () => onSetResolution('resolvido')}
-            disabled={readOnly}
+            readOnly
+            tabIndex={-1}
+            aria-hidden
+            disabled={resolutionDisabled}
           />
           <span>Resolvido</span>
-        </label>
-        <label className="tratativa-action__resolution-option policy-form-checkbox-option">
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={resolution === 'nao_resolvido'}
+          className="tratativa-action__resolution-option policy-form-checkbox-option"
+          disabled={resolutionDisabled}
+          onClick={() => handleSelectResolution('nao_resolvido')}
+        >
           <input
             type="radio"
             name={`action-resolution-${action.id}`}
             checked={resolution === 'nao_resolvido'}
-            onChange={readOnly ? undefined : () => onSetResolution('nao_resolvido')}
-            disabled={readOnly}
+            readOnly
+            tabIndex={-1}
+            aria-hidden
+            disabled={resolutionDisabled}
           />
           <span>Não resolvido</span>
-        </label>
+        </button>
       </div>
+      {!readOnly && showReturnNotice && (
+          <p className="tratativa-action__return-notice" role="note">
+            Esta ação exige retorno para confirmação em{' '}
+            <strong>{action.returnConfirmationMinutes} min</strong>.
+            <br />
+            Ao concluir como Resolvido, a ocorrência retornará à fila automaticamente.
+          </p>
+        )}
+      {showReturnConfirmationSection && (
+        <div className="tratativa-action__return-confirmation">
+          <p className="tratativa-action__return-confirmation-title">Retorno para confirmação</p>
+          <p className="tratativa-action__return-confirmation-subtitle">
+            Esta tratativa solicita um retorno ao contato para confirmação.
+          </p>
+          <div
+            className="tratativa-action__resolution"
+            role="radiogroup"
+            aria-label="Retorno para confirmação"
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={returnConfirmationResolution === 'resolvido'}
+              className="tratativa-action__resolution-option policy-form-checkbox-option"
+              disabled={readOnly}
+              onClick={() => handleSelectReturnConfirmation('resolvido')}
+            >
+              <input
+                type="radio"
+                name={`return-confirmation-${action.id}`}
+                checked={returnConfirmationResolution === 'resolvido'}
+                readOnly
+                tabIndex={-1}
+                aria-hidden
+              />
+              <span>Resolvido</span>
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={returnConfirmationResolution === 'nao_resolvido'}
+              className="tratativa-action__resolution-option policy-form-checkbox-option"
+              disabled={readOnly}
+              onClick={() => handleSelectReturnConfirmation('nao_resolvido')}
+            >
+              <input
+                type="radio"
+                name={`return-confirmation-${action.id}`}
+                checked={returnConfirmationResolution === 'nao_resolvido'}
+                readOnly
+                tabIndex={-1}
+                aria-hidden
+              />
+              <span>Não resolvido</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -728,6 +907,15 @@ const Chip: React.FC<{ label: string; tone?: 'default' | 'highlight' }> = ({
   </span>
 );
 
+const IconSendComment: React.FC = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path
+      d="M3 20L21 12L3 4V10L17 12L3 14V20Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> = ({
   open,
   data,
@@ -736,12 +924,21 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
   onConclude,
   mode = 'tratativa',
   history = [],
+  initialTab = 'tratativa',
+  onHistoryChange,
+  onAttachmentsChange,
+  auditEditable = true,
 }) => {
   const isAuditoria = mode === 'auditoria';
   const isReadOnly = mode === 'auditoria' || mode === 'visualizacao';
-  const [activeTab, setActiveTab] = useState<ActiveTab>('tratativa');
+  const canEditAudit = isAuditoria && auditEditable;
+  const canEditAnexos = canEditAudit;
+  const [activeTab, setActiveTab] = useState<ActiveTab>(initialTab);
   const [observations, setObservations] = useState<Record<string, string>>({});
   const [actionResolutions, setActionResolutions] = useState<
+    Record<string, ActionResolution>
+  >({});
+  const [returnConfirmationResolutions, setReturnConfirmationResolutions] = useState<
     Record<string, ActionResolution>
   >({});
   /** Índice da ação atual na trilha — só avança ao marcar "Não resolvido". */
@@ -774,8 +971,16 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     message: '',
     visible: false,
   });
+  const [commentToast, setCommentToast] = useState<{ message: string; visible: boolean }>({
+    message: '',
+    visible: false,
+  });
   const [sessionHistory, setSessionHistory] = useState<TratativaHistoryEntry[]>([]);
+  const [auditHistory, setAuditHistory] = useState<TratativaHistoryEntry[]>(history);
+  const [commentDraft, setCommentDraft] = useState('');
   const initialAttachmentsRef = useRef<TratativaAttachment[]>(data.attachments ?? []);
+  const auditAttachmentsRef = useRef<TratativaAttachment[]>(data.attachments ?? []);
+  const initialActionResolutionsRef = useRef<Record<string, ActionResolution>>({});
 
   const showCopyToast = useCallback(() => setCopyToastVisible(true), []);
   const dismissCopyToast = useCallback(() => setCopyToastVisible(false), []);
@@ -815,15 +1020,28 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     }
   }, [open]);
 
-  /** Reseta o estado ao reabrir/quando os dados mudam. */
+  /** Reseta o estado ao reabrir ou trocar de ocorrência. */
   useEffect(() => {
     if (!open) return;
-    setActiveTab('tratativa');
+    setActiveTab(initialTab);
     setObservations({});
     const auditResolutions: Record<string, ActionResolution> = isReadOnly
       ? (data.auditActionResolutions as Record<string, ActionResolution> | undefined) ?? {}
       : {};
-    setActionResolutions(isReadOnly ? auditResolutions : {});
+    const initialResolutions: Record<string, ActionResolution> = isReadOnly
+      ? auditResolutions
+      : {};
+    if (
+      !isReadOnly &&
+      data.awaitingReturnConfirmation &&
+      data.actions[0] &&
+      data.actions[0].scheduleReturnConfirmation
+    ) {
+      initialResolutions[data.actions[0].id] = 'resolvido';
+    }
+    setActionResolutions(initialResolutions);
+    setReturnConfirmationResolutions({});
+    initialActionResolutionsRef.current = initialResolutions;
     setSavedTreatmentMs(0);
     setElapsedMs(0);
     setFrontierIndex(
@@ -837,19 +1055,37 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     setExpandedVideo(null);
     setAttachments(data.attachments ?? []);
     setSessionHistory([]);
+    setAuditHistory(history);
+    setCommentDraft('');
     initialAttachmentsRef.current = data.attachments ?? [];
-  }, [open, data, isReadOnly]);
+    auditAttachmentsRef.current = data.attachments ?? [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset só ao abrir/trocar ocorrência
+  }, [open, data.occurrenceId, initialTab, isReadOnly]);
 
-  /** Concluir liberado se alguma ação for "Resolvido" ou se a última
-   *  ação da trilha for marcada como "Não resolvido" (fim da trilha). */
+  /** Concluir liberado conforme resoluções da trilha ou retorno para confirmação. */
   const canConcludeTreatment = useMemo(() => {
     if (data.actions.length === 0) return false;
+
+    const firstAction = data.actions[0];
+    const returnConf = firstAction ? returnConfirmationResolutions[firstAction.id] : undefined;
+
+    if (data.awaitingReturnConfirmation && firstAction) {
+      if (returnConf === 'resolvido') return true;
+      if (returnConf !== 'nao_resolvido') return false;
+      const restActions = data.actions.slice(1);
+      if (restActions.some((action) => actionResolutions[action.id] === 'resolvido')) {
+        return true;
+      }
+      const lastAction = data.actions[data.actions.length - 1];
+      return actionResolutions[lastAction.id] === 'nao_resolvido';
+    }
+
     if (data.actions.some((action) => actionResolutions[action.id] === 'resolvido')) {
       return true;
     }
     const lastAction = data.actions[data.actions.length - 1];
     return actionResolutions[lastAction.id] === 'nao_resolvido';
-  }, [data.actions, actionResolutions]);
+  }, [data.actions, data.awaitingReturnConfirmation, actionResolutions, returnConfirmationResolutions]);
 
   const treatmentTimeLabel =
     mode === 'auditoria'
@@ -874,18 +1110,108 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     [treatmentTimeLabel],
   );
 
+  const appendAuditHistoryEntry = useCallback(
+    (
+      description: string,
+      options?: { isComment?: boolean; createdAt?: Date },
+    ) => {
+      const createdAt = options?.createdAt ?? new Date();
+      const entry: TratativaHistoryEntry = {
+        id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        when: formatHistoryWhen(createdAt),
+        author: MOCK_CURRENT_ANALYST,
+        description: options?.isComment ? `Comentário: ${description}` : description,
+        treatmentDuration: treatmentTimeLabel,
+        createdAtIso: options?.isComment ? formatCreatedAtIso(createdAt) : undefined,
+        isComment: options?.isComment,
+      };
+
+      setAuditHistory((prev) => {
+        const next = [entry, ...prev];
+        onHistoryChange?.(next);
+        return next;
+      });
+    },
+    [onHistoryChange, treatmentTimeLabel],
+  );
+
+  const handleAuditAttachmentsChange = useCallback(
+    (nextAttachments: TratativaAttachment[]) => {
+      const description = buildAttachmentHistoryDescription(
+        auditAttachmentsRef.current,
+        nextAttachments,
+      );
+      if (description) {
+        appendAuditHistoryEntry(description);
+      }
+      auditAttachmentsRef.current = nextAttachments;
+      setAttachments(nextAttachments);
+      onAttachmentsChange?.(nextAttachments);
+    },
+    [appendAuditHistoryEntry, onAttachmentsChange],
+  );
+
+  const handleSubmitComment = () => {
+    const trimmed = commentDraft.trim();
+    if (!trimmed) return;
+    appendAuditHistoryEntry(trimmed, { isComment: true });
+    setCommentDraft('');
+    setCommentToast({ message: COMMENT_INSERTED_TOAST, visible: true });
+  };
+
+  const handleDeleteComment = (entryId: string) => {
+    setAuditHistory((prev) => {
+      const next = prev.filter((entry) => entry.id !== entryId);
+      onHistoryChange?.(next);
+      return next;
+    });
+    setCommentToast({ message: COMMENT_DELETED_TOAST, visible: true });
+  };
+
   const hasSessionChanges = useMemo(() => {
-    if (Object.keys(actionResolutions).length > 0) return true;
+    if (Object.keys(returnConfirmationResolutions).length > 0) return true;
+    const initialResolutions = initialActionResolutionsRef.current;
+    const resolutionsChanged =
+      Object.keys(actionResolutions).length !== Object.keys(initialResolutions).length ||
+      Object.entries(actionResolutions).some(
+        ([actionId, resolution]) => initialResolutions[actionId] !== resolution,
+      );
+    if (resolutionsChanged) return true;
     if (Object.values(observations).some((value) => value.trim().length > 0)) return true;
     const initial = initialAttachmentsRef.current;
     if (attachments.length !== initial.length) return true;
     return attachments.some((attachment, index) => attachment.id !== initial[index]?.id);
-  }, [actionResolutions, observations, attachments]);
+  }, [actionResolutions, returnConfirmationResolutions, observations, attachments]);
 
   const historyEntries = useMemo(() => {
-    if (isAuditoria) return history;
+    if (isAuditoria) return auditHistory;
     return sessionHistory;
-  }, [isAuditoria, history, sessionHistory]);
+  }, [auditHistory, isAuditoria, sessionHistory]);
+
+  const occurrencePointsLabel = useMemo(() => {
+    if (data.occurrencePoints == null || data.occurrencePoints <= 0) return null;
+    return `${data.occurrencePoints} ${data.occurrencePoints === 1 ? 'ponto' : 'pontos'}`;
+  }, [data.occurrencePoints]);
+
+  const handleSetReturnConfirmationResolution = (
+    actionId: string,
+    resolution: ActionResolution,
+  ) => {
+    if (isReadOnly) return;
+
+    setReturnConfirmationResolutions((prev) => ({ ...prev, [actionId]: resolution }));
+
+    if (resolution !== 'nao_resolvido') return;
+
+    const currentIdx = data.actions.findIndex((action) => action.id === actionId);
+    if (currentIdx === -1 || currentIdx >= data.actions.length - 1) return;
+
+    const nextFrontier = currentIdx + 1;
+    setFrontierIndex(nextFrontier);
+    const nextActionId = data.actions[nextFrontier].id;
+    setSelectedActionId(nextActionId);
+    setExpandedActionId(nextActionId);
+  };
 
   const handleSetResolution = (actionId: string, resolution: ActionResolution) => {
     const currentIdx = data.actions.findIndex((a) => a.id === actionId);
@@ -894,6 +1220,14 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     if (isReadOnly) {
       setActionResolutions((prev) => ({ ...prev, [actionId]: resolution }));
       setSelectedActionId(actionId);
+      return;
+    }
+
+    if (
+      data.awaitingReturnConfirmation &&
+      currentIdx === 0 &&
+      actionResolutions[actionId] === 'resolvido'
+    ) {
       return;
     }
 
@@ -919,8 +1253,14 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     setFrontierIndex(nextFrontier);
     const nextSelectedId = findWorkflowActionId(data.actions, nextFrontier, nextResolutions);
     setSelectedActionId(nextSelectedId);
+    const resolvedAction = data.actions[currentIdx];
     if (resolution === 'nao_resolvido') {
       setExpandedActionId(nextSelectedId);
+    } else if (
+      resolvedAction?.scheduleReturnConfirmation &&
+      resolvedAction.returnConfirmationMinutes != null
+    ) {
+      setExpandedActionId(actionId);
     } else {
       setExpandedActionId('');
     }
@@ -1020,6 +1360,9 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
             <span className={`tratativa-card__dot ${dotClass}`} aria-hidden />
             <span>
               {data.eventsCount} {data.eventsCount === 1 ? 'evento' : 'eventos'}
+              {occurrencePointsLabel ? (
+                <span className="tratativa-card__points"> ({occurrencePointsLabel})</span>
+              ) : null}
             </span>
           </div>
         </div>
@@ -1142,6 +1485,23 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                     /** Cards selecionáveis: na auditoria todas; em
                      *  tratativa apenas até a fronteira da trilha. */
                     const canSelect = isReadOnly || index <= frontierIndex;
+                    const returnConfirmationResolution =
+                      returnConfirmationResolutions[action.id];
+                    const resolutionLocked =
+                      !isReadOnly &&
+                      Boolean(data.awaitingReturnConfirmation) &&
+                      index === 0 &&
+                      resolution === 'resolvido';
+                    const showReturnConfirmationSection =
+                      !isReadOnly &&
+                      Boolean(data.awaitingReturnConfirmation) &&
+                      index === 0 &&
+                      Boolean(action.scheduleReturnConfirmation) &&
+                      returnConfirmationResolution !== 'nao_resolvido';
+                    const keepExpandedForReturn =
+                      showReturnConfirmationSection ||
+                      (resolution === 'resolvido' &&
+                        Boolean(action.scheduleReturnConfirmation));
                     return (
                       <ActionCard
                         key={action.id}
@@ -1154,9 +1514,19 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                         resolution={resolution}
                         onSetResolution={(value) => handleSetResolution(action.id, value)}
                         readOnly={isReadOnly}
+                        resolutionLocked={resolutionLocked}
+                        showReturnConfirmationSection={showReturnConfirmationSection}
+                        returnConfirmationResolution={returnConfirmationResolution}
+                        onSetReturnConfirmationResolution={(value) =>
+                          handleSetReturnConfirmationResolution(action.id, value)
+                        }
                         selected={selectedActionId === action.id && !resolution}
                         focused={selectedActionId === action.id}
-                        expanded={isAuditoria || expandedActionId === action.id}
+                        expanded={
+                          isAuditoria ||
+                          expandedActionId === action.id ||
+                          keepExpandedForReturn
+                        }
                         onSelect={
                           canSelect
                             ? () => {
@@ -1366,8 +1736,8 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           <div className="tratativa-body tratativa-anexos-tab">
             <TratativaAnexosPanel
               attachments={attachments}
-              onChange={setAttachments}
-              readOnly={isReadOnly}
+              onChange={canEditAnexos ? handleAuditAttachmentsChange : setAttachments}
+              readOnly={!canEditAnexos}
               onValidationError={(message) => setAnexoToast({ message, visible: true })}
             />
           </div>
@@ -1386,9 +1756,9 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           <div
             className={`tratativa-body tratativa-historico${
               historyEntries.length === 0 ? ' tratativa-historico--empty' : ''
-            }`}
+            }${canEditAudit ? ' tratativa-historico--with-composer' : ''}`}
           >
-            {historyEntries.length === 0 ? (
+            {historyEntries.length === 0 && !isAuditoria ? (
               <div className="history-empty-state">
                 <div className="history-empty-state__image-wrap">
                   <img
@@ -1399,13 +1769,18 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 </div>
                 <p className="history-empty-state__message">Nenhum histórico registrado.</p>
               </div>
+            ) : historyEntries.length === 0 && canEditAudit ? (
+              <div className="tratativa-historico__scroll tratativa-historico__scroll--empty">
+                <p className="tratativa-historico__empty-message">Nenhum histórico registrado.</p>
+              </div>
             ) : (
-              <>
+              <div className="tratativa-historico__scroll">
                 <div className="tratativa-historico-head" aria-hidden>
                   <span>Data/hora</span>
                   <span>Analista</span>
                   <span>Alteração</span>
                   <span>Tempo de tratativa</span>
+                  {canEditAudit ? <span aria-hidden /> : null}
                 </div>
                 <ul className="tratativa-historico-list">
                   {historyEntries.map((entry) => (
@@ -1418,10 +1793,75 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                       <span className="tratativa-historico-row__duration">
                         {entry.treatmentDuration ?? '—'}
                       </span>
+                      {canEditAudit ? (
+                        <span className="tratativa-historico-row__actions">
+                          {canDeleteHistoryComment(entry) ? (
+                            <LevelTooltip text="Excluir" topLayer nowrap>
+                              <button
+                                type="button"
+                                className="btn btn-icon-action tratativa-historico-row__delete"
+                                aria-label="Excluir comentário"
+                                onClick={() => handleDeleteComment(entry.id)}
+                              >
+                                <IconTrash />
+                              </button>
+                            </LevelTooltip>
+                          ) : isExpiredOwnHistoryComment(entry) ? (
+                            <LevelTooltip text={COMMENT_DELETE_EXPIRED_TOOLTIP} topLayer>
+                              <span className="tratativa-historico-row__delete-wrap">
+                                <button
+                                  type="button"
+                                  className="btn btn-icon-action tratativa-historico-row__delete tratativa-historico-row__delete--disabled"
+                                  aria-label="Exclusão indisponível"
+                                  disabled
+                                >
+                                  <IconTrash />
+                                </button>
+                              </span>
+                            </LevelTooltip>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
-              </>
+              </div>
+            )}
+
+            {canEditAudit && (
+              <div className="tratativa-historico-composer">
+                <div className="tratativa-historico-composer__field">
+                  <input
+                    type="text"
+                    className="tratativa-historico-composer__input"
+                    value={commentDraft}
+                    onChange={(event) =>
+                      setCommentDraft(event.target.value.slice(0, HISTORY_COMMENT_MAX_LENGTH))
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleSubmitComment();
+                      }
+                    }}
+                    placeholder="Escreva seu comentário"
+                    aria-label="Escreva seu comentário"
+                    maxLength={HISTORY_COMMENT_MAX_LENGTH}
+                  />
+                  <span className="tratativa-historico-composer__counter" aria-live="polite">
+                    {commentDraft.length} / {HISTORY_COMMENT_MAX_LENGTH} caracteres
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="tratativa-historico-composer__send"
+                  aria-label="Enviar comentário"
+                  disabled={commentDraft.trim().length === 0}
+                  onClick={handleSubmitComment}
+                >
+                  <IconSendComment />
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -1460,6 +1900,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
       onClose={() => setAnexoToast((prev) => ({ ...prev, visible: false }))}
       duration={4000}
       variant="warning"
+    />
+    <SuccessToast
+      message={commentToast.message}
+      visible={commentToast.visible}
+      onClose={() => setCommentToast((prev) => ({ ...prev, visible: false }))}
+      duration={4000}
     />
     </SystemFullscreenPortal>
   );

@@ -551,8 +551,12 @@ export const OperacoesCentralPage: React.FC = () => {
   };
 
   const tratativaData = useMemo(
-    () => getTratativaOcorrenciaForOccurrence(tratativaOccurrenceId),
-    [tratativaOccurrenceId],
+    () => ({
+      ...getTratativaOcorrenciaForOccurrence(tratativaOccurrenceId),
+      treatmentDurationLabel:
+        treatmentDurationByOccurrence[tratativaOccurrenceId] ?? '0:00',
+    }),
+    [tratativaOccurrenceId, treatmentDurationByOccurrence],
   );
 
   const allOccurrences = useMemo(() => buildCentralOccurrenceList(), []);
@@ -779,11 +783,7 @@ export const OperacoesCentralPage: React.FC = () => {
       <TratativaOcorrenciaModal
         open={tratativaModalOpen}
         mode={tratativaViewOnly ? 'visualizacao' : 'tratativa'}
-        data={{
-          ...tratativaData,
-          treatmentDurationLabel:
-            treatmentDurationByOccurrence[tratativaData.occurrenceId] ?? '0:00',
-        }}
+        data={tratativaData}
         onClose={closeTratativaModal}
         onReturn={(saved) => {
           if (saved) setSavedChangesToastVisible(true);

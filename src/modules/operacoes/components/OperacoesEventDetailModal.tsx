@@ -105,27 +105,15 @@ export const OperacoesEventDetailModal: React.FC<OperacoesEventDetailModalProps>
   const detail = useMemo(() => buildOperacoesEventDetail(event), [event]);
   const title = `${event.eventType} no veículo ${event.placa}`;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onClose();
-  };
-
   return (
     <CrModal
       open
       title={title}
       onClose={onClose}
-      onCancel={onClose}
       fullScreen
-      formId="operacoes-event-detail-form"
-      primaryLabel="Salvar"
-      cancelLabel="Cancelar"
+      hideFooter
     >
-      <form
-        id="operacoes-event-detail-form"
-        className="operacoes-event-detail-form"
-        onSubmit={handleSubmit}
-      >
+      <div className="operacoes-event-detail-form">
         <div className="operacoes-event-detail-tabs risk-tabs" role="tablist">
           {TABS.map((tab) => (
             <button
@@ -281,7 +269,7 @@ export const OperacoesEventDetailModal: React.FC<OperacoesEventDetailModalProps>
             })()}
           </div>
         )}
-      </form>
+      </div>
     </CrModal>
   );
 };

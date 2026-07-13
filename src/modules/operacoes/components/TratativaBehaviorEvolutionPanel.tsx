@@ -115,6 +115,11 @@ const BehaviorChartTooltip: React.FC<{
         <hr className="tratativa-behavior-tooltip__divider" />
         <p className="tratativa-behavior-tooltip__line">Início da tratativa às {t.startedAt}</p>
         <p className="tratativa-behavior-tooltip__line">Conclusão da tratativa às {t.endedAt}</p>
+        {t.scheduledReturnMinutes != null && (
+          <p className="tratativa-behavior-tooltip__line">
+            Retorno agendado após <strong>{t.scheduledReturnMinutes} min</strong>
+          </p>
+        )}
       </div>,
       document.body,
     );
