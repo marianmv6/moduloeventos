@@ -1,6 +1,7 @@
 import type { TratativaOcorrenciaData } from '../types/tratativaOcorrencia.types';
 import { buildTratativaOcorrenciaFromCentral } from '../utils/centralOccurrenceBridge';
 import { getBehaviorEvolutionForOccurrence } from './tratativaBehaviorEvolution.mock';
+import { mockTratativaStreaming } from './tratativaStreaming.mock';
 import { mockTratativaAnexosAuditoria } from './tratativaAnexos.mock';
 import { MOCK_TRATATIVA_CONTACT_SCHEDULES } from './tratativaContactSchedules';
 
@@ -170,6 +171,7 @@ export const mockTratativaOcorrencia: TratativaOcorrenciaData = {
       location: 'Canoas / RS',
     },
   ],
+  streaming: mockTratativaStreaming,
   behaviorEvolution: getBehaviorEvolutionForOccurrence('occ-1'),
   attachments: mockTratativaAnexosAuditoria.slice(0, 1),
   treatmentHistory: [

@@ -1,15 +1,25 @@
-import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
+import type { MonitorRiscoFilters, MonitorRiscoListagemItem } from '../types/monitorRisco.types';
 import {
-  MONITOR_COMPORTAMENTO_OPTIONS,
   MONITOR_NIVEL_RISCO_OPTIONS,
+  MONITOR_TEMPO_ATIVO_OPTIONS,
 } from '../constants/monitorRiscoFilterOptions';
-import { getMonitorPoliticaOptions } from './monitorRiscoPolicy';
+import {
+  formatMonitoringFilterDisplayValue,
+} from './centralOccurrenceDisplay';
+import {
+  getMonitorMonitoramentoDeOptions,
+  getMonitorPoliticaOptions,
+} from './monitorRiscoPolicy';
+import { encodeMonitoringFilterValue } from './centralOccurrenceDisplay';
 
 export interface MonitorFilterBannerEntry {
   key: string;
   paramLabel: string;
   value: string;
 }
+
+/** Referência fixa para filtrar o mock da listagem por tempo ativo. */
+const MONITOR_RISCO_REFERENCE_NOW_ISO = '2026-07-07T15:00:00-03:00';
 
 function labelFromOptions(value: string, options: { value: string; label: string }[]): string {
   if (!value) return '';
@@ -21,14 +31,16 @@ function labelFromOptions(value: string, options: { value: string; label: string
     .join(', ');
 }
 
-function formatPeriod(filters: MonitorRiscoFilters): string {
-  const { periodoInicio, periodoFim, periodoHoraInicio, periodoHoraFim } = filters;
-  if (!periodoInicio && !periodoFim) return '';
-  const start = periodoInicio || '…';
-  const end = periodoFim || '…';
-  const startTime = periodoHoraInicio || 'hh:mm';
-  const endTime = periodoHoraFim || 'hh:mm';
-  return `${start} - ${end} (${startTime} - ${endTime})`;
+function parseTempoAtivoMinutes(value: string): number | null {
+  const match = value.match(/^(\d+)(min|h)$/);
+  if (!match) return null;
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  return match[2] === 'h' ? amount * 60 : amount;
+}
+
+function getMonitorRiscoReferenceNow(): number {
+  return new Date(MONITOR_RISCO_REFERENCE_NOW_ISO).getTime();
 }
 
 export function countAppliedMonitorRiscoFilters(filters: MonitorRiscoFilters): number {
@@ -54,38 +66,49 @@ export function getAppliedMonitorRiscoFilterEntries(
       value: labelFromOptions(filters.niveisRisco, MONITOR_NIVEL_RISCO_OPTIONS),
     });
   }
-  if (filters.tiposComportamento) {
+  if (filters.monitoramentoDe) {
     entries.push({
-      key: 'comportamento',
-      paramLabel: 'Comportamento',
-      value: labelFromOptions(filters.tiposComportamento, MONITOR_COMPORTAMENTO_OPTIONS),
+      key: 'monitoramento',
+      paramLabel: 'Monitoramento de',
+      value: formatMonitoringFilterDisplayValue(filters.monitoramentoDe),
     });
   }
-  const period = formatPeriod(filters);
-  if (period) {
-    entries.push({ key: 'periodo', paramLabel: 'Período', value: period });
+  if (filters.tempoAtivo) {
+    entries.push({
+      key: 'tempoAtivo',
+      paramLabel: 'Período',
+      value: labelFromOptions(filters.tempoAtivo, MONITOR_TEMPO_ATIVO_OPTIONS),
+    });
   }
 
   return entries;
 }
 
-export function applyMonitorRiscoFilters<T extends { level?: string; behaviorType?: string }>(
-  items: T[],
+export function applyMonitorRiscoFilters(
+  items: MonitorRiscoListagemItem[],
   filters: MonitorRiscoFilters,
-): T[] {
+): MonitorRiscoListagemItem[] {
   const levels = filters.niveisRisco
     .split(',')
     .map((v) => v.trim())
     .filter(Boolean);
-  const behaviors = filters.tiposComportamento
-    .split(',')
-    .map((v) => v.trim())
-    .filter(Boolean);
+
+  const tempoAtivoMinutes = filters.tempoAtivo ? parseTempoAtivoMinutes(filters.tempoAtivo) : null;
+  const referenceNow = getMonitorRiscoReferenceNow();
+  const tempoAtivoCutoff =
+    tempoAtivoMinutes != null
+      ? referenceNow - tempoAtivoMinutes * 60 * 1000
+      : null;
 
   return items.filter((item) => {
-    if (levels.length && item.level && !levels.includes(item.level)) return false;
-    if (behaviors.length && item.behaviorType && !behaviors.includes(item.behaviorType)) {
-      return false;
+    if (levels.length && !levels.includes(item.level)) return false;
+    if (filters.monitoramentoDe) {
+      const monitoringValue = encodeMonitoringFilterValue(item.trackingType, item.monitoringOf);
+      if (monitoringValue !== filters.monitoramentoDe) return false;
+    }
+    if (tempoAtivoCutoff != null) {
+      const eventTime = new Date(item.lastEventAtIso).getTime();
+      if (eventTime < tempoAtivoCutoff || eventTime > referenceNow) return false;
     }
     return true;
   });

@@ -3,12 +3,30 @@ import type { MonitorRiscoFilters } from '../types/monitorRisco.types';
 export const EMPTY_MONITOR_RISCO_FILTERS: MonitorRiscoFilters = {
   politicaId: '',
   niveisRisco: '',
-  tiposComportamento: '',
+  monitoramentoDe: '',
+  tempoAtivo: '',
   periodoInicio: '',
   periodoFim: '',
   periodoHoraInicio: '',
   periodoHoraFim: '',
 };
+
+export const MONITOR_TEMPO_ATIVO_OPTIONS = [
+  { value: '15min', label: 'Há 15 min' },
+  { value: '30min', label: 'Há 30 min' },
+  { value: '1h', label: 'Há 1 h' },
+  { value: '2h', label: 'Há 2 h' },
+  { value: '3h', label: 'Há 3 h' },
+  { value: '4h', label: 'Há 4 h' },
+  { value: '5h', label: 'Há 5 h' },
+  { value: '6h', label: 'Há 6 h' },
+  { value: '7h', label: 'Há 7 h' },
+  { value: '8h', label: 'Há 8 h' },
+  { value: '9h', label: 'Há 9 h' },
+  { value: '10h', label: 'Há 10 h' },
+  { value: '11h', label: 'Há 11 h' },
+  { value: '12h', label: 'Há 12 h' },
+];
 
 export const MONITOR_NIVEL_RISCO_OPTIONS = [
   { value: 'baixo', label: 'Baixo', pillClassName: 'monitor-risco-pill--baixo' },

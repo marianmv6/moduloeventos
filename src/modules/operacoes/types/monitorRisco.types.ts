@@ -13,7 +13,9 @@ export type MonitorRankingKind = 'motorista' | 'veiculo';
 export interface MonitorRiscoFilters {
   politicaId: string;
   niveisRisco: string;
-  tiposComportamento: string;
+  monitoramentoDe: string;
+  /** Janela de tempo ativo (ex.: 15min, 1h). */
+  tempoAtivo: string;
   periodoInicio: string;
   periodoFim: string;
   periodoHoraInicio: string;
@@ -30,7 +32,19 @@ export interface MonitorRiscoDonutSegment {
   color: string;
 }
 
-export interface MonitorRiscoPoliticaDistribuicaoItem extends MonitorRiscoDonutSegment {}
+export interface MonitorRiscoPoliticaDistribuicaoItem extends MonitorRiscoDonutSegment {
+  policyId: string;
+}
+
+export interface MonitorRiscoPolicyInsights {
+  nivelRisco: MonitorRiscoNivelRisco;
+  eventosPorTempo: MonitorRiscoEventosTempoItem[];
+  tipoEventos: MonitorRiscoDonutInsight;
+  ocorrenciasPendentes: MonitorRiscoDonutInsight;
+  rankingMotorista: MonitorRiscoRankingItem[];
+  rankingVeiculo: MonitorRiscoRankingItem[];
+  reincidentes: MonitorRiscoReincidenteItem[];
+}
 
 export interface MonitorRiscoNivelRisco {
   percent: number;
@@ -46,6 +60,7 @@ export interface MonitorRiscoEventosTempoItem {
   count: number;
   kind: 'historico' | 'previsao';
   alertOutline?: boolean;
+  trendDelta?: number;
 }
 
 export interface MonitorRiscoDonutInsight {

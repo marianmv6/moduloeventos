@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
 import { LevelTooltip } from '../../risk-rules/components/shared/LevelTooltip';
+import { TruncatedTextTooltip } from '../../risk-rules/components/shared/TruncatedTextTooltip';
+import { InfoTooltip } from '../../risk-rules/components/shared/InfoTooltip';
 import { IconView } from '../../risk-rules/components/shared/Icons';
 import { IconFilterBars } from '../components/IconFilterBars';
 import { IconIrisInsights } from '../components/IconIrisInsights';
@@ -16,22 +17,19 @@ import { OperacoesDateTimeCell } from '../components/OperacoesDateTimeCell';
 import { mockMonitorRiscoData } from '../mocks/monitorRisco.mock';
 import type {
   MonitorRankingKind,
-  MonitorRiscoData,
-  MonitorRiscoDistribuicaoItem,
-  MonitorRiscoFeedItem,
-  MonitorRiscoLevel,
+  MonitorRiscoDonutInsight,
+  MonitorRiscoDonutSegment,
+  MonitorRiscoEventosTempoItem,
   MonitorRiscoListagemItem,
-  MonitorRiscoPoliticaImpactItem,
-  MonitorRiscoProjecao,
-  MonitorRiscoScoreGeral,
+  MonitorRiscoNivelRisco,
+  MonitorRiscoPoliticaDistribuicaoItem,
+  MonitorRiscoRankingItem,
+  MonitorRiscoReincidenteItem,
   MonitorRiscoTabId,
-  MonitorRiscoTendenciaPoint,
 } from '../types/monitorRisco.types';
 import {
   EMPTY_MONITOR_RISCO_FILTERS,
-  MONITOR_RISCO_DISTRIBUTION_LABELS,
   MONITOR_RISCO_FEED_LEVEL_LABELS,
-  MONITOR_RISCO_LEVEL_COLORS,
   MONITOR_RISCO_STATUS_BADGE_CLASS,
   MONITOR_RISCO_STATUS_LABELS,
 } from '../constants/monitorRiscoFilterOptions';
@@ -42,164 +40,25 @@ import {
 } from '../utils/monitorRiscoFilterSummary';
 import {
   applyPolicyScope,
+  getMonitorPoliticaOptions,
   getPolicyById,
   getPolicyRankingKind,
 } from '../utils/monitorRiscoPolicy';
-import { resolveSeverityFromAccumulatedPoints } from '../utils/accumulatedPointsSeverity';
 
-const SCORE_SCALE_MARKERS = [0, 50, 80, 100] as const;
+const DONUT_SIZE = 140;
+const DONUT_STROKE = 20;
+const DONUT_SEGMENT_GAP = 3;
 
-const POLITICA_BAR_COLORS = ['#169EFF', '#F2994A'] as const;
-
-function resolveRiskLevelFromPercent(percent: number): MonitorRiscoLevel {
-  if (percent >= 80) return 'alto';
-  if (percent >= 50) return 'medio';
-  return 'baixo';
+function formatPercent(value: number): string {
+  return value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
-function IconMonitorAlert() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M8 2.5L14 13.5H2L8 2.5Z"
-        stroke="#F2994A"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M8 6.5V9" stroke="#F2994A" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="8" cy="11.25" r="0.75" fill="#F2994A" />
-    </svg>
-  );
-}
-
-function ScoreGeralOverview({ scoreGeral }: { scoreGeral: MonitorRiscoScoreGeral }) {
-  const scorePercent = Math.round((scoreGeral.value / scoreGeral.maxScore) * 100);
-  const unfilledPercent = 100 - scorePercent;
-
-  return (
-    <div className="monitor-risco-score-overview">
-      <div className="monitor-risco-score-overview__header">
-        <h2 className="monitor-risco-score-overview__title">Score geral da operação</h2>
-        <p className="monitor-risco-score-overview__risk-line">
-          <span className="monitor-risco-score-overview__percent">{scorePercent}%</span>
-          <span className="monitor-risco-score-overview__risk-text">nível de risco atual</span>
-        </p>
-        <div className="monitor-risco-score-overview__meta">
-          <span className="monitor-risco-score-overview__points-generated">
-            {scoreGeral.value} pontos até o momento
-          </span>
-          <p className="monitor-risco-score__subtitle">{scoreGeral.subtitle}</p>
-        </div>
-      </div>
-      <div className="monitor-risco-score-overview__meter-block">
-        <div className="monitor-risco-score-overview__meter" aria-hidden>
-          <div className="monitor-risco-score-overview__meter-gradient" />
-          <div
-            className="monitor-risco-score-overview__meter-unfilled"
-            style={{ width: `${unfilledPercent}%` }}
-          />
-        </div>
-        <div className="monitor-risco-score-overview__scale" aria-hidden>
-          {SCORE_SCALE_MARKERS.map((marker) => (
-            <span
-              key={marker}
-              className="monitor-risco-score-overview__scale-mark"
-              style={{ left: `${marker}%` }}
-            >
-              {marker}%
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DistribuicaoNivelCard({ items }: { items: MonitorRiscoDistribuicaoItem[] }) {
-  return (
-    <section className="monitor-risco-card monitor-risco-card--distribution">
-      <div className="monitor-risco-card__header">
-        <h2 className="monitor-risco-card__title">Distribuição por nível de risco</h2>
-        <p className="monitor-risco-card__desc">Volume e priorização macro da operação</p>
-      </div>
-      <DonutChart items={items} />
-    </section>
-  );
-}
-
-function TendenciaCombinadaSection({
-  projecao,
-  points,
-}: {
-  projecao: MonitorRiscoProjecao;
-  points: MonitorRiscoTendenciaPoint[];
-}) {
-  const projectedLevel = resolveRiskLevelFromPercent(projecao.projectedPercent);
-
-  return (
-    <section className="monitor-risco-card monitor-risco-card--trend">
-      <div className="monitor-risco-trend-combined">
-        <div className="monitor-risco-card__header">
-          <h2 className="monitor-risco-card__title">Tendência de risco</h2>
-          <p className="monitor-risco-card__desc">
-            Projeção para as próximas 2 h e evolução da operação no período
-          </p>
-        </div>
-        <div className="monitor-risco-trend-combined__summary">
-          <div className="monitor-risco-trend-combined__projecao">
-            <p className="monitor-risco-projecao__value">
-              <strong
-                className={`monitor-risco-projecao__percent monitor-risco-projecao__percent--${projectedLevel}`}
-              >
-                {projecao.projectedPercent}%
-              </strong>{' '}
-              {projecao.projectedLabel}
-            </p>
-            <div className="monitor-risco-projecao__alert" role="note">
-              <IconMonitorAlert />
-              <p className="monitor-risco-projecao__alert-text">
-                Atenção: O ritmo atual indica um aumento de{' '}
-                <strong>+{projecao.alertIncreasePercent}%</strong> no risco nas próximas 2 horas.
-              </p>
-            </div>
-          </div>
-        </div>
-        <TendenciaChart points={points} />
-      </div>
-    </section>
-  );
-}
-
-function PoliticasImpactCard({ items }: { items: MonitorRiscoPoliticaImpactItem[] }) {
-  return (
-    <section className="monitor-risco-card monitor-risco-card--politicas">
-      <div className="monitor-risco-card__header">
-        <h2 className="monitor-risco-card__title">Distribuição por políticas</h2>
-        <p className="monitor-risco-card__desc">Impacto no risco total</p>
-      </div>
-      <ul className="monitor-risco-politicas-impact">
-        {items.map((item, index) => (
-          <li key={item.id} className="monitor-risco-politicas-impact__item">
-            <div className="monitor-risco-politicas-impact__row">
-              <span className="monitor-risco-politicas-impact__label">{item.label}</span>
-              <span className="monitor-risco-politicas-impact__percent">{item.percent}%</span>
-            </div>
-            <div className="monitor-risco-politicas-impact__bar" aria-hidden>
-              <div
-                className="monitor-risco-politicas-impact__bar-fill"
-                style={{
-                  width: `${item.percent}%`,
-                  backgroundColor: POLITICA_BAR_COLORS[index % POLITICA_BAR_COLORS.length],
-                }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
+const RISK_LEVEL_WORDS: Record<string, string> = {
+  baixo: 'baixo',
+  medio: 'médio',
+  alto: 'alto',
+  critico: 'crítico',
+};
 
 function IconMoreMenu({ selected = false }: { selected?: boolean }) {
   return (
@@ -215,208 +74,453 @@ function IconMoreMenu({ selected = false }: { selected?: boolean }) {
   );
 }
 
+function IconRankingFlagged() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden
+      className="monitor-risco-ranking__flag"
+    >
+      <path
+        d="M7.27273 9.45455V2.90909H8.72727V9.45455H7.27273ZM7.27273 13.0909V11.6364H8.72727V13.0909H7.27273ZM3.63636 16H1.45455C1.05455 16 0.712121 15.8576 0.427273 15.5727C0.142424 15.2879 0 14.9455 0 14.5455V12.3636H1.45455V14.5455H3.63636V16ZM12.3636 16V14.5455H14.5455V12.3636H16V14.5455C16 14.9455 15.8576 15.2879 15.5727 15.5727C15.2879 15.8576 14.9455 16 14.5455 16H12.3636ZM0 3.63636V1.45455C0 1.05455 0.142424 0.712121 0.427273 0.427273C0.712121 0.142424 1.05455 0 1.45455 0H3.63636V1.45455H1.45455V3.63636H0ZM14.5455 3.63636V1.45455H12.3636V0H14.5455C14.9455 0 15.2879 0.142424 15.5727 0.427273C15.8576 0.712121 16 1.05455 16 1.45455V3.63636H14.5455Z"
+        fill="#FF5454"
+      />
+    </svg>
+  );
+}
 
-function DonutChart({ items }: { items: MonitorRiscoDistribuicaoItem[] }) {
-  const total = items.reduce((sum, item) => sum + item.count, 0);
-  const size = 140;
-  const stroke = 20;
-  const radius = (size - stroke) / 2;
+function DonutChartVisual({
+  segments,
+  centerPrimary,
+  centerSecondary,
+  ariaLabel,
+  selectedSegmentId = null,
+  onSegmentSelect,
+}: {
+  segments: MonitorRiscoDonutSegment[];
+  centerPrimary: string;
+  centerSecondary: string;
+  ariaLabel: string;
+  selectedSegmentId?: string | null;
+  onSegmentSelect?: (segment: MonitorRiscoDonutSegment) => void;
+}) {
+  const total = segments.reduce((sum, item) => sum + item.count, 0);
+  const radius = (DONUT_SIZE - DONUT_STROKE) / 2;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
+  const hasSelection = Boolean(selectedSegmentId);
 
   return (
-    <div className="monitor-risco-distribution-layout">
-      <div className="monitor-risco-donut-wrap">
-        <svg
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
-          className="monitor-risco-donut"
-          role="img"
-          aria-label="Distribuição por nível de risco"
-        >
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="#ECECEF"
-            strokeWidth={stroke}
-          />
-          {items.map((item) => {
-            const segment = total > 0 ? (item.count / total) * circumference : 0;
-            const dashArray = `${segment} ${circumference - segment}`;
-            const dashOffset = -offset;
-            offset += segment;
-            return (
-              <circle
-                key={item.level}
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="none"
-                stroke={MONITOR_RISCO_LEVEL_COLORS[item.level]}
-                strokeWidth={stroke}
-                strokeDasharray={dashArray}
-                strokeDashoffset={dashOffset}
-                transform={`rotate(-90 ${size / 2} ${size / 2})`}
-              />
-            );
-          })}
-        </svg>
-        <div className="monitor-risco-donut__center">
-          <strong>{total}</strong>
-          <span>ocorrências</span>
-        </div>
-      </div>
-      <ul className="monitor-risco-legend">
-        {items.map((item) => (
-          <li key={item.level} className="monitor-risco-legend__item">
-            <span
-              className="monitor-risco-legend__swatch"
-              style={{ backgroundColor: MONITOR_RISCO_LEVEL_COLORS[item.level] }}
+    <div className="monitor-risco-donut-wrap">
+      <svg
+        width={DONUT_SIZE}
+        height={DONUT_SIZE}
+        viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
+        className="monitor-risco-donut"
+        role="img"
+        aria-label={ariaLabel}
+      >
+        <circle
+          cx={DONUT_SIZE / 2}
+          cy={DONUT_SIZE / 2}
+          r={radius}
+          fill="none"
+          stroke="#F6FBFB"
+          strokeWidth={DONUT_STROKE}
+        />
+        {segments.map((item) => {
+          const segment =
+            total > 0 ? (item.count / total) * circumference - DONUT_SEGMENT_GAP : 0;
+          const dashArray = `${Math.max(0, segment)} ${circumference - Math.max(0, segment)}`;
+          const dashOffset = -(offset + DONUT_SEGMENT_GAP / 2);
+          offset += total > 0 ? (item.count / total) * circumference : 0;
+          const isSelected = selectedSegmentId === item.id;
+          const isDimmed = hasSelection && !isSelected;
+
+          return (
+            <circle
+              key={item.id}
+              cx={DONUT_SIZE / 2}
+              cy={DONUT_SIZE / 2}
+              r={radius}
+              fill="none"
+              stroke={item.color}
+              strokeWidth={isSelected ? DONUT_STROKE + 4 : DONUT_STROKE}
+              strokeDasharray={dashArray}
+              strokeDashoffset={dashOffset}
+              transform={`rotate(-90 ${DONUT_SIZE / 2} ${DONUT_SIZE / 2})`}
+              className={`monitor-risco-donut__segment${
+                isSelected ? ' monitor-risco-donut__segment--selected' : ''
+              }${isDimmed ? ' monitor-risco-donut__segment--dimmed' : ''}`}
+              style={{ cursor: onSegmentSelect ? 'pointer' : undefined }}
+              onClick={onSegmentSelect ? () => onSegmentSelect(item) : undefined}
+              onKeyDown={
+                onSegmentSelect
+                  ? (event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onSegmentSelect(item);
+                      }
+                    }
+                  : undefined
+              }
+              role={onSegmentSelect ? 'button' : undefined}
+              tabIndex={onSegmentSelect ? 0 : undefined}
+              aria-pressed={onSegmentSelect ? isSelected : undefined}
             />
-            <span className="monitor-risco-legend__text">
-              {item.count}{' '}
-              {MONITOR_RISCO_DISTRIBUTION_LABELS[item.level] ?? item.label}{' '}
-              <span className="monitor-risco-legend__muted">({item.percent}%)</span>
-            </span>
-          </li>
-        ))}
+          );
+        })}
+      </svg>
+      <div className="monitor-risco-donut__center">
+        <strong>{centerPrimary}</strong>
+        <span>{centerSecondary}</span>
+      </div>
+    </div>
+  );
+}
+
+function DonutChart({
+  segments,
+  centerPrimary,
+  centerSecondary,
+  ariaLabel,
+  selectedSegmentId = null,
+  onSegmentSelect,
+}: {
+  segments: MonitorRiscoDonutSegment[];
+  centerPrimary: string;
+  centerSecondary: string;
+  ariaLabel: string;
+  selectedSegmentId?: string | null;
+  onSegmentSelect?: (segment: MonitorRiscoDonutSegment) => void;
+}) {
+  return (
+    <div className="monitor-risco-distribution-layout">
+      <DonutChartVisual
+        segments={segments}
+        centerPrimary={centerPrimary}
+        centerSecondary={centerSecondary}
+        ariaLabel={ariaLabel}
+        selectedSegmentId={selectedSegmentId}
+        onSegmentSelect={onSegmentSelect}
+      />
+      <ul className="monitor-risco-legend">
+        {segments.map((item) => {
+          const isSelected = selectedSegmentId === item.id;
+
+          if (!onSegmentSelect) {
+            return (
+              <li key={item.id} className="monitor-risco-legend__item">
+                <span
+                  className="monitor-risco-legend__swatch"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="monitor-risco-legend__text">
+                  {item.count} {item.label}{' '}
+                  <span className="monitor-risco-legend__muted">({item.percent}%)</span>
+                </span>
+              </li>
+            );
+          }
+
+          return (
+            <li key={item.id}>
+              <button
+                type="button"
+                className={`monitor-risco-legend__item monitor-risco-legend__item--selectable${
+                  isSelected ? ' monitor-risco-legend__item--selected' : ''
+                }`}
+                onClick={() => onSegmentSelect(item)}
+                aria-pressed={isSelected}
+              >
+                <span
+                  className="monitor-risco-legend__swatch"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="monitor-risco-legend__text">
+                  {item.count} {item.label}{' '}
+                  <span className="monitor-risco-legend__muted">({item.percent}%)</span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
 }
 
-function TendenciaChart({ points }: { points: MonitorRiscoTendenciaPoint[] }) {
-  const width = 462;
-  const height = 97;
-  const pad = { top: 0, right: 0, bottom: 0, left: 0 };
-  const innerW = width - pad.left - pad.right;
-  const innerH = height - pad.top - pad.bottom;
-  const maxScore = Math.max(...points.flatMap((p) => [p.score, p.afterCentralActions ?? 0]), 1);
-  const xStep = points.length > 1 ? innerW / (points.length - 1) : innerW;
-
-  const toPath = (key: 'score' | 'afterCentralActions') => {
-    const validPoints = points.filter((p) => p[key] != null);
-    return validPoints
-      .map((point, index) => {
-        const x = pad.left + index * xStep;
-        const y = pad.top + innerH - ((point[key] as number) / maxScore) * innerH;
-        return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-      })
-      .join(' ');
-  };
+function PoliticaDistribuicaoCard({
+  items,
+  selectedPolicyId,
+  onSelectPolicy,
+}: {
+  items: MonitorRiscoPoliticaDistribuicaoItem[];
+  selectedPolicyId: string;
+  onSelectPolicy: (policyId: string) => void;
+}) {
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+  const selectedItem = items.find((item) => item.policyId === selectedPolicyId);
+  const selectedSegmentId = selectedItem?.id ?? null;
 
   return (
-    <div className="monitor-risco-chart monitor-risco-chart--trend">
-      <div className="monitor-risco-trend-chart">
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-          className="monitor-risco-trend-svg"
-          aria-hidden
-        >
-          {[0, 0.5, 1].map((ratio) => {
-            const y = pad.top + innerH - ratio * innerH;
-            return (
-              <line
-                key={ratio}
-                x1={pad.left}
-                y1={y}
-                x2={width - pad.right}
-                y2={y}
-                className="monitor-risco-trend-svg__grid"
-              />
-            );
-          })}
-          <path d={toPath('score')} className="monitor-risco-trend-svg__line monitor-risco-trend-svg__line--raw" />
-          <path
-            d={toPath('afterCentralActions')}
-            className="monitor-risco-trend-svg__line monitor-risco-trend-svg__line--actions"
-          />
-        </svg>
-        <div
-          className="monitor-risco-trend-labels"
-          style={{ gridTemplateColumns: `repeat(${points.length}, minmax(0, 1fr))` }}
-        >
-          {points.map((point) => (
-            <span key={point.label} className="monitor-risco-trend-labels__item">
-              {point.label}
-            </span>
-          ))}
-        </div>
+    <section className="monitor-risco-card monitor-risco-card--politicas-dist">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Distribuição de ocorrências por política</h2>
+        <p className="monitor-risco-card__desc">Selecione a política desejada para filtrar</p>
       </div>
-      <div className="monitor-risco-trend-legend">
-        <span className="monitor-risco-trend-legend__item">
-          <span className="monitor-risco-trend-legend__swatch monitor-risco-trend-legend__swatch--raw" />
-          Score observado
-        </span>
-        <span className="monitor-risco-trend-legend__item">
-          <span className="monitor-risco-trend-legend__swatch monitor-risco-trend-legend__swatch--actions" />
-          Impacto das ações da central
-        </span>
-      </div>
-    </div>
+      <DonutChart
+        segments={items}
+        centerPrimary={selectedItem ? String(selectedItem.count) : String(total)}
+        centerSecondary={
+          selectedItem ? 'ocorrências na política' : 'ocorrências no período'
+        }
+        ariaLabel="Distribuição de ocorrências por política"
+        selectedSegmentId={selectedSegmentId}
+        onSegmentSelect={(segment) => {
+          const policyItem = items.find((item) => item.id === segment.id);
+          if (policyItem) onSelectPolicy(policyItem.policyId);
+        }}
+      />
+    </section>
   );
 }
 
-function RecenciaChart({ items }: { items: MonitorRiscoData['recencia'] }) {
-  const recencyOrder = ['3h', '1h', '15m'];
-  const orderedItems = [...items].sort(
-    (a, b) => recencyOrder.indexOf(a.window) - recencyOrder.indexOf(b.window),
-  );
-  const yMax = Math.max(...orderedItems.map((item) => item.count), 1);
-  const plotHeight = 145;
-  const yTicks = [yMax, Math.round(yMax / 2), 0];
+function NivelRiscoCard({ nivelRisco }: { nivelRisco: MonitorRiscoNivelRisco }) {
+  const fillPercent = Math.min(100, Math.max(0, nivelRisco.percent));
+  const levelWord = RISK_LEVEL_WORDS[nivelRisco.level] ?? nivelRisco.level;
 
   return (
-    <div className="monitor-risco-recency-chart">
-      <div className="monitor-risco-recency-chart__y-axis" aria-hidden>
-        {yTicks.map((tick) => (
-          <span key={tick} className="monitor-risco-recency-chart__y-label">
-            {tick}
-          </span>
-        ))}
-      </div>
-      <div className="monitor-risco-recency-chart__plot">
-        <div
-          className="monitor-risco-recency-chart__plot-area"
-          style={{ height: plotHeight }}
-        >
-          <div className="monitor-risco-recency-chart__grid" aria-hidden>
-            {yTicks.map((tick) => (
-              <span key={tick} className="monitor-risco-recency-chart__grid-line" />
-            ))}
-          </div>
-          <div className="monitor-risco-recency-chart__bars">
-            {orderedItems.map((item) => (
-              <div key={item.window} className="monitor-risco-recency-chart__bar-col">
-                <LevelTooltip
-                  text={`${item.label}: ${item.count} eventos`}
-                  topLayer
-                  nowrap
-                >
-                  <div
-                    className="monitor-risco-recency-chart__bar"
-                    style={{
-                      height: `${Math.max(4, (item.count / yMax) * plotHeight)}px`,
-                    }}
-                  />
-                </LevelTooltip>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="monitor-risco-recency-chart__labels">
-          {orderedItems.map((item) => (
-            <span key={item.window} className="monitor-risco-recency-chart__label">
-              {item.label}
+    <section className="monitor-risco-card monitor-risco-card--nivel-risco">
+      <div className="monitor-risco-nivel-risco">
+        <div className="monitor-risco-nivel-risco__top">
+          <div className="monitor-risco-nivel-risco__percent-line">
+            <span
+              className={`monitor-risco-nivel-risco__percent monitor-risco-nivel-risco__percent--${nivelRisco.level}`}
+            >
+              {formatPercent(nivelRisco.percent)}%
             </span>
-          ))}
+            <InfoTooltip
+              text={nivelRisco.tooltipText}
+              className="monitor-risco-nivel-risco__info"
+            />
+          </div>
+          <span
+            className={`monitor-risco-nivel-risco__label monitor-risco-nivel-risco__label--${nivelRisco.level}`}
+          >
+            <span>Nível de</span>
+            <span>risco {levelWord}</span>
+          </span>
+        </div>
+        <p className="monitor-risco-nivel-risco__points">
+          <strong>{nivelRisco.activePoints} pontos</strong> ativos no momento
+        </p>
+        <div className="monitor-risco-nivel-risco__meter-block">
+          <div
+            className="monitor-risco-nivel-risco__meter"
+            aria-hidden
+            style={{ '--monitor-risco-fill': `${fillPercent}%` } as React.CSSProperties}
+          >
+            <div
+              className={`monitor-risco-nivel-risco__meter-fill monitor-risco-nivel-risco__meter-fill--${nivelRisco.level}`}
+            />
+          </div>
+          <div className="monitor-risco-nivel-risco__scale" aria-hidden>
+            <span>0%</span>
+            <span>100%</span>
+          </div>
         </div>
       </div>
+    </section>
+  );
+}
+
+const EVENTOS_TEMPO_PLOT_HEIGHT = 120;
+const EVENTOS_TEMPO_ALERT_COLUMN_REF = 'evt-3';
+const EVENTOS_TEMPO_STACK_GAP = 2;
+
+/** Proporções visuais do Figma (altura em % do plot). */
+const EVENTOS_TEMPO_BAR_HEIGHTS: Record<string, number> = {
+  'evt-1': 100,
+  'evt-2': 60,
+  'evt-3': 80,
+  'evt-4-solid': 60,
+  'evt-4-alert': 20,
+  'evt-5': 45,
+  'evt-6': 22,
+};
+
+function getAlertColumnHeights(plotHeight: number) {
+  const columnTotalHeight = Math.round(
+    (EVENTOS_TEMPO_BAR_HEIGHTS[EVENTOS_TEMPO_ALERT_COLUMN_REF] ?? 80) * (plotHeight / 100),
+  );
+  const alertShare =
+    (EVENTOS_TEMPO_BAR_HEIGHTS['evt-4-alert'] ?? 20) /
+    ((EVENTOS_TEMPO_BAR_HEIGHTS['evt-4-alert'] ?? 20) +
+      (EVENTOS_TEMPO_BAR_HEIGHTS['evt-4-solid'] ?? 60));
+  const alertHeight = Math.round((columnTotalHeight - EVENTOS_TEMPO_STACK_GAP) * alertShare);
+  const solidHeight = columnTotalHeight - EVENTOS_TEMPO_STACK_GAP - alertHeight;
+
+  return { columnTotalHeight, alertHeight, solidHeight };
+}
+
+function EventosPorTempoCard({ items }: { items: MonitorRiscoEventosTempoItem[] }) {
+  const historico = items.filter((item) => item.kind === 'historico');
+  const previsao = items.filter((item) => item.kind === 'previsao');
+
+  const toHeight = (itemId: string, fallbackPercent: number) =>
+    Math.round((EVENTOS_TEMPO_BAR_HEIGHTS[itemId] ?? fallbackPercent) * (EVENTOS_TEMPO_PLOT_HEIGHT / 100));
+
+  const renderBar = (item: MonitorRiscoEventosTempoItem) => {
+    const barClass =
+      item.kind === 'historico'
+        ? 'monitor-risco-eventos-tempo__bar monitor-risco-eventos-tempo__bar--historico'
+        : 'monitor-risco-eventos-tempo__bar monitor-risco-eventos-tempo__bar--previsao';
+
+    if (item.alertOutline) {
+      const { columnTotalHeight, alertHeight, solidHeight } = getAlertColumnHeights(
+        EVENTOS_TEMPO_PLOT_HEIGHT,
+      );
+
+      return (
+        <div key={item.id} className="monitor-risco-eventos-tempo__col">
+          <div
+            className="monitor-risco-eventos-tempo__bar-stack"
+            style={{ height: EVENTOS_TEMPO_PLOT_HEIGHT }}
+          >
+            <div
+              className="monitor-risco-eventos-tempo__bar-stack-inner monitor-risco-eventos-tempo__bar-stack-inner--alert"
+              style={{ height: columnTotalHeight }}
+            >
+              <div
+                className="monitor-risco-eventos-tempo__alert-box"
+                style={{ height: alertHeight }}
+              >
+                <span className="monitor-risco-eventos-tempo__value monitor-risco-eventos-tempo__value--alert">
+                  +{item.trendDelta ?? item.count}
+                </span>
+              </div>
+              <div className={barClass} style={{ height: solidHeight }}>
+                <span className="monitor-risco-eventos-tempo__value monitor-risco-eventos-tempo__value--previsao">
+                  {item.count}
+                </span>
+              </div>
+            </div>
+          </div>
+          <span className="monitor-risco-eventos-tempo__label">{item.label}</span>
+        </div>
+      );
+    }
+
+    const barHeight = toHeight(item.id, 50);
+
+    return (
+      <div key={item.id} className="monitor-risco-eventos-tempo__col">
+        <div
+          className="monitor-risco-eventos-tempo__bar-stack"
+          style={{ height: EVENTOS_TEMPO_PLOT_HEIGHT }}
+        >
+          <div className={barClass} style={{ height: barHeight }}>
+            <span
+              className={`monitor-risco-eventos-tempo__value${
+                item.kind === 'previsao' ? ' monitor-risco-eventos-tempo__value--previsao' : ''
+              }`}
+            >
+              {item.count}
+            </span>
+          </div>
+        </div>
+        <span className="monitor-risco-eventos-tempo__label">{item.label}</span>
+      </div>
+    );
+  };
+
+  const renderSectionHead = (title: string, kind: 'historico' | 'previsao') => (
+    <div
+      className={`monitor-risco-eventos-tempo__section-head monitor-risco-eventos-tempo__section-head--${kind}`}
+    >
+      <span className="monitor-risco-eventos-tempo__section-title">{title}</span>
+      <span className="monitor-risco-eventos-tempo__section-line" aria-hidden />
     </div>
+  );
+
+  return (
+    <section className="monitor-risco-card monitor-risco-card--eventos-tempo">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Quantidade de eventos por tempo</h2>
+        <p className="monitor-risco-card__desc">Histórico e tendência</p>
+      </div>
+      <div className="monitor-risco-eventos-tempo">
+        <div className="monitor-risco-eventos-tempo__chart">
+          <div className="monitor-risco-eventos-tempo__heads">
+            {renderSectionHead('Histórico', 'historico')}
+            {renderSectionHead('Previsão', 'previsao')}
+          </div>
+          <div className="monitor-risco-eventos-tempo__bars">
+            {[...historico, ...previsao].map(renderBar)}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TipoEventosCard({ insight }: { insight: MonitorRiscoDonutInsight }) {
+  return (
+    <section className="monitor-risco-card monitor-risco-card--tipo-eventos">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Tipo dos eventos</h2>
+      </div>
+      <DonutChart
+        segments={insight.segments}
+        centerPrimary={insight.centerPrimary}
+        centerSecondary={insight.centerSecondary}
+        ariaLabel="Tipo dos eventos"
+      />
+    </section>
+  );
+}
+
+function OcorrenciasPendentesCard({ insight }: { insight: MonitorRiscoDonutInsight }) {
+  return (
+    <section className="monitor-risco-card monitor-risco-card--ocorrencias-pendentes">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Ocorrências pendentes</h2>
+      </div>
+      <div className="monitor-risco-distribution-layout">
+        <DonutChartVisual
+          segments={insight.segments}
+          centerPrimary={insight.centerPrimary}
+          centerSecondary={insight.centerSecondary}
+          ariaLabel="Ocorrências pendentes"
+        />
+        <ul className="monitor-risco-legend monitor-risco-legend--pendentes">
+          {insight.segments.map((item) => (
+            <li key={item.id} className="monitor-risco-legend__item">
+              <span
+                className="monitor-risco-legend__swatch"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="monitor-risco-legend__text">
+                {item.count} {item.label}
+              </span>
+            </li>
+          ))}
+          <li className="monitor-risco-legend__item monitor-risco-legend__item--total">
+            <span
+              className="monitor-risco-legend__swatch"
+              style={{ backgroundColor: '#169EFF' }}
+            />
+            <span className="monitor-risco-legend__text">
+              {insight.total} ocorrências pendentes no total
+            </span>
+          </li>
+        </ul>
+      </div>
+    </section>
   );
 }
 
@@ -430,7 +534,6 @@ function formatRankingLine(
     return (
       <>
         <span className="monitor-risco-ranking__vehicle">{vehicleLabel}</span>
-        <span className="monitor-risco-ranking__sep">|</span>
         <span className="monitor-risco-ranking__name">{item.driverName}</span>
       </>
     );
@@ -439,12 +542,119 @@ function formatRankingLine(
   return (
     <>
       <span className="monitor-risco-ranking__name">{item.driverName}</span>
-      <span className="monitor-risco-ranking__sep">|</span>
       <span className="monitor-risco-ranking__vehicle">{vehicleLabel}</span>
     </>
   );
 }
 
+function RankingInsightsCard({
+  items,
+  rankingKind,
+  onRankingKindChange,
+}: {
+  items: MonitorRiscoRankingItem[];
+  rankingKind: MonitorRankingKind;
+  onRankingKindChange: (kind: MonitorRankingKind) => void;
+}) {
+  return (
+    <section className="monitor-risco-card monitor-risco-card--ranking">
+      <div className="monitor-risco-card__header monitor-risco-card__header--split">
+        <div>
+          <h2 className="monitor-risco-card__title">Ranking</h2>
+          <p className="monitor-risco-card__desc">Maiores exposições no período</p>
+        </div>
+        <div className="monitor-risco-ranking-toggle" role="group" aria-label="Tipo de ranking">
+          <div className="operacoes-view-toggle-wrap">
+            <button
+              type="button"
+              className="monitor-risco-ranking-toggle__btn"
+              onClick={() => onRankingKindChange('motorista')}
+              aria-label="Filtrar por motorista"
+              aria-pressed={rankingKind === 'motorista'}
+            >
+              <IconRankingMotorista selected={rankingKind === 'motorista'} />
+            </button>
+            <span className="operacoes-view-tooltip" role="tooltip">
+              Filtrar por motorista
+            </span>
+          </div>
+          <div className="operacoes-view-toggle-wrap">
+            <button
+              type="button"
+              className="monitor-risco-ranking-toggle__btn"
+              onClick={() => onRankingKindChange('veiculo')}
+              aria-label="Filtrar por veículo"
+              aria-pressed={rankingKind === 'veiculo'}
+            >
+              <IconRankingVeiculo selected={rankingKind === 'veiculo'} />
+            </button>
+            <span className="operacoes-view-tooltip" role="tooltip">
+              Filtrar por veículo
+            </span>
+          </div>
+        </div>
+      </div>
+      <ol
+        className={`monitor-risco-ranking monitor-risco-ranking--insights${
+          rankingKind === 'veiculo' ? ' monitor-risco-ranking--veiculo' : ''
+        }`}
+      >
+        {items.map((item) => (
+          <li key={item.id} className="monitor-risco-ranking__item">
+            <span className="monitor-risco-ranking__rank-col">
+              <span className="monitor-risco-ranking__rank">{item.rank}.</span>
+              {item.flagged && (
+                <LevelTooltip text="Reincidente" topLayer nowrap>
+                  <span className="monitor-risco-ranking__flag-wrap">
+                    <IconRankingFlagged />
+                  </span>
+                </LevelTooltip>
+              )}
+            </span>
+            <span className="monitor-risco-ranking__line">
+              {formatRankingLine(item, rankingKind)}
+            </span>
+            <span
+              className={`monitor-risco-ranking__score monitor-risco-ranking__score--${item.level}`}
+            >
+              {item.score} pts
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function ReincidentesCard({ items }: { items: MonitorRiscoReincidenteItem[] }) {
+  return (
+    <section className="monitor-risco-card monitor-risco-card--reincidentes">
+      <div className="monitor-risco-card__header">
+        <h2 className="monitor-risco-card__title">Reincidentes</h2>
+      </div>
+      <ol className="monitor-risco-ranking monitor-risco-ranking--insights">
+        {items.map((item) => (
+          <li key={item.id} className="monitor-risco-ranking__item">
+            <span className="monitor-risco-ranking__rank-col">
+              <span className="monitor-risco-ranking__rank">{item.rank}.</span>
+            </span>
+            <span className="monitor-risco-ranking__line">
+              <span className="monitor-risco-ranking__name">{item.driverName}</span>
+              <span className="monitor-risco-ranking__vehicle">
+                {item.plate} / {item.vehicleModel}
+              </span>
+            </span>
+            <span
+              className={`monitor-risco-ranking__score monitor-risco-ranking__score--${item.level}`}
+            >
+              {item.score} pts
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
 
 function MonitorRiscoStatusBadge({ status }: { status: MonitorRiscoListagemItem['status'] }) {
   return (
@@ -487,14 +697,11 @@ function MonitorListagemTable({
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => {
-            const pointsSeverity = resolveSeverityFromAccumulatedPoints(item.score);
-
-            return (
+          {items.map((item) => (
               <tr key={item.id}>
                 <td className="operacoes-col-data monitor-risco-listagem-col-pontuacao">
                   <span
-                    className={`operacoes-auditoria-points operacoes-auditoria-points--${pointsSeverity}`}
+                    className={`monitor-risco-listagem-points monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}
                   >
                     {item.score} pts
                   </span>
@@ -531,8 +738,7 @@ function MonitorListagemTable({
                   </div>
                 </td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
     </div>
@@ -560,26 +766,27 @@ export const MonitorRiscoPage: React.FC = () => {
     return base;
   }, [appliedFilters.politicaId]);
 
-  const filteredListagem = useMemo(
-    () => applyMonitorRiscoFilters(scopedData.listagem, appliedFilters),
-    [appliedFilters, scopedData.listagem],
-  );
-
-  const filteredFeed = useMemo(
-    () => applyMonitorRiscoFilters(scopedData.feed, appliedFilters),
-    [appliedFilters, scopedData.feed],
-  );
+  const filteredListagem = useMemo(() => {
+    const filtered = applyMonitorRiscoFilters(scopedData.listagem, appliedFilters);
+    return [...filtered].sort(
+      (a, b) => new Date(b.lastEventAtIso).getTime() - new Date(a.lastEventAtIso).getTime(),
+    );
+  }, [appliedFilters, scopedData.listagem]);
 
   const ranking =
     rankingKind === 'motorista' ? scopedData.rankingMotorista : scopedData.rankingVeiculo;
-
-  const displayFeed = filteredFeed.slice(0, 4);
 
   useEffect(() => {
     if (!appliedFilters.politicaId) return;
     const policy = getPolicyById(appliedFilters.politicaId);
     if (policy) setRankingKind(getPolicyRankingKind(policy));
   }, [appliedFilters.politicaId]);
+
+  useEffect(() => {
+    if (activeTab === 'insights') {
+      setMoreMenuOpen(false);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const onOutside = (event: MouseEvent) => {
@@ -611,6 +818,32 @@ export const MonitorRiscoPage: React.FC = () => {
     setRankingKind('motorista');
   };
 
+  const handleSelectPolicy = (policyId: string) => {
+    const nextPolicyId = appliedFilters.politicaId === policyId ? '' : policyId;
+    const nextFilters: MonitorRiscoFilters = {
+      ...appliedFilters,
+      politicaId: nextPolicyId,
+      niveisRisco: '',
+      monitoramentoDe: '',
+    };
+
+    setAppliedFilters(nextFilters);
+    setDraftFilters(nextFilters);
+
+    if (!nextPolicyId) {
+      setRankingKind('motorista');
+      return;
+    }
+
+    const policy = getPolicyById(nextPolicyId);
+    if (policy) {
+      setRankingKind(getPolicyRankingKind(policy));
+      return;
+    }
+
+    setRankingKind(nextPolicyId === 'pol-2' ? 'veiculo' : 'motorista');
+  };
+
   return (
     <div className="monitor-risco-page page-layout content-body">
       <div className="content-toolbar top-bar operacoes-eventos-toolbar">
@@ -632,25 +865,30 @@ export const MonitorRiscoPage: React.FC = () => {
               <IconFilterBars inverted={filterPanelOpen} />
             </button>
           </div>
-          <div className="tratativa-contact__menu-wrap operacoes-eventos-more-menu" ref={moreMenuRef}>
-            <button
-              type="button"
-              className={`tratativa-contact__more${moreMenuOpen ? ' tratativa-contact__more--open' : ''}`}
-              aria-label="Mais opções"
-              aria-expanded={moreMenuOpen}
-              aria-haspopup="menu"
-              onClick={() => setMoreMenuOpen((open) => !open)}
+          {activeTab === 'listagem' && (
+            <div
+              className="tratativa-contact__menu-wrap operacoes-eventos-more-menu"
+              ref={moreMenuRef}
             >
-              <IconMoreMenu selected={moreMenuOpen} />
-            </button>
-            {moreMenuOpen && (
-              <div className="tratativa-contact__menu" role="menu">
-                <button type="button" role="menuitem" className="tratativa-contact__menu-item">
-                  Exportar relatório
-                </button>
-              </div>
-            )}
-          </div>
+              <button
+                type="button"
+                className={`tratativa-contact__more${moreMenuOpen ? ' tratativa-contact__more--open' : ''}`}
+                aria-label="Mais opções"
+                aria-expanded={moreMenuOpen}
+                aria-haspopup="menu"
+                onClick={() => setMoreMenuOpen((open) => !open)}
+              >
+                <IconMoreMenu selected={moreMenuOpen} />
+              </button>
+              {moreMenuOpen && (
+                <div className="tratativa-contact__menu" role="menu">
+                  <button type="button" role="menuitem" className="tratativa-contact__menu-item">
+                    Exportar relatório
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -674,6 +912,7 @@ export const MonitorRiscoPage: React.FC = () => {
 
       {filterPanelOpen && (
         <MonitorRiscoFilterPanel
+          mode={activeTab === 'insights' ? 'politica' : 'full'}
           filters={draftFilters}
           onChange={setDraftFilters}
           onClose={() => {
@@ -689,102 +928,22 @@ export const MonitorRiscoPage: React.FC = () => {
       )}
 
       {activeTab === 'insights' ? (
-        <div className="monitor-risco-grid">
-          <section className="monitor-risco-card monitor-risco-card--score">
-            <ScoreGeralOverview scoreGeral={scopedData.scoreGeral} />
-          </section>
-
-          <DistribuicaoNivelCard items={scopedData.distribuicao} />
-
-          <TendenciaCombinadaSection
-            projecao={scopedData.projecao}
-            points={scopedData.tendencia}
+        <div className="monitor-risco-grid monitor-risco-insights-grid">
+          <PoliticaDistribuicaoCard
+            items={mockMonitorRiscoData.ocorrenciasPorPolitica}
+            selectedPolicyId={appliedFilters.politicaId}
+            onSelectPolicy={handleSelectPolicy}
           />
-
-          <section className="monitor-risco-card monitor-risco-card--ranking">
-            <div className="monitor-risco-card__header monitor-risco-card__header--split">
-              <div>
-                <h2 className="monitor-risco-card__title">Ranking</h2>
-                <p className="monitor-risco-card__desc">5 maiores exposições no período</p>
-              </div>
-              <div className="monitor-risco-ranking-toggle" role="group" aria-label="Tipo de ranking">
-                <div className="operacoes-view-toggle-wrap">
-                  <button
-                    type="button"
-                    className="monitor-risco-ranking-toggle__btn"
-                    onClick={() => setRankingKind('motorista')}
-                    aria-label="Filtrar por motorista"
-                    aria-pressed={rankingKind === 'motorista'}
-                  >
-                    <IconRankingMotorista selected={rankingKind === 'motorista'} />
-                  </button>
-                  <span className="operacoes-view-tooltip" role="tooltip">
-                    Filtrar por motorista
-                  </span>
-                </div>
-                <div className="operacoes-view-toggle-wrap">
-                  <button
-                    type="button"
-                    className="monitor-risco-ranking-toggle__btn"
-                    onClick={() => setRankingKind('veiculo')}
-                    aria-label="Filtrar por veículo"
-                    aria-pressed={rankingKind === 'veiculo'}
-                  >
-                    <IconRankingVeiculo selected={rankingKind === 'veiculo'} />
-                  </button>
-                  <span className="operacoes-view-tooltip" role="tooltip">
-                    Filtrar por veículo
-                  </span>
-                </div>
-              </div>
-            </div>
-            <ol className="monitor-risco-ranking">
-              {ranking.map((item) => (
-                <li key={item.id} className="monitor-risco-ranking__item">
-                  <span className="monitor-risco-ranking__line">
-                    {formatRankingLine(item, rankingKind)}
-                  </span>
-                  <span
-                    className={`monitor-risco-ranking__score monitor-risco-ranking__score--${item.level}`}
-                  >
-                    {item.score} pts
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          <PoliticasImpactCard items={scopedData.distribuicaoPoliticas} />
-
-          <section className="monitor-risco-card monitor-risco-card--recency">
-            <div className="monitor-risco-card__header">
-              <h2 className="monitor-risco-card__title">Histórico recente</h2>
-              <p className="monitor-risco-card__desc">Volume de eventos validados</p>
-            </div>
-            <RecenciaChart items={scopedData.recencia} />
-          </section>
-
-          <section className="monitor-risco-card monitor-risco-card--feed">
-            <div className="monitor-risco-card__header">
-              <h2 className="monitor-risco-card__title">Atualizações em tempo real</h2>
-              <p className="monitor-risco-card__desc">Últimos eventos e tratativas</p>
-            </div>
-            <ul className="monitor-risco-feed">
-              {displayFeed.map((item) => (
-                <li key={item.id} className="monitor-risco-feed__item">
-                  <span className="monitor-risco-feed__time">{item.time}</span>
-                  <p className="monitor-risco-feed__message">{item.message}</p>
-                  <span className="monitor-risco-feed__driver">{item.driverName}</span>
-                  <span className="monitor-risco-feed__vehicle">{item.vehicleLabel}</span>
-                  <span
-                    className={`monitor-risco-feed__level monitor-risco-feed__level--${item.level}`}
-                  >
-                    {MONITOR_RISCO_FEED_LEVEL_LABELS[item.level]}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <NivelRiscoCard nivelRisco={scopedData.nivelRisco} />
+          <EventosPorTempoCard items={scopedData.eventosPorTempo} />
+          <TipoEventosCard insight={scopedData.tipoEventos} />
+          <OcorrenciasPendentesCard insight={scopedData.ocorrenciasPendentes} />
+          <RankingInsightsCard
+            items={ranking}
+            rankingKind={rankingKind}
+            onRankingKindChange={setRankingKind}
+          />
+          <ReincidentesCard items={scopedData.reincidentes} />
         </div>
       ) : (
         <div className="operacoes-eventos-body operacoes-eventos-body--list-only monitor-risco-listagem-body">
@@ -792,7 +951,11 @@ export const MonitorRiscoPage: React.FC = () => {
             <p className="operacoes-eventos-summary">
               <strong>{filteredListagem.length}</strong> ocorrências
               {appliedFilters.politicaId
-                ? ` — ${getPolicyById(appliedFilters.politicaId)?.name ?? 'política selecionada'}`
+                ? ` — ${
+                    getMonitorPoliticaOptions().find(
+                      (option) => option.value === appliedFilters.politicaId,
+                    )?.label ?? 'política selecionada'
+                  }`
                 : ''}
             </p>
             <MonitorListagemTable

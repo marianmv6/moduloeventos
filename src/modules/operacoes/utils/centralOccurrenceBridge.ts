@@ -10,6 +10,7 @@ import type {
   CentralValidationEvent,
 } from '../types/operacoesCentral.types';
 import { resolveEventCategory } from './eventCategory';
+import { mockTratativaStreaming } from '../mocks/tratativaStreaming.mock';
 import type {
   TratativaOcorrenciaData,
   TratativaAction,
@@ -258,6 +259,9 @@ export function buildTratativaOcorrenciaFromCentral(
     ],
     selectedVehicleId: vehicleId,
     validatedEvents: buildValidatedEvents(occurrenceId, events, vehicleId, driverId),
+    streaming: events.some((event) => resolveEventCategory(event.eventType) === 'video')
+      ? mockTratativaStreaming
+      : undefined,
   };
 }
 

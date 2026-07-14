@@ -154,7 +154,7 @@ function DefaultMessageField({ step, onUpdate }: DefaultMessageFieldProps) {
   return (
     <div className="trail-step-config__default-message">
       <label className="form-label-optional" htmlFor={`step-default-message-${step.id}`}>
-        Mensagem padrão (opcional)
+        Descrição (opcional)
       </label>
       <textarea
         id={`step-default-message-${step.id}`}
@@ -260,7 +260,7 @@ const MAX_STEPS = 5;
 const DEFAULT_MESSAGE_MAX_LENGTH = 250;
 const RETURN_CONFIRMATION_MAX_MINUTES = 99;
 const SCHEDULE_RETURN_INFO_TOOLTIP =
-  'Defina o tempo para reavaliar a ocorrência após tentativa de contato. Após o período, a ocorrência retorna para a lista de tratativas para confirmação com o motorista.';
+  'Defina o intervalo para retomar o contato após o prazo estabelecido. Ao término desse período, a ocorrência retorna automaticamente para a lista de tratativas pendentes.';
 
 const CONTACT_ACTIONS_WITH_SCHEDULE: StepActionType[] = ['contato_gestor', 'notificar_contato'];
 

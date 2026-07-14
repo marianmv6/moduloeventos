@@ -6,6 +6,16 @@ import {
   MONITOR_NIVEL_RISCO_OPTIONS,
 } from '../constants/monitorRiscoFilterOptions';
 import type { MonitorRankingKind, MonitorRiscoData } from '../types/monitorRisco.types';
+import { mockMonitorRiscoPolicyInsights, mockMonitorRiscoData } from '../mocks/monitorRisco.mock';
+import {
+  encodeMonitoringFilterValue,
+  getMonitoringTypeSuffix,
+} from './centralOccurrenceDisplay';
+
+const POLICY_FEED_BEHAVIORS: Record<string, string[]> = {
+  'pol-vel': ['velocidade'],
+  'pol-son': ['fadiga'],
+};
 
 const RISK_LEVEL_MAP: Record<PolicyTriggerNivelRisco, string> = {
   low: 'baixo',
@@ -29,9 +39,33 @@ function scoreRuleToBehavior(scoreRuleId: string): string | undefined {
 }
 
 export function getMonitorPoliticaOptions(): ModalSelectOption[] {
-  return mockPolicies
+  const fromPolicies = mockPolicies
     .filter((policy) => policy.active)
     .map((policy) => ({ value: policy.id, label: policy.name }));
+
+  const fromDistribution = mockMonitorRiscoData.ocorrenciasPorPolitica
+    .filter((item) => !fromPolicies.some((option) => option.value === item.policyId))
+    .map((item) => ({ value: item.policyId, label: item.label }));
+
+  return [...fromPolicies, ...fromDistribution];
+}
+
+export function getMonitorMonitoramentoDeOptions(): ModalSelectOption[] {
+  const seen = new Set<string>();
+  const options: ModalSelectOption[] = [];
+
+  mockMonitorRiscoData.listagem.forEach((item) => {
+    const value = encodeMonitoringFilterValue(item.trackingType, item.monitoringOf);
+    if (seen.has(value)) return;
+    seen.add(value);
+    options.push({
+      value,
+      label: item.monitoringOf,
+      suffixLabel: getMonitoringTypeSuffix(item.trackingType, 'filter'),
+    });
+  });
+
+  return options.sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 }
 
 export function getPolicyById(id: string): Policy | undefined {
@@ -72,23 +106,42 @@ export function getPolicyComportamentoOptions(politicaId: string): ModalSelectOp
 }
 
 export function applyPolicyScope(data: MonitorRiscoData, politicaId: string): MonitorRiscoData {
+  const policyInsights = mockMonitorRiscoPolicyInsights[politicaId];
+  if (!policyInsights) return data;
+
   const policy = getPolicyById(politicaId);
-  if (!policy) return data;
+  const allowedBehaviors = POLICY_FEED_BEHAVIORS[politicaId];
 
-  const allowedScoreRules = new Set(Object.keys(policy.configEventos));
-  const allowedLevels = new Set(
-    policy.gatilhos
-      .map((trigger) => trigger.nivelRisco && RISK_LEVEL_MAP[trigger.nivelRisco])
-      .filter(Boolean) as string[],
-  );
+  let feed = data.feed;
+  if (policy) {
+    const allowedScoreRules = new Set(Object.keys(policy.configEventos));
+    const allowedLevels = new Set(
+      policy.gatilhos
+        .map((trigger) => trigger.nivelRisco && RISK_LEVEL_MAP[trigger.nivelRisco])
+        .filter(Boolean) as string[],
+    );
 
-  const feed = data.feed.filter((item) => {
-    if (item.scoreRuleId && !allowedScoreRules.has(item.scoreRuleId)) return false;
-    if (allowedLevels.size > 0 && !allowedLevels.has(item.level)) return false;
-    return true;
-  });
+    feed = data.feed.filter((item) => {
+      if (item.scoreRuleId && !allowedScoreRules.has(item.scoreRuleId)) return false;
+      if (allowedLevels.size > 0 && !allowedLevels.has(item.level)) return false;
+      return true;
+    });
+  } else if (allowedBehaviors) {
+    feed = data.feed.filter((item) => allowedBehaviors.includes(item.behaviorType));
+  }
 
   const listagem = data.listagem.filter((item) => item.policyId === politicaId);
 
-  return { ...data, feed, listagem };
+  return {
+    ...data,
+    nivelRisco: policyInsights.nivelRisco,
+    eventosPorTempo: policyInsights.eventosPorTempo,
+    tipoEventos: policyInsights.tipoEventos,
+    ocorrenciasPendentes: policyInsights.ocorrenciasPendentes,
+    rankingMotorista: policyInsights.rankingMotorista,
+    rankingVeiculo: policyInsights.rankingVeiculo,
+    reincidentes: policyInsights.reincidentes,
+    feed,
+    listagem,
+  };
 }

@@ -2701,7 +2701,7 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 .trail-step-schedule-return__minutes-wrap {
-  max-width: 8rem;
+  max-width: 6.5rem;
 }
 
 .trail-step-schedule-return .trail-step-voice-notice {
@@ -9875,6 +9875,231 @@ body.cr-fullscreen-modal-open .app-content {
   background: #f8fbfd;
 }
 
+/* ---- Aba Ver ao vivo (TratativaOcorrenciaModal) ---- */
+.tratativa-body.tratativa-streaming-tab {
+  overflow: hidden;
+}
+
+.tratativa-streaming-tab {
+  gap: 0.75rem;
+}
+
+.tratativa-streaming {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.tratativa-streaming__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: #f1f5f7;
+  flex-shrink: 0;
+}
+
+.tratativa-streaming__device {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.tratativa-streaming__device-name {
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #444444;
+}
+
+.tratativa-streaming__status-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: #ff5454;
+  flex-shrink: 0;
+}
+
+.tratativa-streaming__status-dot--online {
+  background: #22c55e;
+}
+
+.tratativa-streaming__status-tooltip {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tratativa-streaming__monitor {
+  display: grid;
+  grid-template-rows: 3fr 2fr;
+  gap: 0.375rem;
+  flex: 1;
+  min-height: 0;
+  padding: 0.375rem;
+  border-radius: 10px;
+  background: #0a0a0a;
+}
+
+.tratativa-streaming__row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tratativa-streaming-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #1a1a1a;
+  aspect-ratio: 4 / 3;
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  max-height: 100%;
+  height: auto;
+  align-self: center;
+}
+
+.tratativa-streaming-tile--live {
+  background: #1a1a1a;
+}
+
+.tratativa-streaming-tile__label {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.625rem;
+  z-index: 4;
+  font-family: var(--font-noto-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.tratativa-streaming-tile__preview {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-size: cover;
+  background-position: center;
+  filter: grayscale(1) contrast(0.95);
+}
+
+.tratativa-streaming-tile__feed {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.tratativa-streaming-tile__feed--live {
+  filter: grayscale(1) contrast(1.15);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.2) 100%),
+    radial-gradient(circle at 35% 45%, #ececec 0%, #9a9a9a 30%, #3a3a3a 65%, #151515 100%);
+}
+
+.tratativa-streaming-tile__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.tratativa-streaming-tile__overlay--idle {
+  background: rgba(30, 34, 40, 0.58);
+}
+
+.tratativa-streaming-tile__overlay--idle:hover {
+  background: rgba(30, 34, 40, 0.66);
+}
+
+.tratativa-streaming-tile__overlay--paused {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.tratativa-streaming-tile__overlay--paused:hover {
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.tratativa-streaming-tile__overlay span {
+  font-family: var(--font-noto-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #444444;
+  text-align: center;
+}
+
+.tratativa-streaming-tile__overlay--idle span {
+  color: #f2f4f7;
+}
+
+.tratativa-streaming-tile__unavailable,
+.tratativa-streaming-tile__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #eef1f4;
+}
+
+.tratativa-streaming-tile__loading--with-preview {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.tratativa-streaming-tile__unavailable span {
+  font-family: var(--font-noto-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #667085;
+  text-align: center;
+}
+
+.tratativa-streaming-tile__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 3px solid rgba(22, 158, 255, 0.2);
+  border-top-color: #169eff;
+  animation: tratativa-streaming-spin 0.9s linear infinite;
+}
+
+@keyframes tratativa-streaming-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .tratativa-streaming__row {
+    flex-wrap: wrap;
+  }
+
+  .tratativa-streaming-tile--large,
+  .tratativa-streaming-tile--small {
+    flex: 1 1 calc(50% - 0.25rem);
+  }
+}
+
 /* ---- Aba Histórico (TratativaOcorrenciaModal) ---- */
 .tratativa-historico {
   display: flex;
@@ -10675,10 +10900,14 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 /* ── Monitor de risco ── */
+.app-content:has(.monitor-risco-page) {
+  background-color: #ffffff;
+}
+
 .monitor-risco-page {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.5rem;
   font-family: var(--font-noto-sans);
   font-size: 14px;
   font-weight: 400;
@@ -10690,9 +10919,10 @@ body.cr-fullscreen-modal-open .app-content {
 }
 
 .monitor-risco-page .body-page-title {
-  font-family: var(--font-noto-sans);
+  font-family: var(--font-montserrat);
   font-size: 14.5px;
   font-weight: 600;
+  color: #2f2f2f;
 }
 
 .monitor-risco-tabs {
@@ -10706,30 +10936,96 @@ body.cr-fullscreen-modal-open .app-content {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.625rem;
   margin-bottom: 0;
   font-size: 14px;
+}
+
+.monitor-risco-tabs.risk-tabs {
+  margin-bottom: 0.25rem;
+}
+
+.monitor-risco-tab.risk-tab--active {
+  font-weight: 600;
+  border-bottom-width: 0.1875rem;
 }
 
 .monitor-risco-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.875rem;
-  margin-top: 1.25rem;
+  gap: 1.25rem;
+  margin-top: 1rem;
   padding-bottom: 1.5rem;
+}
+
+.monitor-risco-insights-grid .monitor-risco-card {
+  background: #f6fbfb;
+  border: none;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: none;
+}
+
+.monitor-risco-card--politicas-dist {
+  min-height: 13.5rem;
+  padding: 1.5rem 1.75rem 1.75rem;
+}
+
+.monitor-risco-card--politicas-dist .monitor-risco-distribution-layout {
+  min-height: 11.5rem;
+  gap: 2.25rem;
+  align-items: center;
+}
+
+.monitor-risco-card--politicas-dist .monitor-risco-donut-wrap {
+  padding: 0.35rem;
+  margin: -0.35rem;
+  overflow: visible;
+}
+
+.monitor-risco-card--politicas-dist .monitor-risco-legend {
+  gap: 0.375rem;
+  padding: 0.125rem 0;
+}
+
+.monitor-risco-card--nivel-risco,
+.monitor-risco-card--tipo-eventos,
+.monitor-risco-card--ocorrencias-pendentes,
+.monitor-risco-card--ranking,
+.monitor-risco-card--reincidentes {
+  grid-column: auto;
+}
+
+.monitor-risco-card--nivel-risco {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.monitor-risco-card--eventos-tempo {
+  grid-column: 1 / -1;
+  padding-bottom: 1.75rem;
+}
+
+.monitor-risco-card--eventos-tempo .monitor-risco-eventos-tempo {
+  padding-inline: 3.5rem;
+}
+
+.monitor-risco-card--eventos-tempo .monitor-risco-eventos-tempo__chart {
+  min-height: 10.5rem;
 }
 
 .monitor-risco-card {
   background: #f6fbfb;
   border: none;
   border-radius: 8px;
-  padding: 1rem 1.25rem 1.125rem;
+  padding: 1.5rem;
   min-width: 0;
   box-shadow: none;
 }
 
 .monitor-risco-card__header {
-  margin-bottom: 0.875rem;
+  margin-bottom: 1rem;
 }
 
 .monitor-risco-card__header--split {
@@ -10744,15 +11040,17 @@ body.cr-fullscreen-modal-open .app-content {
   font-family: var(--font-noto-sans);
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #2f2f2f);
+  line-height: 1.35;
+  color: #2f2f2f;
 }
 
 .monitor-risco-card__desc {
   margin: 0.25rem 0 0;
   font-family: var(--font-noto-sans);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
-  color: var(--color-text-secondary, #6b6b6f);
+  line-height: 1.4;
+  color: #667085;
 }
 
 .monitor-risco-card--score {
@@ -11132,8 +11430,8 @@ body.cr-fullscreen-modal-open .app-content {
 .monitor-risco-distribution-layout {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  min-height: 150px;
+  gap: 2.5rem;
+  min-height: 156px;
 }
 
 .monitor-risco-distribution-bar {
@@ -11158,6 +11456,18 @@ body.cr-fullscreen-modal-open .app-content {
   display: block;
 }
 
+.monitor-risco-donut__segment {
+  transition: opacity 0.15s ease, stroke-width 0.15s ease;
+}
+
+.monitor-risco-donut__segment--dimmed {
+  opacity: 0.35;
+}
+
+.monitor-risco-donut__segment--selected {
+  opacity: 1;
+}
+
 .monitor-risco-donut__center {
   position: absolute;
   inset: 0;
@@ -11172,19 +11482,19 @@ body.cr-fullscreen-modal-open .app-content {
 
 .monitor-risco-donut__center strong {
   font-family: var(--font-noto-sans);
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.1;
-  color: var(--color-text-primary, #2f2f2f);
+  color: #2f2f2f;
 }
 
 .monitor-risco-donut__center span {
   font-family: var(--font-noto-sans);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
-  line-height: 1.25;
-  color: var(--color-text-secondary, #6b6b6f);
-  max-width: 6.5rem;
+  line-height: 1.3;
+  color: #667085;
+  max-width: 7rem;
 }
 
 .monitor-risco-legend {
@@ -11193,34 +11503,66 @@ body.cr-fullscreen-modal-open .app-content {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.5rem;
   flex: 1;
+}
+
+.monitor-risco-legend > li {
+  margin: 0;
+  padding: 0;
 }
 
 .monitor-risco-legend__item {
   display: flex;
-  align-items: center;
-  gap: 0.625rem;
+  align-items: flex-start;
+  gap: 0.5rem;
   font-family: var(--font-noto-sans);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
+  line-height: 1.4;
+  color: #2f2f2f;
+  width: 100%;
+  text-align: left;
+}
+
+.monitor-risco-legend__item--selectable {
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 0.375rem 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.monitor-risco-legend__item--selectable:hover {
+  background: rgba(22, 158, 255, 0.08);
+}
+
+.monitor-risco-legend__item--selected {
+  background: rgba(22, 158, 255, 0.14);
+  border-color: rgba(22, 158, 255, 0.35);
+}
+
+.monitor-risco-legend__item--selectable.monitor-risco-legend__item--selected {
+  font-weight: 600;
 }
 
 .monitor-risco-legend__swatch {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   flex-shrink: 0;
+  margin-top: 0.2rem;
 }
 
 .monitor-risco-legend__text {
-  color: var(--color-text-primary, #2f2f2f);
+  color: #2f2f2f;
 }
 
 .monitor-risco-legend__muted {
   font-family: var(--font-noto-sans);
   font-weight: 400;
-  color: var(--color-text-secondary, #6b6b6f);
+  color: #667085;
 }
 
 .monitor-risco-chart__footnote {
@@ -11729,8 +12071,10 @@ body.cr-fullscreen-modal-open .app-content {
   display: inline-block;
 }
 
-.monitor-risco-listagem-col-pontuacao .operacoes-auditoria-points {
+.monitor-risco-listagem-col-pontuacao .monitor-risco-listagem-points {
   white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 700;
 }
 
 .monitor-risco-listagem-col-nivel .monitor-risco-feed__level {
@@ -11761,6 +12105,407 @@ body.cr-fullscreen-modal-open .app-content {
   grid-column: 1 / -1;
 }
 
+/* ── Insights: nível de risco ── */
+.monitor-risco-nivel-risco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 156px;
+  justify-content: center;
+}
+
+.monitor-risco-nivel-risco__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.monitor-risco-nivel-risco__percent-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.monitor-risco-nivel-risco__percent {
+  font-family: var(--font-noto-sans);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #ff5454;
+}
+
+.monitor-risco-nivel-risco__percent--baixo {
+  color: #169eff;
+}
+
+.monitor-risco-nivel-risco__percent--medio {
+  color: #e29c2c;
+}
+
+.monitor-risco-nivel-risco__percent--alto {
+  color: #ff5454;
+}
+
+.monitor-risco-nivel-risco__percent--critico {
+  color: #820000;
+}
+
+.monitor-risco-nivel-risco__info {
+  margin-top: 0.125rem;
+}
+
+.monitor-risco-nivel-risco__label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-noto-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.monitor-risco-nivel-risco__label--baixo {
+  color: #169eff;
+}
+
+.monitor-risco-nivel-risco__label--medio {
+  color: #e29c2c;
+}
+
+.monitor-risco-nivel-risco__label--alto {
+  color: #ff5454;
+}
+
+.monitor-risco-nivel-risco__label--critico {
+  color: #820000;
+}
+
+.monitor-risco-nivel-risco__points {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-noto-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #2f2f2f;
+}
+
+.monitor-risco-nivel-risco__points strong {
+  font-weight: 700;
+}
+
+.monitor-risco-nivel-risco__meter-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.monitor-risco-nivel-risco__meter {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: visible;
+  background: #ececef;
+}
+
+.monitor-risco-nivel-risco__meter-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--monitor-risco-fill, 0%);
+  max-width: calc(100% - 2px);
+  border-radius: 999px;
+  background: #ff5454;
+  box-shadow: 2px 0 0 0 #f6fbfb;
+}
+
+.monitor-risco-nivel-risco__meter-fill--baixo {
+  background: #169eff;
+  box-shadow: 2px 0 0 0 #f6fbfb;
+}
+
+.monitor-risco-nivel-risco__meter-fill--medio {
+  background: #e29c2c;
+  box-shadow: 2px 0 0 0 #f6fbfb;
+}
+
+.monitor-risco-nivel-risco__meter-fill--alto {
+  background: #ff5454;
+  box-shadow: 2px 0 0 0 #f6fbfb;
+}
+
+.monitor-risco-nivel-risco__meter-fill--critico {
+  background: #820000;
+  box-shadow: 2px 0 0 0 #f6fbfb;
+}
+
+.monitor-risco-nivel-risco__scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-noto-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: #2f2f2f;
+}
+
+/* ── Insights: eventos por tempo ── */
+.monitor-risco-eventos-tempo {
+  display: flex;
+  flex-direction: column;
+}
+
+.monitor-risco-eventos-tempo__chart {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.monitor-risco-eventos-tempo__heads {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.monitor-risco-eventos-tempo__section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.monitor-risco-eventos-tempo__section-head--historico {
+  grid-column: 1 / 4;
+}
+
+.monitor-risco-eventos-tempo__section-head--previsao {
+  grid-column: 4 / 7;
+}
+
+.monitor-risco-eventos-tempo__section-line {
+  width: 100%;
+  height: 1px;
+  background: rgba(22, 158, 255, 0.45);
+}
+
+.monitor-risco-eventos-tempo__section-head--previsao .monitor-risco-eventos-tempo__section-line {
+  background: rgba(22, 158, 255, 0.28);
+}
+
+.monitor-risco-eventos-tempo__section-title {
+  font-family: var(--font-noto-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #169eff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.monitor-risco-eventos-tempo__section-head--previsao .monitor-risco-eventos-tempo__section-title {
+  color: #7ec8ff;
+}
+
+.monitor-risco-eventos-tempo__bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: 0.375rem;
+  align-items: end;
+}
+
+.monitor-risco-eventos-tempo__col {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.monitor-risco-eventos-tempo__bar-stack {
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  width: 100%;
+}
+
+.monitor-risco-eventos-tempo__bar-stack-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.monitor-risco-eventos-tempo__bar-stack-inner--alert {
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.monitor-risco-eventos-tempo__bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  border-radius: 3px;
+  min-height: 12px;
+  flex-shrink: 0;
+  padding-bottom: 0.375rem;
+  box-sizing: border-box;
+}
+
+.monitor-risco-eventos-tempo__bar--historico {
+  background: #169eff;
+}
+
+.monitor-risco-eventos-tempo__bar--previsao {
+  background: #b2ddff;
+}
+
+.monitor-risco-eventos-tempo__value {
+  font-family: var(--font-noto-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.monitor-risco-eventos-tempo__value--previsao {
+  color: #169eff;
+}
+
+.monitor-risco-eventos-tempo__alert-box {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  border: 1.5px dashed #ff5454;
+  border-radius: 3px;
+  background: transparent;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  padding-bottom: 0.25rem;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.monitor-risco-eventos-tempo__value--alert {
+  color: #ff5454;
+  font-size: 11px;
+}
+
+.monitor-risco-eventos-tempo__label {
+  font-family: var(--font-noto-sans);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #98a2b3;
+  text-align: center;
+}
+
+/* ── Insights: legendas pendentes e ranking ── */
+.monitor-risco-legend--pendentes .monitor-risco-legend__text {
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+.monitor-risco-legend__item--total {
+  margin-top: 0.125rem;
+}
+
+.monitor-risco-ranking--insights {
+  gap: 0;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__item {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid #e9eeee;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.monitor-risco-ranking__rank-col {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.monitor-risco-ranking__rank {
+  font-family: var(--font-noto-sans);
+  font-size: 14px;
+  font-weight: 400;
+  color: #2f2f2f;
+  min-width: 1.125rem;
+}
+
+.monitor-risco-ranking__flag {
+  flex-shrink: 0;
+}
+
+.monitor-risco-ranking__flag-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__line {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__name,
+.monitor-risco-ranking--insights .monitor-risco-ranking__vehicle {
+  font-family: var(--font-noto-sans);
+  font-size: 14px;
+  font-weight: 400;
+  color: #2f2f2f;
+}
+
+.monitor-risco-ranking--insights:not(.monitor-risco-ranking--veiculo) .monitor-risco-ranking__vehicle {
+  color: #667085;
+}
+
+.monitor-risco-ranking--insights.monitor-risco-ranking--veiculo .monitor-risco-ranking__vehicle {
+  color: #2f2f2f;
+}
+
+.monitor-risco-ranking--insights.monitor-risco-ranking--veiculo .monitor-risco-ranking__name {
+  color: #667085;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__score {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__score--baixo {
+  color: #169eff;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__score--medio {
+  color: #e29c2c;
+}
+
+.monitor-risco-ranking--insights .monitor-risco-ranking__score--alto,
+.monitor-risco-ranking--insights .monitor-risco-ranking__score--critico {
+  color: #ff5454;
+}
+
 @media (max-width: 1100px) {
   .monitor-risco-grid {
     grid-template-columns: 1fr;
@@ -11772,7 +12517,13 @@ body.cr-fullscreen-modal-open .app-content {
   .monitor-risco-card--recency,
   .monitor-risco-card--politicas,
   .monitor-risco-card--feed,
-  .monitor-risco-card--listagem {
+  .monitor-risco-card--listagem,
+  .monitor-risco-card--politicas-dist,
+  .monitor-risco-card--nivel-risco,
+  .monitor-risco-card--eventos-tempo,
+  .monitor-risco-card--tipo-eventos,
+  .monitor-risco-card--ocorrencias-pendentes,
+  .monitor-risco-card--reincidentes {
     grid-column: 1 / -1;
   }
 

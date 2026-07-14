@@ -21,6 +21,8 @@ import { formatTratativaContactSchedule } from '../../risk-rules/utils/contactSc
 import { buildEventTimelineLabels } from '../utils/eventTimeline';
 import { TratativaBehaviorEvolutionPanel } from './TratativaBehaviorEvolutionPanel';
 import { TratativaAnexosPanel } from './TratativaAnexosPanel';
+import { TratativaStreamingPanel } from './TratativaStreamingPanel';
+import { resolveTratativaStreamingData } from '../utils/tratativaStreaming';
 import emptyHistoryImage from '../../../assets/empty-history.png';
 
 interface TratativaOcorrenciaModalProps {
@@ -46,7 +48,14 @@ interface TratativaOcorrenciaModalProps {
   auditEditable?: boolean;
 }
 
-type ActiveTab = 'tratativa' | 'informacoes' | 'eventos' | 'anexos' | 'evolucao' | 'historico';
+type ActiveTab =
+  | 'tratativa'
+  | 'informacoes'
+  | 'eventos'
+  | 'streaming'
+  | 'anexos'
+  | 'evolucao'
+  | 'historico';
 
 const MOCK_CURRENT_ANALYST = 'Júlia Luz Campos';
 const HISTORY_COMMENT_MAX_LENGTH = 250;
@@ -1193,6 +1202,15 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
     return `${data.occurrencePoints} ${data.occurrencePoints === 1 ? 'ponto' : 'pontos'}`;
   }, [data.occurrencePoints]);
 
+  const streamingData = useMemo(() => resolveTratativaStreamingData(data), [data]);
+  const showStreamingTab = !isAuditoria && Boolean(streamingData);
+
+  useEffect(() => {
+    if (!showStreamingTab && activeTab === 'streaming') {
+      setActiveTab('eventos');
+    }
+  }, [activeTab, showStreamingTab]);
+
   const handleSetReturnConfirmationResolution = (
     actionId: string,
     resolution: ActionResolution,
@@ -1421,6 +1439,17 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
           >
             Eventos
           </button>
+          {showStreamingTab && (
+            <button
+              type="button"
+              className={`central-validacao-tab${
+                activeTab === 'streaming' ? ' central-validacao-tab--active' : ''
+              }`}
+              onClick={() => setActiveTab('streaming')}
+            >
+              Ver ao vivo
+            </button>
+          )}
           <button
             type="button"
             className={`central-validacao-tab${
@@ -1496,8 +1525,7 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                       !isReadOnly &&
                       Boolean(data.awaitingReturnConfirmation) &&
                       index === 0 &&
-                      Boolean(action.scheduleReturnConfirmation) &&
-                      returnConfirmationResolution !== 'nao_resolvido';
+                      Boolean(action.scheduleReturnConfirmation);
                     const keepExpandedForReturn =
                       showReturnConfirmationSection ||
                       (resolution === 'resolvido' &&
@@ -1729,6 +1757,12 @@ export const TratativaOcorrenciaModal: React.FC<TratativaOcorrenciaModalProps> =
                 </div>
               );
             })()}
+          </div>
+        )}
+
+        {activeTab === 'streaming' && streamingData && (
+          <div className="tratativa-body tratativa-streaming-tab">
+            <TratativaStreamingPanel data={streamingData} />
           </div>
         )}
 

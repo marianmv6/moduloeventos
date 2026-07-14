@@ -174,6 +174,21 @@ export interface TratativaAttachment {
   uploadedAt?: string;
 }
 
+export type TratativaStreamingCameraStatus = 'online' | 'offline' | 'loading';
+
+export interface TratativaStreamingCamera {
+  id: string;
+  label: string;
+  status: TratativaStreamingCameraStatus;
+  size: 'large' | 'small';
+}
+
+export interface TratativaStreamingData {
+  deviceName: string;
+  isDeviceOnline: boolean;
+  cameras: TratativaStreamingCamera[];
+}
+
 /** Dados gerais utilizados pelas abas Tratativa, Informações e Eventos. */
 export interface TratativaOcorrenciaData {
   /** Identificador da ocorrência sendo tratada. */
@@ -213,6 +228,8 @@ export interface TratativaOcorrenciaData {
 
   /** Eventos validados anteriormente — alimentam o select da aba "Eventos". */
   validatedEvents: TratativaValidatedEvent[];
+  /** Transmissão ao vivo das câmeras (aba Ver ao vivo). */
+  streaming?: TratativaStreamingData;
   /** Série temporal para a aba "Evolução do comportamento". */
   behaviorEvolution?: TratativaBehaviorEvolutionData;
   /** Resoluções da trilha no modo auditoria (ex.: não resolvido → resolvido). */
